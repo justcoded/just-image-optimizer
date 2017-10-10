@@ -49,7 +49,7 @@ class justImageOptimizer extends core\Singleton {
 		self::$version     = 0.100;
 
 		// init features, which this plugin is created for.
-		new components\SimonTitlePrefix();
+		new components\ConnectController();
 	}
 
 }
