@@ -50,6 +50,7 @@ class justImageOptimizer extends core\Singleton {
 
 		// init features, which this plugin is created for.
 		new components\ConnectController();
+		new components\SettingsController();
 	}
 
 }

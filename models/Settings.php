@@ -6,6 +6,7 @@ class Settings {
 
 	const DB_OPT_API_KEY = '_just_img_opt_api_key';
 	const DB_OPT_SERVICE = '_just_img_opt_service';
+	const DB_OPT_STATUS = '_just_img_opt_connect_status';
 
 	/**
 	 * Update option
@@ -28,6 +29,10 @@ class Settings {
 	 */
 	protected function update_google_api_key( $data ) {
 		if ( isset( $data[ self::DB_OPT_API_KEY ] ) ) {
+			if ( get_option( self::DB_OPT_API_KEY ) !== $data[ self::DB_OPT_API_KEY ] ) {
+				update_option( self::DB_OPT_STATUS, '' );
+			}
+
 			return update_option( self::DB_OPT_API_KEY, $data[ self::DB_OPT_API_KEY ] );
 		}
 

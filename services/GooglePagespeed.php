@@ -23,12 +23,12 @@ class GooglePagespeed implements ImageOptimizerInterface {
 			$result = curl_exec( $ch );
 			curl_close( $ch );
 		}
-		$decod_result = json_decode( $result );
-		if ( isset( $decod_result->responseCode ) && $decod_result->responseCode === 200 ) {
-			return true;
+		$decode_result = json_decode( $result );
+		if ( isset( $decode_result->responseCode ) && $decode_result->responseCode === 200 ) {
+			return 1;
 		}
 
-		return false;
+		return 2;
 	}
 }
 

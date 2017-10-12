@@ -1,13 +1,14 @@
 <?php
 
 namespace justimageoptimizer\components;
+
 use justimageoptimizer\models\Settings;
+use justimageoptimizer\services\GooglePagespeed;
+
 /**
  * Adds option connect page
  */
 class ConnectController extends \justimageoptimizer\core\Component {
-	const DB_OPT_API_KEY = '_just_img_opt_api_key';
-	const DB_OPT_SERVICE = '_just_img_opt_service';
 
 	/**
 	 * Class constructor.
@@ -16,6 +17,7 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'init_admin_menu' ) );
 		add_action( 'admin_print_scripts', array( $this, 'registerAssets' ) );
+		add_action( 'wp_ajax_ajax_check_api', array( $this, 'ajax_check_api' ) );
 	}
 
 	/**
@@ -38,12 +40,15 @@ class ConnectController extends \justimageoptimizer\core\Component {
 		$model = new Settings();
 		$model->save( $_POST );
 		$this->render( 'connect/connect-page', array(
-			'api_key_opt' => self::DB_OPT_API_KEY,
-			'api_key'     => get_option( self::DB_OPT_API_KEY ),
-			'service_opt' => self::DB_OPT_SERVICE,
-			'service'     => get_option( self::DB_OPT_SERVICE ),
+			'api_key_opt'       => $model::DB_OPT_API_KEY,
+			'api_key'           => get_option( $model::DB_OPT_API_KEY ),
+			'service_opt'       => $model::DB_OPT_SERVICE,
+			'service'           => get_option( $model::DB_OPT_SERVICE ),
+			'connection_status' => get_option( $model::DB_OPT_STATUS ),
+			'tab'               => 'connect',
 		) );
 	}
+
 	/**
 	 * Register Assets
 	 */
@@ -55,45 +60,17 @@ class ConnectController extends \justimageoptimizer\core\Component {
 		);
 		wp_enqueue_style( 'just_img_opt_css', plugins_url( 'assets/css/styles.css', dirname( __FILE__ ) ) );
 	}
-	public function checkPageSpeed($url, $key ){
-		$url_req = 'https://www.googleapis.com/pagespeedonline/v1/runPagespeed?url='.$url.'&key='.$key.'';
-		if (function_exists('file_get_contents')) {
-			$result = @file_get_contents($url_req);
-		}
-		if ($result == '') {
-			$ch = curl_init();
-			$timeout = 60;
-			curl_setopt($ch, CURLOPT_URL, $url_req);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-			$result = curl_exec($ch);
-			curl_close($ch);
-		}
 
-		return $result;
+	/**
+	 * Ajax function for check valid API key
+	 */
+	public function ajax_check_api() {
+		$service        = new GooglePagespeed();
+		$model          = new Settings();
+		$api_key        = ( isset( $_POST['api_key'] ) ? $_POST['api_key'] : '' );
+		$connection_api = $service->check_api_key( $api_key );
+		update_option( $model::DB_OPT_STATUS, $connection_api );
+		echo $connection_api;
+		exit();
 	}
-//
-//	public function downloadOptimizeImage( $url, $strategy, $key ) {
-//		$url_req = 'https://www.googleapis.com/pagespeedonline/v3beta1/optimizeContents?url='.$url.'&strategy='.$strategy.'&key='.$key.'';
-//		if (function_exists('file_get_contents')) {
-//			$result = @file_get_contents($url_req);
-//		}
-//		if ($result == '') {
-//			$ch = curl_init();
-//			$timeout = 60;
-//			curl_setopt($ch, CURLOPT_URL, $url_req);
-//			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-//			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-//			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-//			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-//			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-//			$result = curl_exec($ch);
-//			curl_close($ch);
-//		}
-//
-//		return $result;
-//	}
 }
