@@ -16,7 +16,7 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 */
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'init_admin_menu' ) );
-		add_action( 'admin_print_scripts', array( $this, 'registerAssets' ) );
+		add_action( 'admin_print_scripts-media_page_just-img-opt-connection', array( $this, 'registerAssets' ) );
 		add_action( 'wp_ajax_ajax_check_api', array( $this, 'ajax_check_api' ) );
 	}
 
