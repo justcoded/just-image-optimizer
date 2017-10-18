@@ -13,7 +13,8 @@ require_once( JUSTIMAGEOPTIMIZER_ROOT . '/core/Autoload.php' );
 
 use justimageoptimizer\core;
 use justimageoptimizer\components;
-
+use justimageoptimizer\services;
+use justimageoptimizer\models;
 /**
  * Class justImageOptimizer
  * Main plugin entry point. Includes components in constructor
@@ -34,6 +35,13 @@ class justImageOptimizer extends core\Singleton {
 	public static $version;
 
 	/**
+	 * Current Optimize service
+	 *
+	 * @var object
+	 */
+	public static $service;
+
+	/**
 	 * Plugin text domain for translations
 	 */
 	const TEXTDOMAIN = 'justimageoptimizer';
@@ -49,7 +57,11 @@ class justImageOptimizer extends core\Singleton {
 		self::$version     = 0.100;
 
 		// init features, which this plugin is created for.
-		new components\SimonTitlePrefix();
+		self::$service = services\ImageOptimizerFactory::create( get_option( models\Settings::DB_OPT_SERVICE ) );
+		new components\ConnectController();
+		new components\SettingsController();
+		new components\MediaInfo();
+
 	}
 
 }
