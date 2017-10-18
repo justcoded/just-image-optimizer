@@ -20,14 +20,18 @@ class Settings {
 	 * @param array $data Data Array.
 	 */
 	public function save( $data ) {
-		if ( is_array( $data ) && isset( $data['submit'] ) ) {
-			$this->update_google_api_key( $data );
-			$this->update_service( $data );
-			$this->update_auto_optimize( $data );
-			$this->update_before_regen( $data );
-			$this->update_image_limit( $data );
-			$this->update_image_sizes( $data );
-			$this->update_size_limit( $data );
+		if ( is_array( $data ) ) {
+			if ( isset( $data['submit-connect'] ) ) {
+				$this->update_google_api_key( $data );
+				$this->update_service( $data );
+			}
+			if ( isset( $data['submit-settings'] ) ) {
+				$this->update_auto_optimize( $data );
+				$this->update_before_regen( $data );
+				$this->update_image_limit( $data );
+				$this->update_image_sizes( $data );
+				$this->update_size_limit( $data );
+			}
 		}
 	}
 
@@ -76,6 +80,7 @@ class Settings {
 		if ( isset( $data[ self::DB_OPT_IMAGE_SIZES ] ) ) {
 			return update_option( self::DB_OPT_IMAGE_SIZES, maybe_serialize( $data[ self::DB_OPT_IMAGE_SIZES ] ) );
 		}
+
 		return update_option( self::DB_OPT_IMAGE_SIZES, '' );
 	}
 
@@ -90,6 +95,7 @@ class Settings {
 		if ( isset( $data[ self::DB_OPT_AUTO_OPTIMIZE ] ) ) {
 			return update_option( self::DB_OPT_AUTO_OPTIMIZE, $data[ self::DB_OPT_AUTO_OPTIMIZE ] );
 		}
+
 		return update_option( self::DB_OPT_AUTO_OPTIMIZE, '' );
 	}
 
@@ -104,6 +110,7 @@ class Settings {
 		if ( isset( $data[ self::DB_OPT_IMAGE_LIMIT ] ) ) {
 			return update_option( self::DB_OPT_IMAGE_LIMIT, $data[ self::DB_OPT_IMAGE_LIMIT ] );
 		}
+
 		return false;
 	}
 
@@ -118,6 +125,7 @@ class Settings {
 		if ( isset( $data[ self::DB_OPT_SIZE_LIMIT ] ) ) {
 			return update_option( self::DB_OPT_SIZE_LIMIT, $data[ self::DB_OPT_SIZE_LIMIT ] );
 		}
+
 		return false;
 	}
 
@@ -132,6 +140,7 @@ class Settings {
 		if ( isset( $data[ self::DB_OPT_BEFORE_REGEN ] ) ) {
 			return update_option( self::DB_OPT_BEFORE_REGEN, $data[ self::DB_OPT_BEFORE_REGEN ] );
 		}
+
 		return update_option( self::DB_OPT_BEFORE_REGEN, '' );
 	}
 }

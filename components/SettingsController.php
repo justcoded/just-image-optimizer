@@ -3,7 +3,6 @@
 namespace justimageoptimizer\components;
 
 use justimageoptimizer\models\Settings;
-use justimageoptimizer\services\GooglePagespeed;
 
 /**
  * Adds option settings page

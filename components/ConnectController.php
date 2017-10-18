@@ -3,7 +3,6 @@
 namespace justimageoptimizer\components;
 
 use justimageoptimizer\models\Settings;
-use justimageoptimizer\services\GooglePagespeed;
 
 /**
  * Adds option connect page
@@ -65,7 +64,7 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 * Ajax function for check valid API key
 	 */
 	public function ajax_check_api() {
-		$service        = new GooglePagespeed();
+		$service        = \justImageOptimizer::$service;
 		$model          = new Settings();
 		$api_key        = ( isset( $_POST['api_key'] ) ? $_POST['api_key'] : '' );
 		$connection_api = $service->check_api_key( $api_key );

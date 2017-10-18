@@ -43,7 +43,7 @@
 			</table>
 		</div>
 		<input <?php echo( $connection_status === '1' ? '' : 'disabled' ); ?>
-			type="submit" name="submit" id="submit-connect"
+			type="submit" name="submit-connect" id="submit-connect"
 			class="button button-primary" value="Save">
 	</form>
 </div>

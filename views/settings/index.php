@@ -61,6 +61,6 @@
 			</tr>
 		</table>
 		<input
-			type="submit" name="submit" class="button button-primary" value="Save">
+			type="submit" name="submit-settings" class="button button-primary" value="Save">
 	</form>
 </div>
