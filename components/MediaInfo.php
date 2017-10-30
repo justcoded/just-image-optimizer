@@ -45,7 +45,10 @@ class MediaInfo extends \justimageoptimizer\core\Component {
 	 * @return mixed
 	 */
 	public function optimize_column_display( $column_name, $id ) {
-		echo 'Image Optimize';
+		$this->render( 'media/column', array(
+			'id'          => $id,
+			'column_name' => $column_name,
+		) );
 	}
 
 	/**

@@ -38,18 +38,18 @@ class SettingsController extends \justimageoptimizer\core\Component {
 		$model = new Settings();
 		$model->save( $_POST );
 		$this->render( 'settings/index', array(
-			'tab' => 'settings',
-			'sizes' => $this->image_dimensions(),
-			'image_sizes' => maybe_unserialize( get_option( $model::DB_OPT_IMAGE_SIZES ) ),
-			'auto_optimize' => get_option( $model::DB_OPT_AUTO_OPTIMIZE ),
-			'image_limit' => get_option( $model::DB_OPT_IMAGE_LIMIT ),
-			'size_limit' => get_option( $model::DB_OPT_SIZE_LIMIT ),
-			'before_regen' => get_option( $model::DB_OPT_BEFORE_REGEN ),
-			'image_sizes_opt' => $model::DB_OPT_IMAGE_SIZES . '[]',
+			'tab'               => 'settings',
+			'sizes'             => $this->image_dimensions(),
+			'image_sizes'       => maybe_unserialize( get_option( $model::DB_OPT_IMAGE_SIZES ) ),
+			'auto_optimize'     => get_option( $model::DB_OPT_AUTO_OPTIMIZE ),
+			'image_limit'       => get_option( $model::DB_OPT_IMAGE_LIMIT ),
+			'size_limit'        => get_option( $model::DB_OPT_SIZE_LIMIT ),
+			'before_regen'      => get_option( $model::DB_OPT_BEFORE_REGEN ),
+			'image_sizes_opt'   => $model::DB_OPT_IMAGE_SIZES . '[]',
 			'auto_optimize_opt' => $model::DB_OPT_AUTO_OPTIMIZE,
-			'image_limit_opt' => $model::DB_OPT_IMAGE_LIMIT,
-			'size_limit_opt' => $model::DB_OPT_SIZE_LIMIT,
-			'before_regen_opt' => $model::DB_OPT_BEFORE_REGEN,
+			'image_limit_opt'   => $model::DB_OPT_IMAGE_LIMIT,
+			'size_limit_opt'    => $model::DB_OPT_SIZE_LIMIT,
+			'before_regen_opt'  => $model::DB_OPT_BEFORE_REGEN,
 		) );
 	}
 

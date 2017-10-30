@@ -1,5 +1,5 @@
 <div class="wrap">
-	<?php include(JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php'); ?>
+	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
 			<tr>

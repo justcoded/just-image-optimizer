@@ -61,7 +61,7 @@ class justImageOptimizer extends core\Singleton {
 		new components\ConnectController();
 		new components\SettingsController();
 		new components\MediaInfo();
-
+        new components\Optimizer();
 	}
 
 }

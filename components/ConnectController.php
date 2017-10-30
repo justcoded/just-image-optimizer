@@ -69,6 +69,7 @@ class ConnectController extends \justimageoptimizer\core\Component {
 		$api_key        = ( isset( $_POST['api_key'] ) ? $_POST['api_key'] : '' );
 		$connection_api = $service->check_api_key( $api_key );
 		update_option( $model::DB_OPT_STATUS, $connection_api );
+		update_option( $model::DB_OPT_API_KEY, $api_key );
 		echo $connection_api;
 		exit();
 	}
