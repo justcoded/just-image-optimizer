@@ -14,28 +14,90 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
-		add_action( 'init', array( $this, 'optimizer_image_add_cron' ) );
-		add_filter( 'cron_schedules', array( $this, 'optimizer_image_add_schedule' ) );
+		$this->run_cron();
 		add_action( 'admin_print_scripts-upload.php', array( $this, 'registerAssets' ) );
 		add_action( 'wp_ajax_ajax_manual_optimize', array( $this, 'ajax_manual_optimize' ) );
 	}
 
 	/**
-	 * Add Optimizer Image cron function.
+	 * Run cron job by Settings param
 	 */
-	public function optimizer_image_add_cron() {
-		if ( ! wp_next_scheduled( 'optimizer_image_cron_start' ) ) {
-			wp_schedule_event( time(), 'optimizer_image', 'optimizer_image_cron_start' );
+	protected function run_cron() {
+		if ( get_option( Settings::DB_OPT_AUTO_OPTIMIZE ) === '1' ) {
+			add_filter( 'cron_schedules', array( $this, 'optimizer_image_add_schedule' ) );
+			add_action( 'init', array( $this, 'optimizer_image_add_cron' ) );
+			add_action( 'optimizer_image_cron', array( $this, 'auto_optimizer' ) );
 		}
 	}
 
 	/**
 	 * Add Optimizer Image cron interval function.
 	 */
-	public function optimizer_image_add_schedule() {
-		$schedules['optimizer_image'] = array( 'interval' => 5 * 60, 'display' => 'Optimizer Image Cron Work' );
+	public function optimizer_image_add_schedule( $schedules ) {
+		$schedules['optimizer_image'] = array( 'interval' => 60 * 5, 'display' => 'Optimizer Image Cron Work' );
 
 		return $schedules;
+	}
+
+	/**
+	 * Add Optimizer Image cron function.
+	 */
+	public function optimizer_image_add_cron() {
+		if ( ! wp_next_scheduled( 'optimizer_image_cron' ) ) {
+			wp_schedule_event( time(), 'optimizer_image', 'optimizer_image_cron' );
+		}
+	}
+
+	/**
+	 * Auto optimizer cron job.
+	 */
+	public function auto_optimizer() {
+		$attach_ids = array();
+		$queue_args = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'posts_per_page' => get_option( Settings::DB_OPT_IMAGE_LIMIT ),
+			'orderby'        => 'id',
+			'order'          => 'ASC',
+			'meta_query'     => array(
+				'relation' => 'OR',
+				array(
+					'key'   => '_just_img_opt_queue',
+					'value' => '1',
+				),
+				array(
+					'key'     => '_just_img_opt_queue',
+					'compare' => 'NOT EXISTS',
+					'value'   => '',
+				),
+			)
+		);
+		$set_queue  = new \WP_Query( $queue_args );
+		while ( $set_queue->have_posts() ) {
+			$set_queue->the_post();
+			$attach_ids[] = get_the_ID();
+			update_post_meta( get_the_ID(), '_just_img_opt_queue', 1 );
+		}
+		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
+		\justImageOptimizer::$service->upload_optimize_images( get_option( Settings::DB_OPT_API_KEY ), home_url( '/just-image-optimize/' . $base_attach_ids . '' ) );
+		$dir       = WP_CONTENT_DIR . '/tmp/image/';
+		$get_image = scandir( $dir );
+		$get_path  = $this->get_uploads_path();
+		if ( ! empty( $get_image ) ) {
+			foreach ( $get_image as $key => $file ) {
+				if ( is_file( $dir . $file ) ) {
+					foreach ( $get_path as $path ) {
+						if ( file_exists( $path . '/' . $file ) ) {
+							copy( $dir . $file, $path . '/' . $file );
+						}
+					}
+				}
+			}
+			self::delete_dir( WP_CONTENT_DIR . '/tmp' );
+			foreach ( $attach_ids as $attach_id ) {
+				update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
+			}
+		}
 	}
 
 	/**
@@ -109,7 +171,7 @@ class Optimizer extends \justimageoptimizer\core\Component {
 				}
 			}
 			self::delete_dir( WP_CONTENT_DIR . '/tmp' );
-			add_post_meta( $attach_id, '_just_img_opt_queue', 3 );
+			update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
 		}
 		wp_die();
 	}

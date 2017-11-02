@@ -1,3 +1,6 @@
+<?php
+use justimageoptimizer\models\Settings;
+?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -9,15 +12,17 @@
 <body <?php body_class(); ?>>
 <div id="wrapper">
 	<?php
-	$link       = $_SERVER['REQUEST_URI'];
-	$link_array = explode( '/', $link );
-	$attach_id  = base64_decode( end( $link_array ) );
-	if ( is_int( $attach_id ) ) {
-		$sizes_attachment = wp_get_attachment_metadata( $attach_id );
-		foreach ( $sizes_attachment['sizes'] as $key_size => $value_size ) {
-			echo '<img src="' . esc_url( wp_get_attachment_image_url( $attach_id, $key_size ) ) . '" />';
+	$link             = $_SERVER['REQUEST_URI'];
+	$link_array       = explode( '/', $link );
+	$attach_ids        = base64_decode( end( $link_array ) );
+	$sizes_attachment = maybe_unserialize( get_option( Settings::DB_OPT_IMAGE_SIZES ) );
+	$attach_ids = explode( ',', $attach_ids );
+	if ( is_array( $sizes_attachment ) ) {
+		foreach ( $sizes_attachment as $value_size ) {
+			foreach ( $attach_ids as $attach_id ) {
+				echo '<img src="' . esc_url( wp_get_attachment_image_url( $attach_id, $value_size ) ) . '" />';
+			}
 		}
-		echo '<img src="' . esc_url( wp_get_attachment_image_url( $attach_id, 'full' ) ) . '" />';
 	}
 	?>
 </div>
