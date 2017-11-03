@@ -24,8 +24,8 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	 */
 	protected function run_cron() {
 		if ( get_option( Settings::DB_OPT_AUTO_OPTIMIZE ) === '1' ) {
-			add_filter( 'cron_schedules', array( $this, 'optimizer_image_add_schedule' ) );
-			add_action( 'init', array( $this, 'optimizer_image_add_cron' ) );
+			add_filter( 'cron_schedules', array( $this, 'add_schedule' ) );
+			add_action( 'init', array( $this, 'add_cron_event' ) );
 			add_action( 'optimizer_image_cron', array( $this, 'auto_optimizer' ) );
 		}
 	}
@@ -33,8 +33,8 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	/**
 	 * Add Optimizer Image cron interval function.
 	 */
-	public function optimizer_image_add_schedule( $schedules ) {
-		$schedules['optimizer_image'] = array( 'interval' => 60 * 5, 'display' => 'Optimizer Image Cron Work' );
+	public function add_schedule( $schedules ) {
+		$schedules['just_image_optimizer'] = array( 'interval' => 60 * 5, 'display' => 'Optimizer Image Cron Work' );
 
 		return $schedules;
 	}
@@ -42,16 +42,16 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	/**
 	 * Add Optimizer Image cron function.
 	 */
-	public function optimizer_image_add_cron() {
+	public function add_cron_event() {
 		if ( ! wp_next_scheduled( 'optimizer_image_cron' ) ) {
-			wp_schedule_event( time(), 'optimizer_image', 'optimizer_image_cron' );
+			wp_schedule_event( time(), 'just_image_optimizer', 'optimizer_image_cron' );
 		}
 	}
 
 	/**
 	 * Auto optimizer cron job.
 	 */
-	public function auto_optimizer() {
+	protected function auto_optimizer() {
 		$attach_ids = array();
 		$queue_args = array(
 			'post_type'      => 'attachment',
@@ -78,26 +78,7 @@ class Optimizer extends \justimageoptimizer\core\Component {
 			$attach_ids[] = get_the_ID();
 			update_post_meta( get_the_ID(), '_just_img_opt_queue', 1 );
 		}
-		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
-		\justImageOptimizer::$service->upload_optimize_images( get_option( Settings::DB_OPT_API_KEY ), home_url( '/just-image-optimize/' . $base_attach_ids . '' ) );
-		$dir       = WP_CONTENT_DIR . '/tmp/image/';
-		$get_image = scandir( $dir );
-		$get_path  = $this->get_uploads_path();
-		if ( ! empty( $get_image ) ) {
-			foreach ( $get_image as $key => $file ) {
-				if ( is_file( $dir . $file ) ) {
-					foreach ( $get_path as $path ) {
-						if ( file_exists( $path . '/' . $file ) ) {
-							copy( $dir . $file, $path . '/' . $file );
-						}
-					}
-				}
-			}
-			self::delete_dir( WP_CONTENT_DIR . '/tmp' );
-			foreach ( $attach_ids as $attach_id ) {
-				update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
-			}
-		}
+		$this->optimize_images( $attach_ids );
 	}
 
 	/**
@@ -153,16 +134,21 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	/**
 	 * Ajax function for manual image optimize
 	 */
-	public function ajax_manual_optimize() {
+	protected function ajax_manual_optimize() {
 		$attach_id      = ( isset( $_POST['attach_id'] ) ? $_POST['attach_id'] : '' );
-		$base_attach_id = base64_encode( $attach_id );
-		\justImageOptimizer::$service->upload_optimize_images( get_option( Settings::DB_OPT_API_KEY ), home_url( '/just-image-optimize/' . $base_attach_id . '' ) );
+		$this->optimize_images( $attach_id );
+		wp_die();
+	}
+
+	protected function optimize_images( $attach_ids ) {
+		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
+		\justImageOptimizer::$service->upload_optimize_images( get_option( Settings::DB_OPT_API_KEY ), home_url( '/just-image-optimize/' . $base_attach_ids . '' ) );
 		$dir       = WP_CONTENT_DIR . '/tmp/image/';
 		$get_image = scandir( $dir );
 		$get_path  = $this->get_uploads_path();
 		if ( ! empty( $get_image ) ) {
 			foreach ( $get_image as $key => $file ) {
-				if ( is_file( $dir . $file ) ) {
+				if ( validate_file( $dir . $file ) ) {
 					foreach ( $get_path as $path ) {
 						if ( file_exists( $path . '/' . $file ) ) {
 							copy( $dir . $file, $path . '/' . $file );
@@ -171,8 +157,9 @@ class Optimizer extends \justimageoptimizer\core\Component {
 				}
 			}
 			self::delete_dir( WP_CONTENT_DIR . '/tmp' );
-			update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
+			foreach ( $attach_ids as $attach_id ) {
+				update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
+			}
 		}
-		wp_die();
 	}
 }

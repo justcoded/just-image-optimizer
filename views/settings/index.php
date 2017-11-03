@@ -5,9 +5,9 @@
 			<tr>
 				<th scope="row"><?php _e( 'Automatically optimize uploads', \justImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
-					<input <?php echo( $auto_optimize === '1' ? 'checked' : '' ); ?>
+					<input <?php echo( get_option( $model::DB_OPT_AUTO_OPTIMIZE ) === '1' ? 'checked' : '' ); ?>
 						type="checkbox"
-						name="<?php echo $auto_optimize_opt; ?>"
+						name="auto_optimize"
 						value="1">
 				</td>
 			</tr>
@@ -18,10 +18,10 @@
 						<?php if ( is_array( $image_sizes ) ) : ?>
 							<input <?php echo( in_array( $size, $image_sizes ) ? 'checked' : '' ); ?>
 							type="checkbox"
-							name="<?php echo $image_sizes_opt; ?>"
+							name="image_sizes[]"
 							value="<?php echo $size; ?>"><?php echo $size; ?><br>
 						<?php else : ?>
-							<input type="checkbox" name="<?php echo $image_sizes_opt; ?>"
+							<input type="checkbox" name="image_sizes[]"
 							       value="<?php echo $size; ?>"><?php echo $size; ?><br>
 						<?php endif; ?>
 					<?php endforeach; ?>
@@ -36,14 +36,14 @@
 			<tr>
 				<th scope="row"><?php _e( 'Bulk images limit', \justImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
-					<input type="text" name="<?php echo $image_limit_opt; ?>" value="<?php echo $image_limit; ?>">
+					<input type="text" name="image_limit" value="<?php echo get_option( $model::DB_OPT_IMAGE_LIMIT ); ?>">
 					<p>how many images can be optimized at a time</p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row"><?php _e( 'Bulk size limit', \justImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
-					<input type="text" name="<?php echo $size_limit_opt; ?>" value="<?php echo $size_limit; ?>">
+					<input type="text" name="size_limit" value="<?php echo get_option( $model::DB_OPT_SIZE_LIMIT ); ?>">
 					<p>optimize images, which file size in total is not greater than limit</p>
 					<p>* can decrease Bulk images limit, if original images are very big</p>
 					<p>** use 0 to ignore this limit</p>
@@ -52,9 +52,9 @@
 			<tr>
 				<th scope="row"><?php _e( 'Regenerate image thumbnails before optimize', \justImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
-					<input <?php echo( $before_regen === '1' ? 'checked' : '' ); ?>
+					<input <?php echo( get_option( $model::DB_OPT_BEFORE_REGEN ) === '1' ? 'checked' : '' ); ?>
 						type="checkbox"
-						name="<?php echo $before_regen_opt; ?>"
+						name="before_regen"
 						value="1">
 					<p>can affect server performance if you upload images very often</p>
 				</td>

@@ -15,6 +15,7 @@ use justimageoptimizer\core;
 use justimageoptimizer\components;
 use justimageoptimizer\services;
 use justimageoptimizer\models;
+use justimageoptimizer\controllers;
 /**
  * Class justImageOptimizer
  * Main plugin entry point. Includes components in constructor
@@ -57,9 +58,9 @@ class justImageOptimizer extends core\Singleton {
 		self::$version     = 0.100;
 
 		// init features, which this plugin is created for.
-		self::$service = services\ImageOptimizerFactory::create( get_option( models\Settings::DB_OPT_SERVICE ) );
-		new components\ConnectController();
-		new components\SettingsController();
+		self::$service = services\ImageOptimizerFactory::create();
+		new controllers\ConnectController();
+		new controllers\SettingsController();
 		new components\MediaInfo();
         new components\Optimizer();
 	}

@@ -1,8 +1,10 @@
 <?php
 
-namespace justimageoptimizer\components;
+namespace justimageoptimizer\controllers;
 
+use justimageoptimizer\models\Connect;
 use justimageoptimizer\models\Settings;
+use justimageoptimizer\services;
 
 /**
  * Adds option connect page
@@ -36,15 +38,11 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 * Render Connect page
 	 */
 	public function actionIndex() {
-		$model = new Settings();
-		$model->save( $_POST );
+		$model = new Connect();
+		$model->load( $_POST ) && $model->save();
 		$this->render( 'connect/connect-page', array(
-			'api_key_opt'       => $model::DB_OPT_API_KEY,
-			'api_key'           => get_option( $model::DB_OPT_API_KEY ),
-			'service_opt'       => $model::DB_OPT_SERVICE,
-			'service'           => get_option( $model::DB_OPT_SERVICE ),
-			'connection_status' => get_option( $model::DB_OPT_STATUS ),
-			'tab'               => 'connect',
+			'model' => $model,
+			'tab'   => 'connect',
 		) );
 	}
 
@@ -64,12 +62,11 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 * Ajax function for check valid API key
 	 */
 	public function ajax_check_api() {
-		$service        = \justImageOptimizer::$service;
-		$model          = new Settings();
-		$api_key        = ( isset( $_POST['api_key'] ) ? $_POST['api_key'] : '' );
-		$connection_api = $service->check_api_key( $api_key );
+		$model   = new Connect();
+		$model->load( $_POST ) && $model->save();
+		$service = services\ImageOptimizerFactory::create();
+		$connection_api = $service->check_api_key();
 		update_option( $model::DB_OPT_STATUS, $connection_api );
-		update_option( $model::DB_OPT_API_KEY, $api_key );
 		echo $connection_api;
 		exit();
 	}

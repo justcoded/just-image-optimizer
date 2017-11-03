@@ -15,10 +15,12 @@ jQuery(document).ready(function ($) {
    });
    $('#api_connect').on('click', function(e) {
       e.preventDefault();
-      var $api_key = $('#_just_img_opt_api_key').val();
+      var $api_key = $('#api_key').val();
+      var $service = $('#service').val();
       var data = {
          action: 'ajax_check_api',
-         api_key: $api_key
+         api_key: $api_key,
+         service: $service
       };
       $.post( ajaxurl, data, function( response ) {
          console.log(response);
