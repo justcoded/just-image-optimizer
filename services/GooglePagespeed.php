@@ -3,6 +3,7 @@
 namespace justimageoptimizer\services;
 
 use justimageoptimizer\components\Optimizer;
+use justimageoptimizer\models;
 
 class GooglePagespeed implements ImageOptimizerInterface {
 
@@ -66,7 +67,6 @@ class GooglePagespeed implements ImageOptimizerInterface {
 
 	public function rewrite_url() {
 		add_rewrite_rule( '^just-image-optimize/?', 'index.php?just-image-optimize=true', 'top' );
-		flush_rewrite_rules();
 	}
 
 	public function query_vars( $query_vars ) {
@@ -79,9 +79,17 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		global $wp;
 		$optimizer = new Optimizer();
 		if ( isset( $wp->query_vars['just-image-optimize'] ) ) {
-			$optimizer->render( 'optimize/index' );
+			$query_var_url = $_SERVER['REQUEST_URI'];
+			$parse_url     = explode( '/', $query_var_url );
+			$attach_ids    = base64_decode( end( $parse_url ) );
+			$attach_ids    = explode( ',', $attach_ids );
+			$optimizer->render( 'optimize/index', array(
+				'attach_ids'           => $attach_ids,
+				'sizes_attachment' => maybe_unserialize( get_option( models\Settings::DB_OPT_IMAGE_SIZES ) ),
+			) );
 			exit;
 		}
 	}
 }
+
 ?>

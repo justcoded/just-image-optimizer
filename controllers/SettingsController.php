@@ -23,8 +23,8 @@ class SettingsController extends \justimageoptimizer\core\Component {
 	public function init_settings_menu() {
 		add_submenu_page(
 			null,
-			__( 'Settings', \justImageOptimizer::TEXTDOMAIN ),
-			__( 'Settings', \justImageOptimizer::TEXTDOMAIN ),
+			__( 'Settings', \JustImageOptimizer::TEXTDOMAIN ),
+			__( 'Settings', \JustImageOptimizer::TEXTDOMAIN ),
 			'manage_options',
 			'just-img-opt-settings',
 			array( $this, 'actionIndex' )

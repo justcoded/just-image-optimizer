@@ -15,12 +15,26 @@ class MediaInfo extends \justimageoptimizer\core\Component {
 	 */
 	public function __construct() {
 		add_action( 'admin_init', array( $this, 'hook_new_media_columns' ) );
+		add_action( 'admin_print_scripts-upload.php', array( $this, 'registerAssets' ) );
 	}
-
+	/**
+	 * Initialize WordPress media hooks
+	 */
 	public function hook_new_media_columns() {
 		add_filter( 'manage_media_columns', array( $this, 'optimize_column' ) );
 		add_action( 'manage_media_custom_column', array( $this, 'optimize_column_display' ), 10, 2 );
 		add_filter( 'manage_upload_sortable_columns', array( $this, 'optimize_column_sortable' ) );
+	}
+
+	/**
+	 * Register Assets
+	 */
+	public function registerAssets() {
+		wp_enqueue_script(
+			'just_img_manual_js',
+			plugins_url( 'assets/js/optimize.js', dirname( __FILE__ ) ),
+			array( 'jquery' )
+		);
 	}
 
 	/**

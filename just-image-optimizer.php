@@ -16,11 +16,12 @@ use justimageoptimizer\components;
 use justimageoptimizer\services;
 use justimageoptimizer\models;
 use justimageoptimizer\controllers;
+
 /**
- * Class justImageOptimizer
+ * Class JustImageOptimizer
  * Main plugin entry point. Includes components in constructor
  */
-class justImageOptimizer extends core\Singleton {
+class JustImageOptimizer extends core\Singleton {
 	/**
 	 * Textual plugin name
 	 *
@@ -54,7 +55,7 @@ class justImageOptimizer extends core\Singleton {
 	 */
 	protected function __construct() {
 		// init plugin name and version.
-		self::$plugin_name = __( 'Just Image Optimizer', justImageOptimizer::TEXTDOMAIN );
+		self::$plugin_name = __( 'Just Image Optimizer', JustImageOptimizer::TEXTDOMAIN );
 		self::$version     = 0.100;
 
 		// init features, which this plugin is created for.
@@ -62,9 +63,9 @@ class justImageOptimizer extends core\Singleton {
 		new controllers\ConnectController();
 		new controllers\SettingsController();
 		new components\MediaInfo();
-        new components\Optimizer();
+		new components\Optimizer();
 	}
 
 }
 
-justImageOptimizer::run();
+JustImageOptimizer::run();

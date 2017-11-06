@@ -3,6 +3,7 @@
 namespace justimageoptimizer\components;
 
 use justimageoptimizer\models\Settings;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * Class Optimizer
@@ -15,7 +16,6 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	 */
 	public function __construct() {
 		$this->run_cron();
-		add_action( 'admin_print_scripts-upload.php', array( $this, 'registerAssets' ) );
 		add_action( 'wp_ajax_ajax_manual_optimize', array( $this, 'ajax_manual_optimize' ) );
 	}
 
@@ -51,7 +51,7 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	/**
 	 * Auto optimizer cron job.
 	 */
-	protected function auto_optimizer() {
+	public function auto_optimizer() {
 		$attach_ids = array();
 		$queue_args = array(
 			'post_type'      => 'attachment',
@@ -78,18 +78,8 @@ class Optimizer extends \justimageoptimizer\core\Component {
 			$attach_ids[] = get_the_ID();
 			update_post_meta( get_the_ID(), '_just_img_opt_queue', 1 );
 		}
+		require ABSPATH . 'wp-admin/includes/file.php';
 		$this->optimize_images( $attach_ids );
-	}
-
-	/**
-	 * Register Assets
-	 */
-	public function registerAssets() {
-		wp_enqueue_script(
-			'just_img_manual_js',
-			plugins_url( 'assets/js/optimize.js', dirname( __FILE__ ) ),
-			array( 'jquery' )
-		);
 	}
 
 	/**
@@ -109,9 +99,20 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	}
 
 	/**
+	 * Function for init filesystem accesses
+	 *
+	 * @return string
+	 */
+	public function filesystem_direct() {
+		return 'direct';
+	}
+
+	/**
 	 * Delete upload dir
 	 *
 	 * @param string $dir_path Path url.
+	 *
+	 * @throws \InvalidArgumentException Check directory.
 	 */
 	public static function delete_dir( $dir_path ) {
 		if ( ! is_dir( $dir_path ) ) {
@@ -134,32 +135,41 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	/**
 	 * Ajax function for manual image optimize
 	 */
-	protected function ajax_manual_optimize() {
-		$attach_id      = ( isset( $_POST['attach_id'] ) ? $_POST['attach_id'] : '' );
-		$this->optimize_images( $attach_id );
+	public function ajax_manual_optimize() {
+		$this->optimize_images( $_POST );
 		wp_die();
 	}
 
+	/**
+	 * Function for optimize images
+	 *
+	 * @param array $attach_ids Attachment ids.
+	 */
 	protected function optimize_images( $attach_ids ) {
+		global $wp_filesystem;
+		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
 		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
-		\justImageOptimizer::$service->upload_optimize_images( get_option( Settings::DB_OPT_API_KEY ), home_url( '/just-image-optimize/' . $base_attach_ids . '' ) );
+		\JustImageOptimizer::$service->upload_optimize_images( home_url( '/just-image-optimize/' . $base_attach_ids . '' ) );
 		$dir       = WP_CONTENT_DIR . '/tmp/image/';
 		$get_image = scandir( $dir );
 		$get_path  = $this->get_uploads_path();
+		foreach ( $attach_ids as $attach_id ) {
+			update_post_meta( $attach_id, '_just_img_opt_queue', 2 );
+		}
 		if ( ! empty( $get_image ) ) {
 			foreach ( $get_image as $key => $file ) {
-				if ( validate_file( $dir . $file ) ) {
+				if ( $wp_filesystem->is_file( $dir . $file ) ) {
 					foreach ( $get_path as $path ) {
-						if ( file_exists( $path . '/' . $file ) ) {
-							copy( $dir . $file, $path . '/' . $file );
+						if ( $wp_filesystem->exists( $path . '/' . $file ) ) {
+							$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
 						}
 					}
 				}
 			}
 			self::delete_dir( WP_CONTENT_DIR . '/tmp' );
-			foreach ( $attach_ids as $attach_id ) {
-				update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
-			}
+		}
+		foreach ( $attach_ids as $attach_id ) {
+			update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
 		}
 	}
 }

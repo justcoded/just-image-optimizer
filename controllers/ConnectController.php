@@ -26,8 +26,8 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 */
 	public function init_admin_menu() {
 		add_media_page(
-			__( 'Image Optimization', \justImageOptimizer::TEXTDOMAIN ),
-			__( 'Image Optimization', \justImageOptimizer::TEXTDOMAIN ),
+			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
 			'manage_options',
 			'just-img-opt-connection',
 			array( $this, 'actionIndex' )
@@ -62,9 +62,9 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 * Ajax function for check valid API key
 	 */
 	public function ajax_check_api() {
-		$model   = new Connect();
+		$model = new Connect();
 		$model->load( $_POST ) && $model->save();
-		$service = services\ImageOptimizerFactory::create();
+		$service        = services\ImageOptimizerFactory::create();
 		$connection_api = $service->check_api_key();
 		update_option( $model::DB_OPT_STATUS, $connection_api );
 		echo $connection_api;

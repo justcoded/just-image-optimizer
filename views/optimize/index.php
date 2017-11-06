@@ -12,11 +12,6 @@ use justimageoptimizer\models\Settings;
 <body <?php body_class(); ?>>
 <div id="wrapper">
 	<?php
-	$link             = $_SERVER['REQUEST_URI'];
-	$link_array       = explode( '/', $link );
-	$attach_ids        = base64_decode( end( $link_array ) );
-	$sizes_attachment = maybe_unserialize( get_option( Settings::DB_OPT_IMAGE_SIZES ) );
-	$attach_ids = explode( ',', $attach_ids );
 	if ( is_array( $sizes_attachment ) ) {
 		foreach ( $sizes_attachment as $value_size ) {
 			foreach ( $attach_ids as $attach_id ) {

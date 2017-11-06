@@ -3,7 +3,7 @@
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
 			<tr>
-				<th scope="row"><?php _e( 'Automatically optimize uploads', \justImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row"><?php _e( 'Automatically optimize uploads', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input <?php echo( get_option( $model::DB_OPT_AUTO_OPTIMIZE ) === '1' ? 'checked' : '' ); ?>
 						type="checkbox"
@@ -12,7 +12,7 @@
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Image sizes to optimize', \justImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row"><?php _e( 'Image sizes to optimize', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td class="additional_sizes">
 					<?php foreach ( $sizes as $size => $dimensions ) : ?>
 						<?php if ( is_array( $image_sizes ) ) : ?>
@@ -28,20 +28,20 @@
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Keep origin', \justImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row"><?php _e( 'Keep origin', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input disabled checked type="checkbox" name="keep_origin" value="keep_origin">
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Bulk images limit', \justImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row"><?php _e( 'Bulk images limit', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input type="text" name="image_limit" value="<?php echo get_option( $model::DB_OPT_IMAGE_LIMIT ); ?>">
 					<p>how many images can be optimized at a time</p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Bulk size limit', \justImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row"><?php _e( 'Bulk size limit', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input type="text" name="size_limit" value="<?php echo get_option( $model::DB_OPT_SIZE_LIMIT ); ?>">
 					<p>optimize images, which file size in total is not greater than limit</p>
@@ -50,7 +50,7 @@
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Regenerate image thumbnails before optimize', \justImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row"><?php _e( 'Regenerate image thumbnails before optimize', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input <?php echo( get_option( $model::DB_OPT_BEFORE_REGEN ) === '1' ? 'checked' : '' ); ?>
 						type="checkbox"

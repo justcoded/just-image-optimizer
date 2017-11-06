@@ -3,7 +3,7 @@
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
 			<tr>
-				<th scope="row"><?php _e( 'Select an Image Optimization Service', \justImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row"><?php _e( 'Select an Image Optimization Service', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td><label for="service">
 						<input
 							<?php echo( get_option( $model::DB_OPT_SERVICE ) === 'google_insights' ? 'checked' : '' ); ?>
@@ -11,15 +11,15 @@
 							id="service"
 							name="service"
 							value="google_insights">
-						<?php _e( 'Google PageSpeed Insights', \justImageOptimizer::TEXTDOMAIN ); ?></label>
+						<?php _e( 'Google PageSpeed Insights', \JustImageOptimizer::TEXTDOMAIN ); ?></label>
 				</td>
 			</tr>
 		</table>
 		<div id="google_insights">
-			<h3><?php _e( 'Google PageSpeed Insights Settings', \justImageOptimizer::TEXTDOMAIN ); ?></h3>
+			<h3><?php _e( 'Google PageSpeed Insights Settings', \JustImageOptimizer::TEXTDOMAIN ); ?></h3>
 			<table class="form-table">
 				<tr>
-					<th scope="row"><?php _e( 'API Key', \justImageOptimizer::TEXTDOMAIN ); ?></th>
+					<th scope="row"><?php _e( 'API Key', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 					<td>
 
 						<input type="text" name="api_key"
@@ -30,7 +30,7 @@
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><?php _e( 'API Status', \justImageOptimizer::TEXTDOMAIN ); ?></th>
+					<th scope="row"><?php _e( 'API Status', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 					<td class="api_status">
 						<?php if ( get_option( $model::DB_OPT_STATUS ) === '1' ) : ?>
 							<p>OK</p>
