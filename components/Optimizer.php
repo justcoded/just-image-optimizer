@@ -3,7 +3,7 @@
 namespace justimageoptimizer\components;
 
 use justimageoptimizer\models\Settings;
-use Psr\Cache\InvalidArgumentException;
+use justimageoptimizer\models\Media;
 
 /**
  * Class Optimizer
@@ -17,6 +17,7 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	public function __construct() {
 		$this->run_cron();
 		add_action( 'wp_ajax_ajax_manual_optimize', array( $this, 'ajax_manual_optimize' ) );
+		add_action( 'add_attachment', array( $this, 'set_attachment_in_queue' ) );
 	}
 
 	/**
@@ -40,6 +41,15 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	}
 
 	/**
+	 * Set uploaded attachment in queue
+	 *
+	 * @param int $post_id Attachment id.
+	 */
+	function set_attachment_in_queue( $post_id ) {
+		update_post_meta( $post_id, '_just_img_opt_queue', 1 );
+	}
+
+	/**
 	 * Add Optimizer Image cron function.
 	 */
 	public function add_cron_event() {
@@ -56,6 +66,7 @@ class Optimizer extends \justimageoptimizer\core\Component {
 		$queue_args = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
+			'post_mime_type' => array( 'image/jpg', 'image/jpeg', 'image/gif', 'image/png' ),
 			'posts_per_page' => get_option( Settings::DB_OPT_IMAGE_LIMIT ),
 			'orderby'        => 'id',
 			'order'          => 'ASC',
@@ -137,6 +148,16 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	 */
 	public function ajax_manual_optimize() {
 		$this->optimize_images( $_POST );
+		$attach_id       = $_POST['attach_id'];
+		$model           = new Media();
+		$data_statistics = array(
+			'saving_percent' => get_post_meta( $attach_id, $model::DB_OPT_IMAGE_SAVING_PERCENT, true ),
+			'saving_size'    => get_post_meta( $attach_id, $model::DB_OPT_IMAGE_SAVING, true ),
+			'total_size'     => get_post_meta( $attach_id, $model::DB_OPT_IMAGE_DU, true ),
+			'count_images'   => $model->get_count_images( $attach_id ),
+		);
+		header( "Content-Type: application/json; charset=" . get_bloginfo( 'charset' ) );
+		echo wp_json_encode( $data_statistics );
 		wp_die();
 	}
 
@@ -147,6 +168,8 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	 */
 	protected function optimize_images( $attach_ids ) {
 		global $wp_filesystem;
+		$media        = new Media();
+		$b_total_size = 0;
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
 		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
 		\JustImageOptimizer::$service->upload_optimize_images( home_url( '/just-image-optimize/' . $base_attach_ids . '' ) );
@@ -154,6 +177,10 @@ class Optimizer extends \justimageoptimizer\core\Component {
 		$get_image = scandir( $dir );
 		$get_path  = $this->get_uploads_path();
 		foreach ( $attach_ids as $attach_id ) {
+			$b_total_size                 = $media->get_total_filesizes( $attach_id, false );
+			$media->before_optimize_stats = array(
+				'b_stats' => $media->get_total_filesizes( $attach_id, true ),
+			);
 			update_post_meta( $attach_id, '_just_img_opt_queue', 2 );
 		}
 		if ( ! empty( $get_image ) ) {
@@ -169,6 +196,14 @@ class Optimizer extends \justimageoptimizer\core\Component {
 			self::delete_dir( WP_CONTENT_DIR . '/tmp' );
 		}
 		foreach ( $attach_ids as $attach_id ) {
+			$media->_just_img_opt_du     = $media->get_total_filesizes( $attach_id, false );
+			$media->_just_img_opt_saving = $b_total_size - $media->_just_img_opt_du;
+			$media->set_saving_percent( $b_total_size, $media->_just_img_opt_saving );
+			$media->after_optimize_stats = array(
+				'a_stats' => $media->get_total_filesizes( $attach_id, true ),
+			);
+			$media->set_sizes_stats();
+			$media->save( $attach_id );
 			update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
 		}
 	}

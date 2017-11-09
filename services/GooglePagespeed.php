@@ -22,6 +22,11 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		add_action( 'init', array( $this, 'rewrite_url' ), 0 );
 	}
 
+	/**
+	 * Check API key.
+	 *
+	 * @return int Return flag.
+	 */
 	public function check_api_key() {
 		$check_url = 'http://code.google.com/speed/page-speed/';
 		$url_req   = self::API_URL . 'url=' . $check_url . '&key=' . $this->api_key . '';
@@ -48,6 +53,11 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		return 2;
 	}
 
+	/**
+	 * Upload optimized images.
+	 *
+	 * @param string $optimize_contents_url Page with images.
+	 */
 	public function upload_optimize_images( $optimize_contents_url ) {
 		$upload_dir = WP_CONTENT_DIR;
 		$ch         = curl_init();
@@ -65,16 +75,28 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		unlink( $upload_dir . '/optimize_contents.zip' );
 	}
 
+	/**
+	 * Add custom rewrite url.
+	 */
 	public function rewrite_url() {
 		add_rewrite_rule( '^just-image-optimize/?', 'index.php?just-image-optimize=true', 'top' );
 	}
 
+	/**
+	 * Add custom query vars.
+	 *
+	 * @param array $query_vars Array with WordPress query_vars.
+	 * @return array Array with new query_vars.
+	 */
 	public function query_vars( $query_vars ) {
 		$query_vars[] = 'just-image-optimize';
 
 		return $query_vars;
 	}
 
+	/**
+	 * Render optimize page for upload images
+	 */
 	public function view() {
 		global $wp;
 		$optimizer = new Optimizer();
@@ -84,7 +106,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 			$attach_ids    = base64_decode( end( $parse_url ) );
 			$attach_ids    = explode( ',', $attach_ids );
 			$optimizer->render( 'optimize/index', array(
-				'attach_ids'           => $attach_ids,
+				'attach_ids'       => $attach_ids,
 				'sizes_attachment' => maybe_unserialize( get_option( models\Settings::DB_OPT_IMAGE_SIZES ) ),
 			) );
 			exit;

@@ -62,6 +62,7 @@ class JustImageOptimizer extends core\Singleton {
 		self::$service = services\ImageOptimizerFactory::create();
 		new controllers\ConnectController();
 		new controllers\SettingsController();
+		new controllers\DashboardController();
 		new components\MediaInfo();
 		new components\Optimizer();
 	}

@@ -3,7 +3,11 @@
 namespace justimageoptimizer\models;
 
 use justimageoptimizer\core;
-
+/**
+ * Class Media
+ *
+ * Work with connect settings
+ */
 class Connect extends core\Model {
 
 	const DB_OPT_API_KEY = 'api_key';

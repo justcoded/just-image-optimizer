@@ -1,7 +1,65 @@
 <?php
+
+namespace justimageoptimizer\controllers;
+
+use justimageoptimizer\models\Settings;
+use justimageoptimizer\models\Media;
+
 /**
- * Created by PhpStorm.
- * User: user
- * Date: 29/08/17
- * Time: 19:41
+ * Adds option dashboard page
  */
+class DashboardController extends \justimageoptimizer\core\Component {
+
+	/**
+	 * Class constructor.
+	 * initialize WordPress hooks
+	 */
+	public function __construct() {
+		add_action( 'admin_menu', array( $this, 'init_dashboard_menu' ) );
+		add_action( 'admin_print_scripts-media_page_just-img-opt-dashboard', array( $this, 'registerAssets' ) );
+	}
+
+	/**
+	 * Add new page to the Wordpress Menu
+	 */
+	public function init_dashboard_menu() {
+		add_submenu_page(
+			null,
+			__( 'Dashboard', \JustImageOptimizer::TEXTDOMAIN ),
+			__( 'Dashboard', \JustImageOptimizer::TEXTDOMAIN ),
+			'manage_options',
+			'just-img-opt-dashboard',
+			array( $this, 'actionIndex' )
+		);
+	}
+
+	/**
+	 * Register Assets
+	 */
+	public function registerAssets() {
+		wp_enqueue_script(
+			'just_img_opt_js',
+			plugins_url( 'assets/js/main.js', dirname( __FILE__ ) ),
+			array( 'jquery' )
+		);
+		wp_enqueue_script(
+			'google_charts',
+			'https://www.gstatic.com/charts/loader.js',
+			array(),
+			'',
+			false
+		);
+		wp_enqueue_style( 'just_img_opt_css', plugins_url( 'assets/css/styles.css', dirname( __FILE__ ) ) );
+	}
+
+	/**
+	 * Render Dashboard page
+	 */
+	public function actionIndex() {
+		$model = new Media();
+		$this->render( 'dashboard/index', array(
+			'tab'   => 'dashboard',
+			'model' => $model,
+		) );
+	}
+}

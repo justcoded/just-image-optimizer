@@ -3,7 +3,7 @@
 namespace justimageoptimizer\controllers;
 
 use justimageoptimizer\models\Settings;
-
+use justimageoptimizer\models\Media;
 /**
  * Adds option settings page
  */
@@ -36,46 +36,13 @@ class SettingsController extends \justimageoptimizer\core\Component {
 	 */
 	public function actionIndex() {
 		$model = new Settings();
+		$media = new Media();
 		$model->load( $_POST ) && $model->save();
 		$this->render( 'settings/index', array(
 			'tab'         => 'settings',
 			'model'       => $model,
-			'sizes'       => $this->image_dimensions(),
+			'sizes'       => $media->image_dimensions(),
 			'image_sizes' => maybe_unserialize( get_option( $model::DB_OPT_IMAGE_SIZES ) ),
 		) );
-	}
-
-	public function image_dimensions() {
-		global $_wp_additional_image_sizes;
-		$additional_sizes = get_intermediate_image_sizes();
-		$sizes            = array();
-
-		// Create the full array with sizes and crop info
-		foreach ( $additional_sizes as $_size ) {
-			if ( in_array( $_size, array( 'thumbnail', 'medium', 'large' ) ) ) {
-				$sizes[ $_size ]['width']  = get_option( $_size . '_size_w' );
-				$sizes[ $_size ]['height'] = get_option( $_size . '_size_h' );
-				$sizes[ $_size ]['crop']   = (bool) get_option( $_size . '_crop' );
-			} elseif ( isset( $_wp_additional_image_sizes[ $_size ] ) ) {
-				$sizes[ $_size ] = array(
-					'width'  => $_wp_additional_image_sizes[ $_size ]['width'],
-					'height' => $_wp_additional_image_sizes[ $_size ]['height'],
-					'crop'   => $_wp_additional_image_sizes[ $_size ]['crop']
-				);
-			}
-		}
-		//Medium Large
-		if ( ! isset( $sizes['medium_large'] ) || empty( $sizes['medium_large'] ) ) {
-			$width  = intval( get_option( 'medium_large_size_w' ) );
-			$height = intval( get_option( 'medium_large_size_h' ) );
-
-			$sizes['medium_large'] = array(
-				'width'  => $width,
-				'height' => $height
-			);
-		}
-
-		return $sizes;
-
 	}
 }

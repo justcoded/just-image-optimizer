@@ -3,7 +3,11 @@
 namespace justimageoptimizer\models;
 
 use justimageoptimizer\core;
-
+/**
+ * Class Media
+ *
+ * Work with settings plugin
+ */
 class Settings extends core\Model {
 
 	const DB_OPT_IMAGE_SIZES = 'image_sizes';
