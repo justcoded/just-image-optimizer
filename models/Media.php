@@ -3,6 +3,7 @@
 namespace justimageoptimizer\models;
 
 use justimageoptimizer\core;
+
 /**
  * Class Media
  *
@@ -317,14 +318,16 @@ class Media extends core\Model {
 		$stats       = maybe_unserialize( get_post_meta( $id, self::DB_OPT_IMAGES_STATS, true ) );
 		if ( isset( $stats['size_stats'] ) ) {
 			foreach ( $stats as $stat_key => $stat ) {
-				foreach ( $stat as $sizes ) {
-					foreach ( $sizes as $size_key => $size_stat ) {
-						if ( $size_key === $key ) {
-							if ( $stat_key === 'percent_stats' ) {
-								$stats_array[ $size_key ]['percent_stats'] = $size_stat;
-							}
-							if ( $stat_key === 'size_stats' ) {
-								$stats_array[ $size_key ]['size_stats'] = $size_stat;
+				if ( is_array( $stat ) ) {
+					foreach ( $stat as $sizes ) {
+						foreach ( $sizes as $size_key => $size_stat ) {
+							if ( $size_key === $key ) {
+								if ( $stat_key === 'percent_stats' ) {
+									$stats_array[ $size_key ]['percent_stats'] = $size_stat;
+								}
+								if ( $stat_key === 'size_stats' ) {
+									$stats_array[ $size_key ]['size_stats'] = $size_stat;
+								}
 							}
 						}
 					}
@@ -384,7 +387,7 @@ class Media extends core\Model {
 			$disk_usage = $disk_usage + $this->get_total_filesizes( get_the_ID(), false );
 		}
 
-		return (int) number_format_i18n( $disk_usage / 1024 );
+		return (int) number_format_i18n( $disk_usage / 1048576 );
 	}
 
 }

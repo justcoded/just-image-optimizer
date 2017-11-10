@@ -17,6 +17,20 @@ class DashboardController extends \justimageoptimizer\core\Component {
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'init_dashboard_menu' ) );
 		add_action( 'admin_print_scripts-media_page_just-img-opt-dashboard', array( $this, 'registerAssets' ) );
+		if ( empty( get_option( Settings::DB_OPT_AUTO_OPTIMIZE, true ) ) ) {
+			add_action( 'joi_dashboard_admin_notice', array( $this, 'notice' ) );
+		}
+	}
+
+	/**
+	 * Notice message.
+	 */
+	public function notice() {
+		echo __( '<div class="update-nag">
+                <strong>Automatic image optimization is disabled. Please check
+				<a href=" ' . admin_url() . 'upload.php?page=just-img-opt-settings">Settings</a>
+				 tab to enable it.</strong></div>', \JustImageOptimizer::TEXTDOMAIN
+		);
 	}
 
 	/**

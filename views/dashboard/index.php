@@ -1,5 +1,6 @@
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
+	<?php do_action('joi_dashboard_admin_notice'); ?>
 	<div class="row">
 		<div class="column">
 			<h2 class="head-title">Stats</h2>

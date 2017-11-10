@@ -1,5 +1,6 @@
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
+	<?php do_action('joi_settings_admin_notice'); ?>
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
 			<tr>
@@ -11,9 +12,12 @@
 						value="1">
 				</td>
 			</tr>
-			<tr>
+			<tr class="image_sizes_set">
 				<th scope="row"><?php _e( 'Image sizes to optimize', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td class="additional_sizes">
+					<input id="check_all_size" type="checkbox" name="image_sizes_all"
+					       value="all">All<br>
+					<span class="size_checked">
 					<?php foreach ( $sizes as $size => $dimensions ) : ?>
 						<?php if ( is_array( $image_sizes ) ) : ?>
 							<input <?php echo( in_array( $size, $image_sizes ) ? 'checked' : '' ); ?>
@@ -25,6 +29,7 @@
 							       value="<?php echo $size; ?>"><?php echo $size; ?><br>
 						<?php endif; ?>
 					<?php endforeach; ?>
+					</span>
 				</td>
 			</tr>
 			<tr>

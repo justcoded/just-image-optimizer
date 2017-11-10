@@ -15,6 +15,32 @@ class SettingsController extends \justimageoptimizer\core\Component {
 	 */
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'init_settings_menu' ) );
+		add_action( 'admin_print_scripts-media_page_just-img-opt-settings', array( $this, 'registerAssets' ) );
+		if ( ! get_option( Settings::DB_OPT_IMAGE_SIZES ) ) {
+			add_action( 'joi_settings_admin_notice', array( $this, 'notice' ) );
+		}
+	}
+
+	/**
+	 * Notice message.
+	 */
+	public function notice() {
+		echo __( '<div class="update-nag">
+                <strong>Please confirm the settings below and Save them.</strong>
+                </div>', \JustImageOptimizer::TEXTDOMAIN
+		);
+	}
+
+	/**
+	 * Register Assets
+	 */
+	public function registerAssets() {
+		wp_enqueue_script(
+			'just_img_opt_js',
+			plugins_url( 'assets/js/settings.js', dirname( __FILE__ ) ),
+			array( 'jquery' )
+		);
+		wp_enqueue_style( 'just_img_opt_css', plugins_url( 'assets/css/styles.css', dirname( __FILE__ ) ) );
 	}
 
 	/**
