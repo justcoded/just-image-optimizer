@@ -94,6 +94,23 @@ class Media extends core\Model {
 	}
 
 	/**
+	 * Clear statistics after Regenerate Thumbnails
+	 *
+	 * @param int $attach_id Attachment ID.
+	 */
+	public function clean_statistics( $attach_id ) {
+		$stats = array(
+			'percent_stats' => '',
+			'size_stats'    => '',
+		);
+		update_post_meta( $attach_id, self::DB_OPT_IMAGES_STATS, maybe_serialize( $stats ) );
+		update_post_meta( $attach_id, self::DB_OPT_IMAGE_DU, '' );
+		update_post_meta( $attach_id, self::DB_OPT_IMAGE_SAVING, '' );
+		update_post_meta( $attach_id, self::DB_OPT_IMAGE_SAVING_PERCENT, '' );
+		update_post_meta( $attach_id, '_just_img_opt_queue', 1 );
+	}
+
+	/**
 	 * Get all date upload dir
 	 *
 	 * @return array

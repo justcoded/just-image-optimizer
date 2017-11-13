@@ -23,6 +23,19 @@ class MediaInfo extends \justimageoptimizer\core\Component {
 		add_action( 'admin_init', array( $this, 'hook_new_media_columns' ) );
 		add_action( 'admin_print_scripts-upload.php', array( $this, 'registerAssets' ) );
 		add_action( 'add_meta_boxes_attachment', array( $this, 'add_meta_boxes' ) );
+		add_action( 'wp_ajax_regeneratethumbnail', array( $this, 'clean_stats' ), 5 );
+
+	}
+
+	/**
+	 * Clean attachment statistics with Regenerate Thumbnails
+	 */
+	public function clean_stats() {
+		if ( ! empty( $_REQUEST['id'] ) ) {
+			$attach_id = $_REQUEST['id'];
+			$media = new Media();
+			$media->clean_statistics( $attach_id );
+		}
 	}
 
 	/**
