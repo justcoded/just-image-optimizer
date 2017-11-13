@@ -31,29 +31,18 @@ class Media extends core\Model {
 	public $after_optimize_stats = array();
 
 	/**
-	 * Save all statistics for each image
+	 * Set before image statistics main attach
 	 *
-	 * @var array $_just_img_opt_stats
+	 * @var array $before_main_attach_stats
 	 */
-	public $_just_img_opt_stats = array();
+	public $before_main_attach_stats = array();
+
 	/**
-	 * Save images total size
+	 * Set after image statistics main attach
 	 *
-	 * @var int|float $_just_img_opt_du
+	 * @var array $after_main_attach_stats
 	 */
-	public $_just_img_opt_du = 0;
-	/**
-	 * Save stat after optimize saving size
-	 *
-	 * @var int|float $_just_img_opt_saving
-	 */
-	public $_just_img_opt_saving = 0;
-	/**
-	 * Save stat after optimize saving percent size
-	 *
-	 * @var int|float $_just_img_opt_saving_percent
-	 */
-	public $_just_img_opt_saving_percent = 0;
+	public $after_main_attach_stats = array();
 	/**
 	 * Arguments query array to use.
 	 *
@@ -74,10 +63,34 @@ class Media extends core\Model {
 	 * @param int $id Attach ID.
 	 */
 	public function save( $id ) {
-		update_post_meta( $id, self::DB_OPT_IMAGES_STATS, maybe_serialize( $this->_just_img_opt_stats ) );
-		update_post_meta( $id, self::DB_OPT_IMAGE_DU, size_format( $this->_just_img_opt_du ) );
-		update_post_meta( $id, self::DB_OPT_IMAGE_SAVING, size_format( $this->_just_img_opt_saving ) );
-		update_post_meta( $id, self::DB_OPT_IMAGE_SAVING_PERCENT, $this->_just_img_opt_saving_percent . '%' );
+		$this->set_sizes_stats( $id );
+		$this->set_stats_main_attach( $id );
+	}
+
+	/**
+	 * Set array statistics
+	 *
+	 * @param int $attach_id Attachment ID.
+	 */
+	public function set_sizes_stats( $attach_id ) {
+		$stats = array(
+			'percent_stats' => $this->get_saving_size_stats( $attach_id ),
+			'size_stats'    => $this->get_percent_saving_stats( $attach_id ),
+		);
+		update_post_meta( $attach_id, self::DB_OPT_IMAGES_STATS, maybe_serialize( $stats ) );
+	}
+
+	/**
+	 * Set stats for main attach image
+	 *
+	 * @param int $attach_id Attachment ID.
+	 */
+	public function set_stats_main_attach( $attach_id ) {
+		$saving_size    = $this->before_main_attach_stats[ $attach_id ] - $this->after_main_attach_stats[ $attach_id ];
+		$saving_percent = round( ( $saving_size / $this->before_main_attach_stats[ $attach_id ] ) * 100, 2 );
+		update_post_meta( $attach_id, self::DB_OPT_IMAGE_DU, size_format( $this->after_main_attach_stats[ $attach_id ] ) );
+		update_post_meta( $attach_id, self::DB_OPT_IMAGE_SAVING, size_format( $saving_size ) );
+		update_post_meta( $attach_id, self::DB_OPT_IMAGE_SAVING_PERCENT, $saving_percent . '%' );
 	}
 
 	/**
@@ -109,16 +122,6 @@ class Media extends core\Model {
 		return $attach_filesize;
 	}
 
-	/**
-	 * Set array statistics
-	 */
-	public function set_sizes_stats() {
-		$this->_just_img_opt_stats = array(
-			'percent_stats' => $this->get_saving_size_stats(),
-			'size_stats'    => $this->get_percent_saving_stats(),
-			'disk_usage'    => $this->get_images_disk_usage(),
-		);
-	}
 
 	/**
 	 * Array map callback method
@@ -138,17 +141,17 @@ class Media extends core\Model {
 	 *
 	 * @return float|null|array
 	 */
-	public function get_saving_size_stats() {
+	public function get_saving_size_stats( $attach_id ) {
 		$size_stats = array();
-		if ( ! empty( $this->before_optimize_stats['b_stats'] ) ) {
+		if ( ! empty( $this->before_optimize_stats[ $attach_id ]['b_stats'] ) ) {
 			$size_stats = array_map(
 				array(
 					$this,
 					'size_map_callback',
 				),
-				array_keys( $this->before_optimize_stats['b_stats'] ),
-				$this->before_optimize_stats['b_stats'],
-				$this->after_optimize_stats['a_stats']
+				array_keys( $this->before_optimize_stats[ $attach_id ]['b_stats'] ),
+				$this->before_optimize_stats[ $attach_id ]['b_stats'],
+				$this->after_optimize_stats[ $attach_id ]['a_stats']
 			);
 
 			return $size_stats;
@@ -175,11 +178,11 @@ class Media extends core\Model {
 	 *
 	 * @return float|int|array
 	 */
-	public function get_percent_saving_stats() {
+	public function get_percent_saving_stats( $attach_id ) {
 		$percent_stats = array();
-		$size_stats    = $this->get_saving_size_stats();
-		$before_stats  = $this->before_optimize_stats['b_stats'];
-		if ( ! empty( $this->before_optimize_stats['b_stats'] ) ) {
+		$size_stats    = $this->get_saving_size_stats( $attach_id );
+		$before_stats  = $this->before_optimize_stats[ $attach_id ]['b_stats'];
+		if ( ! empty( $this->before_optimize_stats[ $attach_id ]['b_stats'] ) ) {
 			$percent_stats = array_map(
 				array(
 					$this,
@@ -231,16 +234,6 @@ class Media extends core\Model {
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Set saving percent after optimize
-	 *
-	 * @param int $total_size Total images size.
-	 * @param int $saving_size Saving images size after optimize.
-	 */
-	public function set_saving_percent( $total_size, $saving_size ) {
-		$this->_just_img_opt_saving_percent = round( ( $saving_size / $total_size ) * 100, 2 );
 	}
 
 	/**

@@ -8,7 +8,7 @@ if ( ! in_array( get_post_mime_type( $id ), $allowed_images ) ) {
 $image_status = get_post_meta( $id, '_just_img_opt_queue', true );
 ?>
 <?php if ( $image_status === '3' ) : ?>
-	<p><?php echo get_post_meta( $id, $model::DB_OPT_IMAGE_SAVING_PERCENT, true ); ?>
+	<p><?php echo get_post_meta( $id, $model::DB_OPT_IMAGE_SAVING_PERCENT, true ); ?> saved
 		(<?php echo get_post_meta( $id, $model::DB_OPT_IMAGE_SAVING, true ); ?>)</p>
 	<p>disk usage: <?php echo get_post_meta( $id, $model::DB_OPT_IMAGE_DU, true ); ?>
 		(<?php echo $model->get_count_images( $id ) ?> images) </p>

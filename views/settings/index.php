@@ -1,6 +1,6 @@
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
-	<?php do_action('joi_settings_admin_notice'); ?>
+	<?php do_action( 'joi_settings_admin_notice' ); ?>
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
 			<tr>
@@ -14,9 +14,21 @@
 			</tr>
 			<tr class="image_sizes_set">
 				<th scope="row"><?php _e( 'Image sizes to optimize', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
+				<?php
+				$opt_checked = get_option( $model::DB_OPT_SIZE_CHECKED );
+				$check       = '';
+				if ( ! $opt_checked ) {
+					$check = 'checked';
+				} elseif ( $opt_checked === '1' ) {
+					$check = 'checked';
+				} else {
+					$check = '';
+				}
+				?>
 				<td class="additional_sizes">
-					<input id="check_all_size" type="checkbox" name="image_sizes_all"
-					       value="all">All<br>
+					<input <?php echo $check; ?>
+						id="check_all_size" type="checkbox" name="image_sizes_all"
+						value="1">All<br>
 					<span class="size_checked">
 					<?php foreach ( $sizes as $size => $dimensions ) : ?>
 						<?php if ( is_array( $image_sizes ) ) : ?>
@@ -41,7 +53,8 @@
 			<tr>
 				<th scope="row"><?php _e( 'Bulk images limit', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
-					<input type="text" name="image_limit" value="<?php echo get_option( $model::DB_OPT_IMAGE_LIMIT ); ?>">
+					<input type="text" name="image_limit"
+					       value="<?php echo get_option( $model::DB_OPT_IMAGE_LIMIT ); ?>">
 					<p>how many images can be optimized at a time</p>
 				</td>
 			</tr>

@@ -3,6 +3,7 @@
 namespace justimageoptimizer\models;
 
 use justimageoptimizer\core;
+
 /**
  * Class Media
  *
@@ -15,12 +16,14 @@ class Settings extends core\Model {
 	const DB_OPT_IMAGE_LIMIT = 'image_limit';
 	const DB_OPT_SIZE_LIMIT = 'size_limit';
 	const DB_OPT_BEFORE_REGEN = 'before_regen';
+	const DB_OPT_SIZE_CHECKED = 'image_sizes_all';
 
 	public $image_sizes;
 	public $auto_optimize;
 	public $image_limit;
 	public $size_limit;
 	public $before_regen;
+	public $image_sizes_all;
 
 	/**
 	 * Update options
@@ -31,6 +34,12 @@ class Settings extends core\Model {
 		update_option( self::DB_OPT_IMAGE_LIMIT, $this->image_limit );
 		update_option( self::DB_OPT_SIZE_LIMIT, $this->size_limit );
 		update_option( self::DB_OPT_BEFORE_REGEN, $this->before_regen );
+		if ( $this->image_sizes_all ) {
+			update_option( self::DB_OPT_SIZE_CHECKED, $this->image_sizes_all );
+		} else {
+			update_option( self::DB_OPT_SIZE_CHECKED, 2 );
+		}
+
 	}
 
 }

@@ -40,4 +40,14 @@ jQuery(document).ready(function ($) {
          $($selector_block).css('display', 'block');
       }
    }
+   $('#find_api').on('click', function(e) {
+      e.preventDefault();
+      var x = document.getElementById("instructions-api");
+      if (x.style.display === "none") {
+         x.style.display = "block";
+      } else {
+         x.style.display = "none";
+      }
+
+   });
 });

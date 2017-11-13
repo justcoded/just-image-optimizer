@@ -169,7 +169,6 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	protected function optimize_images( $attach_ids ) {
 		global $wp_filesystem;
 		$media        = new Media();
-		$b_total_size = 0;
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
 		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
 		\JustImageOptimizer::$service->upload_optimize_images( home_url( '/just-image-optimize/' . $base_attach_ids . '' ) );
@@ -177,8 +176,8 @@ class Optimizer extends \justimageoptimizer\core\Component {
 		$get_image = scandir( $dir );
 		$get_path  = $this->get_uploads_path();
 		foreach ( $attach_ids as $attach_id ) {
-			$b_total_size                 = $media->get_total_filesizes( $attach_id, false );
-			$media->before_optimize_stats = array(
+			$media->before_main_attach_stats[ $attach_id ] = $media->get_total_filesizes( $attach_id, false );
+			$media->before_optimize_stats[ $attach_id ]    = array(
 				'b_stats' => $media->get_total_filesizes( $attach_id, true ),
 			);
 			update_post_meta( $attach_id, '_just_img_opt_queue', 2 );
@@ -196,13 +195,10 @@ class Optimizer extends \justimageoptimizer\core\Component {
 			self::delete_dir( WP_CONTENT_DIR . '/tmp' );
 		}
 		foreach ( $attach_ids as $attach_id ) {
-			$media->_just_img_opt_du     = $media->get_total_filesizes( $attach_id, false );
-			$media->_just_img_opt_saving = $b_total_size - $media->_just_img_opt_du;
-			$media->set_saving_percent( $b_total_size, $media->_just_img_opt_saving );
-			$media->after_optimize_stats = array(
+			$media->after_main_attach_stats[ $attach_id ] = $media->get_total_filesizes( $attach_id, false );
+			$media->after_optimize_stats[ $attach_id ]    = array(
 				'a_stats' => $media->get_total_filesizes( $attach_id, true ),
 			);
-			$media->set_sizes_stats();
 			$media->save( $attach_id );
 			update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
 		}

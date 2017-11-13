@@ -33,16 +33,31 @@ class ConnectController extends \justimageoptimizer\core\Component {
 			array( $this, 'actionIndex' )
 		);
 	}
+	/**
+	 * Is first save add redirect
+	 *
+	 * @return string Redirect to Settings Page
+	 */
+	public function redirect() {
+		if ( isset( $_POST['submit-connect'] ) && get_option( Connect::DB_OPT_IS_FIRST ) !== '1' ) {
+			return "<script>window.location = '" . admin_url() . "upload.php?page=just-img-opt-settings'</script>";
+		}
+
+		return null;
+	}
 
 	/**
 	 * Render Connect page
 	 */
 	public function actionIndex() {
-		$model = new Connect();
+		$model   = new Connect();
+		$service = get_option( $model::DB_OPT_SERVICE );
 		$model->load( $_POST ) && $model->save();
 		$this->render( 'connect/connect-page', array(
-			'model' => $model,
-			'tab'   => 'connect',
+			'model'    => $model,
+			'tab'      => 'connect',
+			'service'  => $service,
+			'redirect_is_first' => $this->redirect(),
 		) );
 	}
 

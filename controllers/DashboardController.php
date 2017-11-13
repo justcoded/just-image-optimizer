@@ -4,6 +4,7 @@ namespace justimageoptimizer\controllers;
 
 use justimageoptimizer\models\Settings;
 use justimageoptimizer\models\Media;
+use justimageoptimizer\models\Connect;
 
 /**
  * Adds option dashboard page
@@ -15,7 +16,9 @@ class DashboardController extends \justimageoptimizer\core\Component {
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'init_dashboard_menu' ) );
+		if ( ! empty( get_option( Connect::DB_OPT_SERVICE ) ) ) {
+			add_action( 'admin_menu', array( $this, 'init_dashboard_menu' ) );
+		}
 		add_action( 'admin_print_scripts-media_page_just-img-opt-dashboard', array( $this, 'registerAssets' ) );
 		if ( empty( get_option( Settings::DB_OPT_AUTO_OPTIMIZE, true ) ) ) {
 			add_action( 'joi_dashboard_admin_notice', array( $this, 'notice' ) );
@@ -74,6 +77,7 @@ class DashboardController extends \justimageoptimizer\core\Component {
 		$this->render( 'dashboard/index', array(
 			'tab'   => 'dashboard',
 			'model' => $model,
+			'service' => get_option( Connect::DB_OPT_SERVICE ),
 		) );
 	}
 }
