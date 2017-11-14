@@ -16,7 +16,7 @@ class DashboardController extends \justimageoptimizer\core\Component {
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
-		if ( ! empty( get_option( Connect::DB_OPT_SERVICE ) ) ) {
+		if ( ! empty( maybe_unserialize( get_option( Settings::DB_OPT_IMAGE_SIZES ) ) ) ) {
 			add_action( 'admin_menu', array( $this, 'init_dashboard_menu' ) );
 		}
 		add_action( 'admin_print_scripts-media_page_just-img-opt-dashboard', array( $this, 'registerAssets' ) );
@@ -40,14 +40,24 @@ class DashboardController extends \justimageoptimizer\core\Component {
 	 * Add new page to the Wordpress Menu
 	 */
 	public function init_dashboard_menu() {
-		add_submenu_page(
-			null,
-			__( 'Dashboard', \JustImageOptimizer::TEXTDOMAIN ),
-			__( 'Dashboard', \JustImageOptimizer::TEXTDOMAIN ),
-			'manage_options',
-			'just-img-opt-dashboard',
-			array( $this, 'actionIndex' )
-		);
+		if ( ! get_option( Settings::DB_OPT_IS_SECOND ) ) {
+			add_submenu_page(
+				null,
+				__( 'Dashboard', \JustImageOptimizer::TEXTDOMAIN ),
+				__( 'Dashboard', \JustImageOptimizer::TEXTDOMAIN ),
+				'manage_options',
+				'just-img-opt-dashboard',
+				array( $this, 'actionIndex' )
+			);
+		} else {
+			add_media_page(
+				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+				'manage_options',
+				'just-img-opt-dashboard',
+				array( $this, 'actionIndex' )
+			);
+		}
 	}
 
 	/**
@@ -75,9 +85,8 @@ class DashboardController extends \justimageoptimizer\core\Component {
 	public function actionIndex() {
 		$model = new Media();
 		$this->render( 'dashboard/index', array(
-			'tab'   => 'dashboard',
-			'model' => $model,
-			'service' => get_option( Connect::DB_OPT_SERVICE ),
+			'tab'     => 'dashboard',
+			'model'   => $model,
 		) );
 	}
 }

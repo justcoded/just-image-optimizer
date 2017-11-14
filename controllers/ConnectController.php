@@ -25,14 +25,26 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 * Add new page to the Wordpress Menu
 	 */
 	public function init_admin_menu() {
-		add_media_page(
-			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-			'manage_options',
-			'just-img-opt-connection',
-			array( $this, 'actionIndex' )
-		);
+		if ( ! get_option( Settings::DB_OPT_IS_SECOND ) ) {
+			add_media_page(
+				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+				'manage_options',
+				'just-img-opt-connection',
+				array( $this, 'actionIndex' )
+			);
+		} else {
+			add_submenu_page(
+				null,
+				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+				'manage_options',
+				'just-img-opt-connection',
+				array( $this, 'actionIndex' )
+			);
+		}
 	}
+
 	/**
 	 * Is first save add redirect
 	 *
@@ -51,13 +63,12 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 */
 	public function actionIndex() {
 		$model   = new Connect();
-		$service = get_option( $model::DB_OPT_SERVICE );
 		$model->load( $_POST ) && $model->save();
 		$this->render( 'connect/connect-page', array(
-			'model'    => $model,
-			'tab'      => 'connect',
-			'service'  => $service,
-			'redirect_is_first' => $this->redirect(),
+			'model'             => $model,
+			'tab'               => 'connect',
+			'wizard' => get_option( $model::DB_OPT_IS_FIRST ),
+			'redirect' => $this->redirect(),
 		) );
 	}
 

@@ -1,6 +1,6 @@
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
-	<?php do_action('joi_dashboard_admin_notice'); ?>
+	<?php do_action( 'joi_dashboard_admin_notice' ); ?>
 	<div class="row">
 		<div class="column">
 			<h2 class="head-title">Stats</h2>
@@ -13,10 +13,11 @@
 				on Google PageSpeed Insight we
 				recommend such plugins:</p>
 			<ul>
-				<li><a href="">Autoptimize</a></li>
-				<li><a href="">WP Super Cache</a></li>
-				<li><a href="">Yoast SEO</a></li>
-				<li><a href="">Just Responsive images</a></li>
+				<li><a target="_blank" href="https://wordpress.org/plugins/autoptimize/">Autoptimize</a></li>
+				<li><a target="_blank" href="https://wordpress.org/plugins/wp-super-cache/">WP Super Cache</a></li>
+				<li><a target="_blank" href="https://wordpress.org/plugins/wordpress-seo/">Yoast SEO</a></li>
+				<li><a target="_blank" href="https://wordpress.org/plugins/just-responsive-images/">Just Responsive
+						Images</a></li>
 			</ul>
 		</div>
 	</div>

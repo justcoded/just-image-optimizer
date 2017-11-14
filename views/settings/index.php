@@ -1,3 +1,4 @@
+<?php echo $redirect; ?>
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
 	<?php do_action( 'joi_settings_admin_notice' ); ?>

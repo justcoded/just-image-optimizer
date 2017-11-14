@@ -1,4 +1,4 @@
-<?php echo $redirect_is_first; ?>
+<?php echo $redirect; ?>
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">

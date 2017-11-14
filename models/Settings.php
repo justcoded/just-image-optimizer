@@ -17,6 +17,7 @@ class Settings extends core\Model {
 	const DB_OPT_SIZE_LIMIT = 'size_limit';
 	const DB_OPT_BEFORE_REGEN = 'before_regen';
 	const DB_OPT_SIZE_CHECKED = 'image_sizes_all';
+	const DB_OPT_IS_SECOND = 'is_second';
 
 	public $image_sizes;
 	public $auto_optimize;
@@ -34,6 +35,9 @@ class Settings extends core\Model {
 		update_option( self::DB_OPT_IMAGE_LIMIT, $this->image_limit );
 		update_option( self::DB_OPT_SIZE_LIMIT, $this->size_limit );
 		update_option( self::DB_OPT_BEFORE_REGEN, $this->before_regen );
+		if ( ! get_option( self::DB_OPT_IS_SECOND ) ) {
+			update_option( self::DB_OPT_IS_SECOND, 1 );
+		}
 		if ( $this->image_sizes_all ) {
 			update_option( self::DB_OPT_SIZE_CHECKED, $this->image_sizes_all );
 		} else {

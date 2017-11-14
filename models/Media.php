@@ -249,7 +249,7 @@ class Media extends core\Model {
 			}
 
 		} else {
-			return false;
+			return 0;
 		}
 	}
 

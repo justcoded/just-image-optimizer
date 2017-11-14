@@ -61,6 +61,19 @@ class SettingsController extends \justimageoptimizer\core\Component {
 	}
 
 	/**
+	 * Is first save add redirect
+	 *
+	 * @return string Redirect to Dashboard Page
+	 */
+	public function redirect() {
+		if ( isset( $_POST['submit-settings'] ) && get_option( Settings::DB_OPT_IS_SECOND ) !== '1' ) {
+			return "<script>window.location = '" . admin_url() . "upload.php?page=just-img-opt-dashboard'</script>";
+		}
+
+		return null;
+	}
+
+	/**
 	 * Render Settings page
 	 */
 	public function actionIndex() {
@@ -72,7 +85,7 @@ class SettingsController extends \justimageoptimizer\core\Component {
 			'model'       => $model,
 			'sizes'       => $media->image_dimensions(),
 			'image_sizes' => maybe_unserialize( get_option( $model::DB_OPT_IMAGE_SIZES ) ),
-			'service' => get_option( Connect::DB_OPT_SERVICE ),
+			'redirect' => $this->redirect(),
 		) );
 	}
 }
