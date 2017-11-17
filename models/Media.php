@@ -11,10 +11,13 @@ use justimageoptimizer\core;
  */
 class Media extends core\Model {
 
-	const DB_OPT_IMAGES_STATS = '_just_img_opt_stats';
-	const DB_OPT_IMAGE_DU = '_just_img_opt_du';
-	const DB_OPT_IMAGE_SAVING = '_just_img_opt_saving';
-	const DB_OPT_IMAGE_SAVING_PERCENT = '_just_img_opt_saving_percent';
+	const DB_META_IMAGES_STATS = '_just_img_meta_stats';
+	const DB_META_IMAGE_DU = '_just_img_meta_du';
+	const DB_META_IMAGE_SAVING = '_just_img_meta_saving';
+	const DB_META_IMAGE_SAVING_PERCENT = '_just_img_meta_saving_percent';
+
+	const DB_OPT_SIZES_BEFORE = '_just_img_opt_sizes_before';
+	const DB_OPT_SAVING_SIZE = '_just_img_opt_saving_size';
 
 	/**
 	 * Set before images statistics
@@ -57,6 +60,12 @@ class Media extends core\Model {
 		'order'          => 'ASC',
 	);
 
+	public $saving_size;
+
+	public function __construct() {
+		$this->saving_size = ( get_option( self::DB_OPT_SAVING_SIZE ) ? get_option( self::DB_OPT_SAVING_SIZE ) : 0 );
+	}
+
 	/**
 	 * Update options
 	 *
@@ -65,6 +74,20 @@ class Media extends core\Model {
 	public function save( $id ) {
 		$this->set_sizes_stats( $id );
 		$this->set_stats_main_attach( $id );
+	}
+
+	/**
+	 * Update option for saving size after optimization
+	 */
+	public function set_saving_size() {
+		update_option( self::DB_OPT_SAVING_SIZE, $this->get_saving_size() + $this->saving_size );
+	}
+
+	/**
+	 * Update option for before optimize sizes
+	 */
+	public function set_before_sizes() {
+		update_option( self::DB_OPT_SIZES_BEFORE, $this->get_images_disk_usage() );
 	}
 
 	/**
@@ -77,7 +100,7 @@ class Media extends core\Model {
 			'percent_stats' => $this->get_saving_size_stats( $attach_id ),
 			'size_stats'    => $this->get_percent_saving_stats( $attach_id ),
 		);
-		update_post_meta( $attach_id, self::DB_OPT_IMAGES_STATS, maybe_serialize( $stats ) );
+		update_post_meta( $attach_id, self::DB_META_IMAGES_STATS, maybe_serialize( $stats ) );
 	}
 
 	/**
@@ -88,9 +111,9 @@ class Media extends core\Model {
 	public function set_stats_main_attach( $attach_id ) {
 		$saving_size    = $this->before_main_attach_stats[ $attach_id ] - $this->after_main_attach_stats[ $attach_id ];
 		$saving_percent = round( ( $saving_size / $this->before_main_attach_stats[ $attach_id ] ) * 100, 2 );
-		update_post_meta( $attach_id, self::DB_OPT_IMAGE_DU, size_format( $this->after_main_attach_stats[ $attach_id ] ) );
-		update_post_meta( $attach_id, self::DB_OPT_IMAGE_SAVING, size_format( $saving_size ) );
-		update_post_meta( $attach_id, self::DB_OPT_IMAGE_SAVING_PERCENT, $saving_percent . '%' );
+		update_post_meta( $attach_id, self::DB_META_IMAGE_DU, size_format( $this->after_main_attach_stats[ $attach_id ] ) );
+		update_post_meta( $attach_id, self::DB_META_IMAGE_SAVING, size_format( $saving_size ) );
+		update_post_meta( $attach_id, self::DB_META_IMAGE_SAVING_PERCENT, $saving_percent . '%' );
 	}
 
 	/**
@@ -103,10 +126,10 @@ class Media extends core\Model {
 			'percent_stats' => '',
 			'size_stats'    => '',
 		);
-		update_post_meta( $attach_id, self::DB_OPT_IMAGES_STATS, maybe_serialize( $stats ) );
-		update_post_meta( $attach_id, self::DB_OPT_IMAGE_DU, '' );
-		update_post_meta( $attach_id, self::DB_OPT_IMAGE_SAVING, '' );
-		update_post_meta( $attach_id, self::DB_OPT_IMAGE_SAVING_PERCENT, '' );
+		update_post_meta( $attach_id, self::DB_META_IMAGES_STATS, maybe_serialize( $stats ) );
+		update_post_meta( $attach_id, self::DB_META_IMAGE_DU, '' );
+		update_post_meta( $attach_id, self::DB_META_IMAGE_SAVING, '' );
+		update_post_meta( $attach_id, self::DB_META_IMAGE_SAVING_PERCENT, '' );
 		update_post_meta( $attach_id, '_just_img_opt_queue', 1 );
 	}
 
@@ -220,7 +243,7 @@ class Media extends core\Model {
 	 * Get total filesizes attachments in bytes
 	 *
 	 * @param int $id Attachment ID.
-	 * @param bool $stats For get total size or sizes array.
+	 * @param bool $stats For get total size = false or sizes array = true.
 	 *
 	 * @return int|float|boolean|array
 	 */
@@ -281,7 +304,7 @@ class Media extends core\Model {
 	 *
 	 * @return array
 	 */
-	public function image_dimensions() {
+	static function image_dimensions() {
 		global $_wp_additional_image_sizes;
 		$additional_sizes = get_intermediate_image_sizes();
 		$sizes            = array();
@@ -325,7 +348,7 @@ class Media extends core\Model {
 	 */
 	public function get_stats( $id, $key ) {
 		$stats_array = array();
-		$stats       = maybe_unserialize( get_post_meta( $id, self::DB_OPT_IMAGES_STATS, true ) );
+		$stats       = maybe_unserialize( get_post_meta( $id, self::DB_META_IMAGES_STATS, true ) );
 		if ( isset( $stats['size_stats'] ) ) {
 			foreach ( $stats as $stat_key => $stat ) {
 				if ( is_array( $stat ) ) {
@@ -373,31 +396,113 @@ class Media extends core\Model {
 	}
 
 	/**
-	 * Get Total and Saving image size
-	 *
-	 * @param bool $saving Check for get Total or Saving.
+	 * Get Total image size
 	 *
 	 * @return int
 	 */
-	public function get_images_disk_usage( $saving = false ) {
-
+	public function get_images_disk_usage() {
 		$disk_usage = 0;
 		$args       = $args = $this->query_args;
-		if ( $saving === true ) {
-			$args['meta_query'] = array(
-				array(
-					'key'   => '_just_img_opt_queue',
-					'value' => '3',
-				),
-			);
-		}
-		$query = new \WP_Query( $args );
+		$query      = new \WP_Query( $args );
 		while ( $query->have_posts() ) {
 			$query->the_post();
 			$disk_usage = $disk_usage + $this->get_total_filesizes( get_the_ID(), false );
 		}
 
 		return (int) number_format_i18n( $disk_usage / 1048576 );
+	}
+
+	/**
+	 * Get count images with status processed
+	 *
+	 * @return int
+	 */
+	public function get_count_images_processed() {
+		$args               = $args = $this->query_args;
+		$args['meta_query'] = array(
+			array(
+				'key'   => '_just_img_opt_queue',
+				'value' => '3',
+			),
+		);
+		$query              = new \WP_Query( $args );
+
+		return $query->post_count;
+	}
+
+	/**
+	 * Get sizes images with status processed
+	 *
+	 * @return int
+	 */
+	public function get_size_images_processed() {
+		$disk_usage         = 0;
+		$args               = $args = $this->query_args;
+		$args['meta_query'] = array(
+			array(
+				'key'   => '_just_img_opt_queue',
+				'value' => '3',
+			),
+		);
+		$query              = new \WP_Query( $args );
+		while ( $query->have_posts() ) {
+			$query->the_post();
+			$disk_usage = $disk_usage + $this->get_total_filesizes( get_the_ID(), false );
+		}
+
+		return (int) number_format_i18n( $disk_usage / 1048576 );
+	}
+
+	/**
+	 * Get count images in queue from total count
+	 *
+	 * @return int|float
+	 */
+	public function get_in_queue_image_count() {
+		return $this->get_images_stat( true ) - $this->get_count_images_processed();
+	}
+
+	/**
+	 * Get disk space sizes from total size
+	 *
+	 * @return int|float
+	 */
+	public function get_saving_size() {
+		$before_sizes = get_option( self::DB_OPT_SIZES_BEFORE );
+		$total_size   = $this->get_images_disk_usage();
+		if ( $before_sizes ) {
+			return $before_sizes - $total_size;
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * Get saving sizes from space size
+	 *
+	 * @return int|float
+	 */
+	public function get_disk_space_size() {
+		$total_size  = $this->get_images_disk_usage();
+		if ( $this->saving_size !== 0 ) {
+			return $total_size - $this->saving_size;
+		} else {
+			return $total_size;
+		}
+
+	}
+
+	/**
+	 * Get Saving image percent
+	 *
+	 * @return int|float
+	 */
+	public function get_saving_percent_dashboard() {
+		if ( $this->get_images_disk_usage() ) {
+			return round( ( $this->saving_size / $this->get_images_disk_usage() ) * 100, 2 );
+		} else {
+			return 0;
+		}
 	}
 
 }

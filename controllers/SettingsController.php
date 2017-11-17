@@ -5,6 +5,7 @@ namespace justimageoptimizer\controllers;
 use justimageoptimizer\models\Settings;
 use justimageoptimizer\models\Media;
 use justimageoptimizer\models\Connect;
+
 /**
  * Adds option settings page
  */
@@ -15,23 +16,31 @@ class SettingsController extends \justimageoptimizer\core\Component {
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
-		if ( ! empty( get_option( Connect::DB_OPT_SERVICE ) ) ) {
-			add_action( 'admin_menu', array( $this, 'init_settings_menu' ) );
-		}
+		parent::__construct();
+		add_action( 'admin_menu', array( $this, 'init_settings_menu' ) );
 		add_action( 'admin_print_scripts-media_page_just-img-opt-settings', array( $this, 'registerAssets' ) );
-		if ( empty( get_option( Settings::DB_OPT_IMAGE_SIZES ) ) ) {
-			add_action( 'joi_settings_admin_notice', array( $this, 'notice' ) );
-		}
+		add_action( 'joi_settings_admin_notice', array( $this, 'notice' ) );
+
 	}
 
 	/**
 	 * Notice message.
 	 */
 	public function notice() {
-		echo __( '<div class="update-nag">
+		if ( empty( maybe_unserialize( self::$settings->image_sizes ) ) ) {
+			echo __( '<div class="update-nag">
                 <strong>Please confirm the settings below and Save them.</strong>
+                </div><br>', \JustImageOptimizer::TEXTDOMAIN
+			);
+		}
+		if ( isset( $_POST['submit-settings'] ) ) {
+			echo __( '<div class="update-nag" style="border-left-color: green !important">
+                <strong>Settings options updated!</strong>
+                <strong>Go to <a href=" ' . admin_url() . 'upload.php?page=just-img-opt-dashboard">Dashboard page</a>
+                to view the general statistics.</strong>
                 </div>', \JustImageOptimizer::TEXTDOMAIN
-		);
+			);
+		}
 	}
 
 	/**
@@ -61,13 +70,13 @@ class SettingsController extends \justimageoptimizer\core\Component {
 	}
 
 	/**
-	 * Is first save add redirect
+	 * Redirect to Connect page if connection false.
 	 *
-	 * @return string Redirect to Dashboard Page
+	 * @return string Redirect to Connect Page
 	 */
 	public function redirect() {
-		if ( isset( $_POST['submit-settings'] ) && get_option( Settings::DB_OPT_IS_SECOND ) !== '1' ) {
-			return "<script>window.location = '" . admin_url() . "upload.php?page=just-img-opt-dashboard'</script>";
+		if ( ! Connect::connected() ) {
+			return admin_url() . 'upload.php?page=just-img-opt-connection';
 		}
 
 		return null;
@@ -77,15 +86,18 @@ class SettingsController extends \justimageoptimizer\core\Component {
 	 * Render Settings page
 	 */
 	public function actionIndex() {
-		$model = new Settings();
-		$media = new Media();
+		$model = self::$settings;
 		$model->load( $_POST ) && $model->save();
+		if ( ! empty( $this->redirect() ) ) {
+			$this->render( 'redirect', array(
+				'redirect_url' => $this->redirect(),
+			) );
+		}
 		$this->render( 'settings/index', array(
 			'tab'         => 'settings',
 			'model'       => $model,
-			'sizes'       => $media->image_dimensions(),
-			'image_sizes' => maybe_unserialize( get_option( $model::DB_OPT_IMAGE_SIZES ) ),
-			'redirect' => $this->redirect(),
+			'sizes'       => Media::image_dimensions(),
+			'image_sizes' => maybe_unserialize( $model->image_sizes ),
 		) );
 	}
 }

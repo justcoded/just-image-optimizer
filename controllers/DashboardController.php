@@ -2,9 +2,9 @@
 
 namespace justimageoptimizer\controllers;
 
+use justimageoptimizer\models\Connect;
 use justimageoptimizer\models\Settings;
 use justimageoptimizer\models\Media;
-use justimageoptimizer\models\Connect;
 
 /**
  * Adds option dashboard page
@@ -16,48 +16,44 @@ class DashboardController extends \justimageoptimizer\core\Component {
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
-		if ( ! empty( maybe_unserialize( get_option( Settings::DB_OPT_IMAGE_SIZES ) ) ) ) {
-			add_action( 'admin_menu', array( $this, 'init_dashboard_menu' ) );
-		}
+		parent::__construct();
+		add_action( 'admin_menu', array( $this, 'init_dashboard_menu' ) );
 		add_action( 'admin_print_scripts-media_page_just-img-opt-dashboard', array( $this, 'registerAssets' ) );
-		if ( empty( get_option( Settings::DB_OPT_AUTO_OPTIMIZE, true ) ) ) {
-			add_action( 'joi_dashboard_admin_notice', array( $this, 'notice' ) );
-		}
+		add_action( 'joi_dashboard_admin_notice', array( $this, 'notice' ) );
+
 	}
 
 	/**
 	 * Notice message.
 	 */
 	public function notice() {
-		echo __( '<div class="update-nag">
-                <strong>Automatic image optimization is disabled. Please check
-				<a href=" ' . admin_url() . 'upload.php?page=just-img-opt-settings">Settings</a>
-				 tab to enable it.</strong></div>', \JustImageOptimizer::TEXTDOMAIN
-		);
+		if ( empty( self::$settings->auto_optimize ) ) {
+			echo __( '<div class="update-nag">
+	                <strong>Automatic image optimization is disabled. Please check
+					<a href=" ' . admin_url() . 'upload.php?page=just-img-opt-settings">Settings</a>
+					 tab to enable it.</strong></div><br>', \JustImageOptimizer::TEXTDOMAIN
+			);
+		}
+		if ( empty( maybe_unserialize( self::$settings->image_sizes ) ) ) {
+			echo __( '<div class="update-nag">
+	                <strong>Image sizes for optimization are not selected. Please check
+					<a href=" ' . admin_url() . 'upload.php?page=just-img-opt-settings">Settings</a>
+					 tab to select sizes.</strong></div>', \JustImageOptimizer::TEXTDOMAIN
+			);
+		}
 	}
 
 	/**
 	 * Add new page to the Wordpress Menu
 	 */
 	public function init_dashboard_menu() {
-		if ( ! get_option( Settings::DB_OPT_IS_SECOND ) ) {
-			add_submenu_page(
-				null,
-				__( 'Dashboard', \JustImageOptimizer::TEXTDOMAIN ),
-				__( 'Dashboard', \JustImageOptimizer::TEXTDOMAIN ),
-				'manage_options',
-				'just-img-opt-dashboard',
-				array( $this, 'actionIndex' )
-			);
-		} else {
-			add_media_page(
-				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-				'manage_options',
-				'just-img-opt-dashboard',
-				array( $this, 'actionIndex' )
-			);
-		}
+		add_media_page(
+			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+			'manage_options',
+			'just-img-opt-dashboard',
+			array( $this, 'actionIndex' )
+		);
 	}
 
 	/**
@@ -80,13 +76,31 @@ class DashboardController extends \justimageoptimizer\core\Component {
 	}
 
 	/**
+	 * Redirect to Connect page if connection false.
+	 *
+	 * @return string Redirect to Connect Page
+	 */
+	public function redirect() {
+		if ( ! Connect::connected() ) {
+			return admin_url() . 'upload.php?page=just-img-opt-connection';
+		}
+
+		return null;
+	}
+
+	/**
 	 * Render Dashboard page
 	 */
 	public function actionIndex() {
 		$model = new Media();
+		if ( ! empty( $this->redirect() ) ) {
+			$this->render( 'redirect', array(
+				'redirect_url' => $this->redirect(),
+			) );
+		}
 		$this->render( 'dashboard/index', array(
-			'tab'     => 'dashboard',
-			'model'   => $model,
+			'tab'   => 'dashboard',
+			'model' => $model,
 		) );
 	}
 }

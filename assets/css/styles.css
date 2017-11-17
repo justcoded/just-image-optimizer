@@ -29,14 +29,22 @@
 
 .column {
     float: left;
-    width: 75%;
+    width: 40%;
 }
-.column-s {
-    float: right;
+
+.column-l {
+    float: left;
     width: 20%;
 }
 
-/* Clear floats after the columns */
+.column h2 {
+    text-align: center !important;
+}
+.row h1 {
+    margin-left: 40%;
+}
+
+/* Clear floats */
 .row:after {
     content: "";
     display: table;

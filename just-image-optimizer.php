@@ -60,6 +60,8 @@ class JustImageOptimizer extends core\Singleton {
 
 		// init features, which this plugin is created for.
 		self::$service = services\ImageOptimizerFactory::create();
+		new models\Connect();
+		new models\Settings();
 		new controllers\ConnectController();
 		new controllers\SettingsController();
 		new controllers\DashboardController();

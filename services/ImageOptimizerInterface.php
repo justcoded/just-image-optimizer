@@ -5,6 +5,6 @@ interface ImageOptimizerInterface {
 
 	public function check_api_key();
 
-	public function upload_optimize_images( $optimize_contents_url );
+	public function upload_optimize_images( $attach_id, $tmp_images );
 }
 ?>

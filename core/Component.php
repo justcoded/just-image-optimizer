@@ -1,6 +1,7 @@
 <?php
 
 namespace justimageoptimizer\core;
+use justimageoptimizer\models\Settings;
 
 /**
  * Base class for plugin features and components.
@@ -8,6 +9,12 @@ namespace justimageoptimizer\core;
  * Contains global methods which can help you inside your features.
  */
 class Component {
+
+	public static $settings;
+
+	protected function __construct() {
+		self::$settings = new Settings();
+	}
 
 	/**
 	 * Render view file with extracted params

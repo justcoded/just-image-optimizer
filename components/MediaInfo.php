@@ -20,9 +20,11 @@ class MediaInfo extends \justimageoptimizer\core\Component {
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
+		parent::__construct();
 		add_action( 'admin_init', array( $this, 'hook_new_media_columns' ) );
 		add_action( 'admin_print_scripts-upload.php', array( $this, 'registerAssets' ) );
-		add_action( 'add_meta_boxes_attachment', array( $this, 'add_meta_boxes' ) );
+		add_action( 'admin_print_scripts-post.php', array( $this, 'registerAssets' ) );
+		add_action( 'add_meta_boxes_attachment', array( $this, 'add_optimize_meta_boxes' ), 99 );
 		add_action( 'wp_ajax_regeneratethumbnail', array( $this, 'clean_stats' ), 5 );
 
 	}
@@ -108,11 +110,11 @@ class MediaInfo extends \justimageoptimizer\core\Component {
 	 *
 	 * @param \WP_Post $post Post object.
 	 */
-	public function add_meta_boxes( $post ) {
+	public function add_optimize_meta_boxes( $post ) {
 		if ( ! in_array( get_post_mime_type( $post->ID ), $this->allowed_images ) ) {
 			return;
 		}
-		add_meta_box( 'just-img-meta-info', __( 'Image Sizes' ), array( $this, 'render_meta_info' ) );
+		add_meta_box( 'jri-attachement-meta-info', __( 'Image Sizes' ), array( $this, 'render_meta_info' ) );
 	}
 
 	/**
@@ -154,6 +156,7 @@ class MediaInfo extends \justimageoptimizer\core\Component {
 				'meta'  => $meta,
 				'model' => $model,
 				'id'    => $post->ID,
+				'allowed_images' => $this->allowed_images,
 			)
 		);
 	}

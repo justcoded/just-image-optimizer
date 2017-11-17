@@ -47,10 +47,10 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		}
 		$decode_result = json_decode( $result );
 		if ( isset( $decode_result->responseCode ) && $decode_result->responseCode === 200 ) {
-			return 1;
+			return true;
 		}
 
-		return 2;
+		return false;
 	}
 
 	/**
@@ -58,11 +58,11 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 *
 	 * @param string $optimize_contents_url Page with images.
 	 */
-	public function upload_optimize_images( $optimize_contents_url ) {
+	public function upload_optimize_images( $attach_id, $tmp_images ) {
 		$upload_dir = WP_CONTENT_DIR;
 		$ch         = curl_init();
 		$file       = fopen( $upload_dir . '/optimize_contents.zip', 'w+' );
-		$source     = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . $optimize_contents_url . '&strategy=desktop';
+		$source     = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . home_url( '/just-image-optimize/' . $attach_id . '') . '&strategy=desktop';
 		curl_setopt( $ch, CURLOPT_URL, $source );
 		curl_setopt( $ch, CURLOPT_FILE, $file );
 		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
@@ -71,7 +71,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		fclose( $file );
 
 		WP_Filesystem();
-		unzip_file( $upload_dir . '/optimize_contents.zip', $upload_dir . '/tmp' );
+		unzip_file( $upload_dir . '/optimize_contents.zip', $tmp_images );
 		unlink( $upload_dir . '/optimize_contents.zip' );
 	}
 

@@ -16,33 +16,37 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
+		parent::__construct();
 		add_action( 'admin_menu', array( $this, 'init_admin_menu' ) );
 		add_action( 'admin_print_scripts-media_page_just-img-opt-connection', array( $this, 'registerAssets' ) );
 		add_action( 'wp_ajax_ajax_check_api', array( $this, 'ajax_check_api' ) );
+		add_action( 'joi_connection_admin_notice', array( $this, 'notice' ) );
+	}
+
+	/**
+	 * Notice message.
+	 */
+	public function notice() {
+		if ( isset( $_POST['submit-connect'] ) ) {
+			echo __( '<div class="update-nag" style="border-left-color: green !important">
+                <strong>Connection options updated!</strong>
+                </div>', \JustImageOptimizer::TEXTDOMAIN
+			);
+		}
 	}
 
 	/**
 	 * Add new page to the Wordpress Menu
 	 */
 	public function init_admin_menu() {
-		if ( ! get_option( Settings::DB_OPT_IS_SECOND ) ) {
-			add_media_page(
-				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-				'manage_options',
-				'just-img-opt-connection',
-				array( $this, 'actionIndex' )
-			);
-		} else {
-			add_submenu_page(
-				null,
-				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-				__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-				'manage_options',
-				'just-img-opt-connection',
-				array( $this, 'actionIndex' )
-			);
-		}
+		add_submenu_page(
+			null,
+			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+			'manage_options',
+			'just-img-opt-connection',
+			array( $this, 'actionIndex' )
+		);
 	}
 
 	/**
@@ -51,8 +55,8 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 * @return string Redirect to Settings Page
 	 */
 	public function redirect() {
-		if ( isset( $_POST['submit-connect'] ) && get_option( Connect::DB_OPT_IS_FIRST ) !== '1' ) {
-			return "<script>window.location = '" . admin_url() . "upload.php?page=just-img-opt-settings'</script>";
+		if ( isset( $_POST['submit-connect'] ) ) {
+			return admin_url() . 'upload.php?page=just-img-opt-settings';
 		}
 
 		return null;
@@ -62,13 +66,17 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 * Render Connect page
 	 */
 	public function actionIndex() {
-		$model   = new Connect();
+		$model = new Connect();
 		$model->load( $_POST ) && $model->save();
+		if ( ! empty( $this->redirect() ) && ! empty( $model->service ) && $model::connected()
+		     && empty( maybe_unserialize( self::$settings->image_sizes ) ) ) {
+			$this->render( 'redirect', array(
+				'redirect_url' => $this->redirect(),
+			) );
+		}
 		$this->render( 'connect/connect-page', array(
-			'model'             => $model,
-			'tab'               => 'connect',
-			'wizard' => get_option( $model::DB_OPT_IS_FIRST ),
-			'redirect' => $this->redirect(),
+			'model' => $model,
+			'tab'   => 'connect',
 		) );
 	}
 
@@ -88,11 +96,8 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	 * Ajax function for check valid API key
 	 */
 	public function ajax_check_api() {
-		$model = new Connect();
-		$model->load( $_POST ) && $model->save();
-		$service        = services\ImageOptimizerFactory::create();
+		$service        = services\ImageOptimizerFactory::create( $_POST['service'], $_POST['api_key'] );
 		$connection_api = $service->check_api_key();
-		update_option( $model::DB_OPT_STATUS, $connection_api );
 		echo $connection_api;
 		exit();
 	}

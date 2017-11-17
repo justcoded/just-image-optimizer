@@ -1,13 +1,14 @@
-<?php echo $redirect; ?>
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
+	<?php do_action( 'joi_connection_admin_notice' ); ?>
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
 			<tr>
 				<th scope="row"><?php _e( 'Select an Image Optimization Service', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td><label for="service">
+						<input type="hidden" name="service" value="0">
 						<input
-							<?php echo( get_option( $model::DB_OPT_SERVICE ) === 'google_insights' ? 'checked' : '' ); ?>
+							<?php echo( $model->service === 'google_insights' ? 'checked' : '' ); ?>
 							type="checkbox"
 							id="service"
 							name="service"
@@ -25,39 +26,46 @@
 
 						<input type="text" name="api_key"
 						       id="api_key" class="regular-text"
-						       value="<?php echo esc_attr( get_option( $model::DB_OPT_API_KEY ) ); ?>"/>
+						       value="<?php echo esc_attr( $model->api_key ); ?>"/>
 						<p><a id="find_api" href="#connect">where i can find my API key?</a></p>
 						<div>
-						<ol id="instructions-api" style="display: none">
-							<li>
-								Navigate to <a target="_blank" href="https://code.google.com/apis/console" rel="nofollow">
-									https://code.google.com/apis/console
-								</a>
-							</li>
-							<li>
-								Login with your Google Account (Create a Google account if you do not have one)
-							</li>
-							<li>
-								Click the “Create Project…” button
-							</li>
-							<li>
-								You should now be looking at the “Services” page, if you are not, click “Services” from the menu on the left.
-							</li>
-							<li>
-								Scroll down the Services page until you find “PageSpeed Insights API”. Click the Switch to turn it on. You must agree to Google’s Terms and Conditions to continue.
-							</li>
-							<li>
-								After enabling the API, navigate to the “API Access” page from the left menu. Your API Key can be found under “Simple API Access.” Copy this key to your clipboard.
-							</li>
-							<li>Paste this API Key</li>
-						</ol>
+							<ol id="instructions-api" style="display: none">
+								<li>
+									Navigate to <a target="_blank" href="https://console.cloud.google.com/"
+									               rel="nofollow">
+										Cloud Platform Console</a>
+								</li>
+								<li>
+									Login with your Google Account (Create a Google account if you do not have one)
+								</li>
+								<li>
+									From the projects list ( is on top left ), select a project or create a new one.
+								</li>
+								<li>
+									For creation project set “Project Name” and click “Create”. Waiting for creation
+									project and select him.
+								</li>
+								<li>
+									After creation project. Click on <a
+										href="https://console.developers.google.com/apis/credentials">Credentials
+										page</a>
+								</li>
+								<li>
+									On Credentials page the left, choose "Credentials".
+								</li>
+								<li>
+									Click "Create credentials" and then select API key.
+								</li>
+								<li>Paste this API Key</li>
+							</ol>
 						</div>
 					</td>
 				</tr>
 				<tr>
 					<th scope="row"><?php _e( 'API Status', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 					<td class="api_status">
-						<?php if ( get_option( $model::DB_OPT_STATUS ) === '1' ) : ?>
+						<input type="hidden" name="status" value="<?php $model->status; ?>">
+						<?php if ( $model->status === '1' ) : ?>
 							<p>OK</p>
 						<?php else: ?>
 							<button id="api_connect">Connect</button>
@@ -67,7 +75,7 @@
 				</tr>
 			</table>
 		</div>
-		<input <?php echo( get_option( $model::DB_OPT_STATUS ) === '1' ? '' : 'disabled' ); ?>
+		<input <?php echo( $model->status === '1' ? '' : 'disabled' ); ?>
 			type="submit" name="submit-connect" id="submit-connect"
 			class="button button-primary" value="Save">
 	</form>
