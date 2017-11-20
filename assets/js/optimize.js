@@ -4,7 +4,7 @@ jQuery(document).ready(function ($) {
         var attach_id = $(this).data('attach-id');
         $(this).parent().html('<div class="loader"></div>');
         var data = {
-            action: 'ajax_manual_optimize',
+            action: 'manual_optimize',
             attach_id: attach_id
         };
         $.post( ajaxurl, data, function( response ) {
@@ -20,7 +20,7 @@ jQuery(document).ready(function ($) {
         $(this).parent().append('<div class="loader"></div>');
         $('td .optimize-now-meta').remove();
         var data = {
-            action: 'ajax_manual_optimize',
+            action: 'manual_optimize',
             attach_id: attach_id
         };
         $.post( ajaxurl, data, function( response ) {

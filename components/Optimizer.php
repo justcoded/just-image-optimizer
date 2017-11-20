@@ -17,7 +17,7 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	public function __construct() {
 		parent::__construct();
 		$this->run_cron();
-		add_action( 'wp_ajax_ajax_manual_optimize', array( $this, 'ajax_manual_optimize' ) );
+		add_action( 'wp_ajax_manual_optimize', array( $this, 'manual_optimize' ) );
 		add_action( 'add_attachment', array( $this, 'set_attachment_in_queue' ) );
 	}
 
@@ -147,7 +147,7 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	/**
 	 * Ajax function for manual image optimize
 	 */
-	public function ajax_manual_optimize() {
+	public function manual_optimize() {
 		$this->optimize_images( $_POST );
 		$attach_id       = $_POST['attach_id'];
 		$model           = new Media();

@@ -40,7 +40,6 @@ class Connect extends core\Model {
 			update_option( self::DB_OPT_API_KEY, $this->api_key );
 			update_option( self::DB_OPT_SERVICE, $this->service );
 			update_option( self::DB_OPT_STATUS, '1' );
-			flush_rewrite_rules();
 		} else {
 			update_option( self::DB_OPT_STATUS, '2' );
 		}

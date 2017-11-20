@@ -19,7 +19,7 @@ class ConnectController extends \justimageoptimizer\core\Component {
 		parent::__construct();
 		add_action( 'admin_menu', array( $this, 'init_admin_menu' ) );
 		add_action( 'admin_print_scripts-media_page_just-img-opt-connection', array( $this, 'registerAssets' ) );
-		add_action( 'wp_ajax_ajax_check_api', array( $this, 'ajax_check_api' ) );
+		add_action( 'wp_ajax_connect_api', array( $this, 'connect_api' ) );
 		add_action( 'joi_connection_admin_notice', array( $this, 'notice' ) );
 	}
 
@@ -69,7 +69,8 @@ class ConnectController extends \justimageoptimizer\core\Component {
 		$model = new Connect();
 		$model->load( $_POST ) && $model->save();
 		if ( ! empty( $this->redirect() ) && ! empty( $model->service ) && $model::connected()
-		     && empty( maybe_unserialize( self::$settings->image_sizes ) ) ) {
+		     && empty( maybe_unserialize( self::$settings->image_sizes ) )
+		) {
 			$this->render( 'redirect', array(
 				'redirect_url' => $this->redirect(),
 			) );
@@ -95,9 +96,12 @@ class ConnectController extends \justimageoptimizer\core\Component {
 	/**
 	 * Ajax function for check valid API key
 	 */
-	public function ajax_check_api() {
+	public function connect_api() {
 		$service        = services\ImageOptimizerFactory::create( $_POST['service'], $_POST['api_key'] );
 		$connection_api = $service->check_api_key();
+		if ( $connection_api === '1' ) {
+			flush_rewrite_rules();
+		}
 		echo $connection_api;
 		exit();
 	}
