@@ -169,13 +169,17 @@ class Optimizer extends \justimageoptimizer\core\Component {
 	 */
 	protected function optimize_images( $attach_ids ) {
 		global $wp_filesystem;
-		$media        = new Media();
+		$media = new Media();
+		//add filter for WP_FIlesystem permission
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
+		//encode to base64 attach ids
 		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
+		//upload images from service
 		\JustImageOptimizer::$service->upload_optimize_images( $base_attach_ids, WP_CONTENT_DIR . '/tmp' );
 		$dir       = WP_CONTENT_DIR . '/tmp/image/';
 		$get_image = scandir( $dir );
 		$get_path  = $this->get_uploads_path();
+		//set statistics and status before replace images
 		foreach ( $attach_ids as $attach_id ) {
 			$media->before_main_attach_stats[ $attach_id ] = $media->get_total_filesizes( $attach_id, false );
 			$media->before_optimize_stats[ $attach_id ]    = array(
@@ -184,6 +188,7 @@ class Optimizer extends \justimageoptimizer\core\Component {
 			update_post_meta( $attach_id, '_just_img_opt_queue', 2 );
 		}
 		$media->set_before_sizes();
+		//process for replace images
 		if ( ! empty( $get_image ) ) {
 			foreach ( $get_image as $key => $file ) {
 				if ( $wp_filesystem->is_file( $dir . $file ) ) {
@@ -196,6 +201,7 @@ class Optimizer extends \justimageoptimizer\core\Component {
 			}
 			self::delete_dir( WP_CONTENT_DIR . '/tmp' );
 		}
+		//set statistics and status after replace images
 		foreach ( $attach_ids as $attach_id ) {
 			$media->after_main_attach_stats[ $attach_id ] = $media->get_total_filesizes( $attach_id, false );
 			$media->after_optimize_stats[ $attach_id ]    = array(

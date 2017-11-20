@@ -27,7 +27,7 @@ class Connect extends core\Model {
 	public function reset() {
 		$this->api_key = get_option( self::DB_OPT_API_KEY );
 		$this->service = get_option( self::DB_OPT_SERVICE );
-		$this->status = get_option( self::DB_OPT_STATUS );
+		$this->status  = get_option( self::DB_OPT_STATUS );
 	}
 
 
@@ -47,6 +47,11 @@ class Connect extends core\Model {
 		$this->reset();
 	}
 
+	/**
+	 * Check API connect
+	 *
+	 * @return bool Return true or false.
+	 */
 	public static function connected() {
 		return get_option( self::DB_OPT_STATUS ) === '1';
 	}
