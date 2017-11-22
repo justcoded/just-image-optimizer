@@ -1,6 +1,15 @@
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
-	<?php do_action( 'joi_connection_admin_notice' ); ?>
+	<?php if ( $saved ) : ?>
+		<div class="update-nag" style="border-left-color: green !important">
+			<strong>Connection options updated!</strong>
+		</div>
+	<?php endif; ?>
+	<?php if ( $saved === false ) : ?>
+		<div class="update-nag" style="border-left-color: red !important">
+			<strong>API key is invalid!</strong>
+		</div>
+	<?php endif; ?>
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
 			<tr>

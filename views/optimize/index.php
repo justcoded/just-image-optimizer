@@ -13,21 +13,21 @@ use justimageoptimizer\models\Settings;
 <body <?php body_class(); ?>>
 <div id="wrapper">
 	<?php
-	$bulk_size  = 0;
-	$bulk_array = array();
-	if ( is_array( $sizes_attachment ) ) {
+	$limit_size = 0;
+	$size_array = array();
+	if ( is_array( $settings->image_sizes ) ) {
 		foreach ( $attach_ids as $attach_id ) {
-			$bulk_array[ $attach_id ] = $media->get_total_filesizes( $attach_id, true );
+			$size_array[ $attach_id ] = $media->get_total_filesizes( $attach_id, true );
 		}
-		foreach ( $sizes_attachment as $value_size ) {
+		foreach ( $settings->image_sizes as $value_size ) {
 			foreach ( $attach_ids as $attach_id ) {
-				if ( get_option( $settings::DB_OPT_SIZE_LIMIT ) === '0' ) {
+				if ( $settings->size_limit === '0' ) {
 					echo '<img src="' . esc_url( wp_get_attachment_image_url( $attach_id, $value_size ) ) . '" />';
 				} else {
-					if ( ! empty( $bulk_array[ $attach_id ][ $value_size ] ) ) {
-						$bulk_size = $bulk_size + $bulk_array[ $attach_id ][ $value_size ];
+					if ( ! empty( $size_array[ $attach_id ][ $value_size ] ) ) {
+						$limit_size = $limit_size + $size_array[ $attach_id ][ $value_size ];
 					}
-					if ( number_format_i18n( $bulk_size / 1048576 ) >= get_option( $settings::DB_OPT_SIZE_LIMIT ) ) {
+					if ( number_format_i18n( $limit_size / 1048576 ) >= $settings->size_limit ) {
 						break;
 					}
 					echo '<img src="' . esc_url( wp_get_attachment_image_url( $attach_id, $value_size ) ) . '" />';

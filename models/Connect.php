@@ -20,10 +20,16 @@ class Connect extends core\Model {
 	public $service;
 	public $status;
 
+	/**
+	 * Construct for Connect model
+	 */
 	public function __construct() {
 		$this->reset();
 	}
 
+	/**
+	 * Set connect options values
+	 */
 	public function reset() {
 		$this->api_key = get_option( self::DB_OPT_API_KEY );
 		$this->service = get_option( self::DB_OPT_SERVICE );
@@ -40,10 +46,15 @@ class Connect extends core\Model {
 			update_option( self::DB_OPT_API_KEY, $this->api_key );
 			update_option( self::DB_OPT_SERVICE, $this->service );
 			update_option( self::DB_OPT_STATUS, '1' );
+			$this->reset();
+
+			return true;
 		} else {
 			update_option( self::DB_OPT_STATUS, '2' );
+			$this->reset();
+
+			return false;
 		}
-		$this->reset();
 	}
 
 	/**

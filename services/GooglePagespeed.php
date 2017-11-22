@@ -59,10 +59,12 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 * @param string $optimize_contents_url Page with images.
 	 */
 	public function upload_optimize_images( $attach_id, $tmp_images ) {
-		$upload_dir = WP_CONTENT_DIR;
-		$ch         = curl_init();
-		$file       = fopen( $upload_dir . '/optimize_contents.zip', 'w+' );
-		$source     = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . home_url( '/just-image-optimize/' . $attach_id . '') . '&strategy=desktop';
+		$base_attach_ids = base64_encode( implode( ',', $attach_id ) );
+		$upload_dir      = WP_CONTENT_DIR;
+		$google_img_path = $upload_dir . '/tmp/image/';
+		$ch              = curl_init();
+		$file            = fopen( $upload_dir . '/optimize_contents.zip', 'w+' );
+		$source          = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . home_url( '/just-image-optimize/' . $base_attach_ids . '' ) . '&strategy=desktop';
 		curl_setopt( $ch, CURLOPT_URL, $source );
 		curl_setopt( $ch, CURLOPT_FILE, $file );
 		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
@@ -70,9 +72,21 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		curl_close( $ch );
 		fclose( $file );
 
-		WP_Filesystem();
-		unzip_file( $upload_dir . '/optimize_contents.zip', $tmp_images );
-		unlink( $upload_dir . '/optimize_contents.zip' );
+		$unzipfile = unzip_file( $upload_dir . '/optimize_contents.zip', $tmp_images );
+		if ( $unzipfile ) {
+			// Get array of all source files
+			$files = scandir( $google_img_path );
+			foreach ( $files as $file ) {
+				if ( in_array( $file, array( ".", ".." ) ) ) {
+					continue;
+				}
+				copy( $google_img_path . $file, $tmp_images . $file );
+			}
+			if ( is_dir( $google_img_path ) ) {
+				Optimizer::delete_dir( $google_img_path );
+			}
+			unlink( $upload_dir . '/optimize_contents.zip' );
+		}
 	}
 
 	/**
@@ -86,6 +100,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 * Add custom query vars.
 	 *
 	 * @param array $query_vars Array with WordPress query_vars.
+	 *
 	 * @return array Array with new query_vars.
 	 */
 	public function query_vars( $query_vars ) {
@@ -107,10 +122,9 @@ class GooglePagespeed implements ImageOptimizerInterface {
 			$attach_ids    = base64_decode( end( $parse_url ) );
 			$attach_ids    = explode( ',', $attach_ids );
 			$optimizer->render( 'optimize/index', array(
-				'attach_ids'       => $attach_ids,
-				'sizes_attachment' => maybe_unserialize( get_option( models\Settings::DB_OPT_IMAGE_SIZES ) ),
-				'media' => new models\Media(),
-				'settings' => new models\Settings(),
+				'attach_ids' => $attach_ids,
+				'media'      => new models\Media(),
+				'settings'   => \JustImageOptimizer::$settings,
 			) );
 			exit;
 		}

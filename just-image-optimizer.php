@@ -44,6 +44,13 @@ class JustImageOptimizer extends core\Singleton {
 	public static $service;
 
 	/**
+	 * Settings model
+	 *
+	 * @var object
+	 */
+	public static $settings;
+
+	/**
 	 * Plugin text domain for translations
 	 */
 	const TEXTDOMAIN = 'justimageoptimizer';
@@ -57,16 +64,16 @@ class JustImageOptimizer extends core\Singleton {
 		// init plugin name and version.
 		self::$plugin_name = __( 'Just Image Optimizer', JustImageOptimizer::TEXTDOMAIN );
 		self::$version     = 0.100;
-
+		self::$settings = new models\Settings();
 		// init features, which this plugin is created for.
 		self::$service = services\ImageOptimizerFactory::create();
-		new models\Connect();
-		new models\Settings();
-		new controllers\ConnectController();
-		new controllers\SettingsController();
-		new controllers\DashboardController();
 		new components\MediaInfo();
 		new components\Optimizer();
+		if ( is_admin() ) {
+			new controllers\ConnectController();
+			new controllers\SettingsController();
+			new controllers\DashboardController();
+		}
 	}
 
 }

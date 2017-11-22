@@ -483,7 +483,7 @@ class Media extends core\Model {
 	 * @return int|float
 	 */
 	public function get_disk_space_size() {
-		$total_size  = $this->get_images_disk_usage();
+		$total_size = $this->get_images_disk_usage();
 		if ( $this->saving_size !== 0 ) {
 			return $total_size - $this->saving_size;
 		} else {
@@ -503,6 +503,38 @@ class Media extends core\Model {
 		} else {
 			return 0;
 		}
+	}
+
+	/**
+	 * Check size limit images optimization
+	 *
+	 * @param array $attach_ids Array attach ids.
+	 * @return array Array attach ids.
+	 */
+	public function size_limit( array $attach_ids ) {
+		$size_limit = 0;
+		$size_array = array();
+		$array_ids  = array();
+		if ( is_array( \JustImageOptimizer::$settings->image_sizes ) && \JustImageOptimizer::$settings->size_limit !== '0' ) {
+			foreach ( $attach_ids as $attach_id ) {
+				$size_array[ $attach_id ] = $this->get_total_filesizes( $attach_id, true );
+			}
+			foreach ( \JustImageOptimizer::$settings->image_sizes as $value_size ) {
+				foreach ( $attach_ids as $attach_id ) {
+					if ( ! empty( $size_array[ $attach_id ][ $value_size ] ) ) {
+						$size_limit  = $size_limit + $size_array[ $attach_id ][ $value_size ];
+						$array_ids[ $attach_id ] = $attach_id;
+					}
+					if ( number_format_i18n( $size_limit / 1048576 ) >= \JustImageOptimizer::$settings->size_limit ) {
+						break;
+					}
+				}
+			}
+
+			return $array_ids;
+		}
+
+		return $attach_ids;
 	}
 
 }

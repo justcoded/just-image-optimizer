@@ -20,7 +20,6 @@ class MediaInfo extends \justimageoptimizer\core\Component {
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
-		parent::__construct();
 		add_action( 'admin_init', array( $this, 'hook_new_media_columns' ) );
 		add_action( 'admin_print_scripts-upload.php', array( $this, 'registerAssets' ) );
 		add_action( 'admin_print_scripts-post.php', array( $this, 'registerAssets' ) );

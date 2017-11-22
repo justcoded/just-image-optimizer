@@ -1,6 +1,17 @@
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
-	<?php do_action( 'joi_settings_admin_notice' ); ?>
+	<?php if ( ! $model->saved() ) : ?>
+		<div class="update-nag">
+			<strong>Please confirm the settings below and Save them.</strong>
+		</div><br>
+	<?php endif; ?>
+	<?php if ( $saved ) : ?>
+		<div class="update-nag" style="border-left-color: green !important">
+			<strong>Settings options updated!</strong>
+			<strong>Go to <a href="<?php echo admin_url(); ?>upload.php?page=just-img-opt-dashboard">Dashboard page</a>
+				to view the general statistics.</strong>
+		</div>
+	<?php endif; ?>
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
 			<tr>
@@ -45,8 +56,8 @@
 					<span class="size_checked">
 						<input type="hidden" name="image_sizes" value="0">
 						<?php foreach ( $sizes as $size => $dimensions ) : ?>
-							<?php if ( is_array( $image_sizes ) ) : ?>
-								<input <?php echo( in_array( $size, $image_sizes ) ? 'checked' : '' ); ?>
+							<?php if ( is_array( $model->image_sizes ) ) : ?>
+								<input <?php echo( in_array( $size, $model->image_sizes ) ? 'checked' : '' ); ?>
 								type="checkbox"
 								name="image_sizes[]"
 								value="<?php echo $size; ?>"><?php echo $size; ?><br>
@@ -61,7 +72,7 @@
 			<tr>
 				<th scope="row"><?php _e( 'Keep origin', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
-					<input disabled checked type="checkbox" name="keep_origin" value="keep_origin">
+					<input onclick="return false;" checked type="checkbox" name="keep_origin" value="1">
 				</td>
 			</tr>
 			<tr>

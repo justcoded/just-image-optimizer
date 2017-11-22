@@ -1,6 +1,19 @@
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
-	<?php do_action( 'joi_dashboard_admin_notice' ); ?>
+	<?php if ( empty( \JustImageOptimizer::$settings->auto_optimize ) ) : ?>
+		<div class="update-nag">
+			<strong>Automatic image optimization is disabled. Please check
+				<a href="<?php echo admin_url(); ?>upload.php?page=just-img-opt-settings">Settings</a>
+				tab to enable it.</strong>
+		</div><br>
+	<?php endif; ?>
+	<?php if ( empty( \JustImageOptimizer::$settings->image_sizes ) ) : ?>
+		<div class="update-nag">
+			<strong>Image sizes for optimization are not selected. Please check
+				<a href="<?php echo admin_url(); ?>upload.php?page=just-img-opt-settings">Settings</a>
+				tab to select sizes.</strong>
+		</div>
+	<?php endif; ?>
 	<div class="row">
 		<h1>Stats</h1>
 		<div class="column middle">

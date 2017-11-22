@@ -17,6 +17,7 @@ class Settings extends core\Model {
 	const DB_OPT_SIZE_LIMIT = 'joi_size_limit';
 	const DB_OPT_BEFORE_REGEN = 'joi_before_regen';
 	const DB_OPT_SIZE_CHECKED = 'joi_image_sizes_all';
+	const DB_OPT_KEEP_ORIGIN = 'joi_keep_origin';
 
 	public $image_sizes;
 	public $auto_optimize;
@@ -24,15 +25,26 @@ class Settings extends core\Model {
 	public $size_limit;
 	public $before_regen;
 	public $image_sizes_all;
+	public $keep_origin;
 
-
+	/**
+	 * Construct for Settings model
+	 */
 	public function __construct() {
-		$this->image_sizes     = get_option( self::DB_OPT_IMAGE_SIZES );
+		$this->reset();
+	}
+
+	/**
+	 * Set setting options values
+	 */
+	public function reset() {
+		$this->image_sizes     = maybe_unserialize( get_option( self::DB_OPT_IMAGE_SIZES ) );
 		$this->auto_optimize   = get_option( self::DB_OPT_AUTO_OPTIMIZE );
 		$this->image_limit     = get_option( self::DB_OPT_IMAGE_LIMIT );
 		$this->size_limit      = get_option( self::DB_OPT_SIZE_LIMIT );
 		$this->before_regen    = get_option( self::DB_OPT_BEFORE_REGEN );
 		$this->image_sizes_all = get_option( self::DB_OPT_SIZE_CHECKED );
+		$this->keep_origin     = get_option( self::DB_OPT_KEEP_ORIGIN );
 	}
 
 	/**
@@ -45,6 +57,19 @@ class Settings extends core\Model {
 		update_option( self::DB_OPT_BEFORE_REGEN, $this->before_regen );
 		update_option( self::DB_OPT_AUTO_OPTIMIZE, $this->auto_optimize );
 		update_option( self::DB_OPT_SIZE_CHECKED, $this->image_sizes_all );
+		update_option( self::DB_OPT_KEEP_ORIGIN, $this->keep_origin );
+		$this->reset();
+
+		return true;
+	}
+
+	/**
+	 * Check first saved setting options
+	 *
+	 * @return bool true or false.
+	 */
+	public function saved() {
+		return get_option( self::DB_OPT_KEEP_ORIGIN ) === '1';
 	}
 
 }

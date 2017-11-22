@@ -10,12 +10,6 @@ use justimageoptimizer\models\Settings;
  */
 class Component {
 
-	public static $settings;
-
-	protected function __construct() {
-		self::$settings = new Settings();
-	}
-
 	/**
 	 * Render view file with extracted params
 	 *
