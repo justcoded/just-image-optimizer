@@ -1,14 +1,14 @@
 <?php
 
-namespace justimageoptimizer\components;
+namespace JustCoded\WP\ImageOptimizer\components;
 
-use justimageoptimizer\models\Settings;
-use justimageoptimizer\models\Media;
+use JustCoded\WP\ImageOptimizer\models\Settings;
+use JustCoded\WP\ImageOptimizer\models\Media;
 
 /**
  * Class Optimizer
  */
-class Optimizer extends \justimageoptimizer\core\Component {
+class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
 	 * Class constructor.

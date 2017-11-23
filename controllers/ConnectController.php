@@ -1,15 +1,15 @@
 <?php
 
-namespace justimageoptimizer\controllers;
+namespace JustCoded\WP\ImageOptimizer\controllers;
 
-use justimageoptimizer\models\Connect;
-use justimageoptimizer\models\Settings;
-use justimageoptimizer\services;
+use JustCoded\WP\ImageOptimizer\models\Connect;
+use JustCoded\WP\ImageOptimizer\models\Settings;
+use JustCoded\WP\ImageOptimizer\services;
 
 /**
  * Adds option connect page
  */
-class ConnectController extends \justimageoptimizer\core\Component {
+class ConnectController extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
 	 * Class constructor.

@@ -1,6 +1,6 @@
 <?php
 
-namespace justimageoptimizer\core;
+namespace JustCoded\WP\ImageOptimizer\core;
 
 class Model {
 

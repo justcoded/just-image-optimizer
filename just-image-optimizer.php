@@ -2,20 +2,20 @@
 
 /*
 Plugin Name: Just Image Optimizer
-Description: WordPress Plugin Boilerplate based on latest WordPress OOP practices
+Description: Optimize your site images (reduce size). Based on Google Page Speed.
 Version: 0.1
-Author: Private Company
+Author: JustCoded
 License: GPL3
 */
 
 define( 'JUSTIMAGEOPTIMIZER_ROOT', dirname( __FILE__ ) );
-require_once( JUSTIMAGEOPTIMIZER_ROOT . '/core/Autoload.php' );
+require_once JUSTIMAGEOPTIMIZER_ROOT . '/core/Autoload.php';
 
-use justimageoptimizer\core;
-use justimageoptimizer\components;
-use justimageoptimizer\services;
-use justimageoptimizer\models;
-use justimageoptimizer\controllers;
+use JustCoded\WP\ImageOptimizer\core;
+use JustCoded\WP\ImageOptimizer\components;
+use JustCoded\WP\ImageOptimizer\services;
+use JustCoded\WP\ImageOptimizer\models;
+use JustCoded\WP\ImageOptimizer\controllers;
 
 /**
  * Class JustImageOptimizer
@@ -39,14 +39,14 @@ class JustImageOptimizer extends core\Singleton {
 	/**
 	 * Current Optimize service
 	 *
-	 * @var object
+	 * @var services\ImageOptimizerInterface
 	 */
 	public static $service;
 
 	/**
 	 * Settings model
 	 *
-	 * @var object
+	 * @var models\Settings
 	 */
 	public static $settings;
 
@@ -62,13 +62,18 @@ class JustImageOptimizer extends core\Singleton {
 	 */
 	protected function __construct() {
 		// init plugin name and version.
-		self::$plugin_name = __( 'Just Image Optimizer', JustImageOptimizer::TEXTDOMAIN );
+		self::$plugin_name = __( 'Just Image Optimizer', self::TEXTDOMAIN );
 		self::$version     = 0.100;
+
+		// init global static objects.
 		self::$settings = new models\Settings();
-		// init features, which this plugin is created for.
-		self::$service = services\ImageOptimizerFactory::create();
+		self::$service  = services\ImageOptimizerFactory::create();
+
+		// init components for media and optimizer.
 		new components\MediaInfo();
 		new components\Optimizer();
+
+		// admin panel option pages.
 		if ( is_admin() ) {
 			new controllers\ConnectController();
 			new controllers\SettingsController();

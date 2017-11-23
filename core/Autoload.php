@@ -1,6 +1,6 @@
 <?php
 
-namespace justimageoptimizer\core;
+namespace JustCoded\WP\ImageOptimizer\core;
 
 /**
  * SPL autoload registration for plugin to prevent using file includes
@@ -27,7 +27,7 @@ class Autoloader {
 			return;
 		}
 
-		$path = preg_replace( '/^justimageoptimizer\//', JUSTIMAGEOPTIMIZER_ROOT . '/', $class_path ) . '.php';
+		$path = preg_replace( '/^JustCoded\WP\ImageOptimizer\//', JUSTIMAGEOPTIMIZER_ROOT . '/', $class_path ) . '.php';
 
 		if ( is_file( $path ) ) {
 			require_once( $path );

@@ -1,7 +1,7 @@
 <?php
 
-namespace justimageoptimizer\core;
-use justimageoptimizer\models\Settings;
+namespace JustCoded\WP\ImageOptimizer\core;
+use JustCoded\WP\ImageOptimizer\models\Settings;
 
 /**
  * Base class for plugin features and components.

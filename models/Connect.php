@@ -1,9 +1,9 @@
 <?php
 
-namespace justimageoptimizer\models;
+namespace JustCoded\WP\ImageOptimizer\models;
 
-use justimageoptimizer\core;
-use justimageoptimizer\services;
+use JustCoded\WP\ImageOptimizer\core;
+use JustCoded\WP\ImageOptimizer\services;
 
 /**
  * Class Media

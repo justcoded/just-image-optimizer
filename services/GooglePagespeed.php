@@ -1,9 +1,9 @@
 <?php
 
-namespace justimageoptimizer\services;
+namespace JustCoded\WP\ImageOptimizer\services;
 
-use justimageoptimizer\components\Optimizer;
-use justimageoptimizer\models;
+use JustCoded\WP\ImageOptimizer\components\Optimizer;
+use JustCoded\WP\ImageOptimizer\models;
 
 class GooglePagespeed implements ImageOptimizerInterface {
 

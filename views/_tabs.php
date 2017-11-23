@@ -1,5 +1,5 @@
 <?php
-use justimageoptimizer\models;
+use JustCoded\WP\ImageOptimizer\models;
 ?>
 <h1><?php _e('Just Image Optimizer', \JustImageOptimizer::TEXTDOMAIN); ?></h1>
 <h2 class="nav-tab-wrapper">

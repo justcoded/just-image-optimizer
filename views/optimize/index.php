@@ -1,5 +1,5 @@
 <?php
-use justimageoptimizer\models\Settings;
+use JustCoded\WP\ImageOptimizer\models\Settings;
 
 ?>
 <!DOCTYPE html>

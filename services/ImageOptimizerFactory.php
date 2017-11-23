@@ -1,7 +1,7 @@
 <?php
-namespace justimageoptimizer\services;
+namespace JustCoded\WP\ImageOptimizer\services;
 
-use justimageoptimizer\models\Connect;
+use JustCoded\WP\ImageOptimizer\models\Connect;
 
 class ImageOptimizerFactory {
 

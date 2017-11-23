@@ -1,5 +1,5 @@
 <?php
-namespace justimageoptimizer\services;
+namespace JustCoded\WP\ImageOptimizer\services;
 
 interface ImageOptimizerInterface {
 

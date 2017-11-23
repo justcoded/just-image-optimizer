@@ -1,14 +1,14 @@
 <?php
 
-namespace justimageoptimizer\components;
+namespace JustCoded\WP\ImageOptimizer\components;
 
-use justimageoptimizer\models\Settings;
-use justimageoptimizer\models\Media;
+use JustCoded\WP\ImageOptimizer\models\Settings;
+use JustCoded\WP\ImageOptimizer\models\Media;
 
 /**
  * Adds option media info boxes
  */
-class MediaInfo extends \justimageoptimizer\core\Component {
+class MediaInfo extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
 	 * Allowed images mime types

@@ -1,15 +1,15 @@
 <?php
 
-namespace justimageoptimizer\controllers;
+namespace JustCoded\WP\ImageOptimizer\controllers;
 
-use justimageoptimizer\models\Settings;
-use justimageoptimizer\models\Media;
-use justimageoptimizer\models\Connect;
+use JustCoded\WP\ImageOptimizer\models\Settings;
+use JustCoded\WP\ImageOptimizer\models\Media;
+use JustCoded\WP\ImageOptimizer\models\Connect;
 
 /**
  * Adds option settings page
  */
-class SettingsController extends \justimageoptimizer\core\Component {
+class SettingsController extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
 	 * Class constructor.
