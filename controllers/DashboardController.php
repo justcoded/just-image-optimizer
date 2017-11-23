@@ -21,7 +21,7 @@ class DashboardController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	}
 
 	/**
-	 * Add new page to the Wordpress Menu
+	 * Add new page to the WordPress Menu
 	 */
 	public function init_dashboard_menu() {
 		add_media_page(
@@ -56,12 +56,14 @@ class DashboardController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Render Dashboard page
 	 */
 	public function actionIndex() {
-		$model = new Media();
+		// check page access.
 		if ( ! Connect::connected() ) {
 			$this->render( 'redirect', array(
 				'redirect_url' => admin_url() . 'upload.php?page=just-img-opt-connection',
 			) );
 		}
+
+		$model = new Media();
 		$this->render( 'dashboard/index', array(
 			'tab'   => 'dashboard',
 			'model' => $model,

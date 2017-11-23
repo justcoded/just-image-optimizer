@@ -14,10 +14,27 @@ class Connect extends core\Model {
 
 	const DB_OPT_API_KEY = 'joi_api_key';
 	const DB_OPT_SERVICE = 'joi_service';
-	const DB_OPT_STATUS = 'joi_status';
+	const DB_OPT_STATUS  = 'joi_status';
 
-	public $api_key;
+	/**
+	 * Service identifier.
+	 *
+	 * @var string
+	 */
 	public $service;
+
+	/**
+	 * Service credentials
+	 *
+	 * @var string
+	 */
+	public $api_key;
+
+	/**
+	 * Service connection status
+	 *
+	 * @var bool
+	 */
 	public $status;
 
 	/**
@@ -36,9 +53,10 @@ class Connect extends core\Model {
 		$this->status  = get_option( self::DB_OPT_STATUS );
 	}
 
-
 	/**
 	 * Update Settings
+	 *
+	 * @return bool
 	 */
 	public function save() {
 		$service = services\ImageOptimizerFactory::create( $this->service, $this->api_key );

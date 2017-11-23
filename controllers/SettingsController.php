@@ -33,7 +33,7 @@ class SettingsController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	}
 
 	/**
-	 * Add new page to the Wordpress Menu
+	 * Add new page to the WordPress Menu
 	 */
 	public function init_settings_menu() {
 		add_submenu_page(
@@ -50,13 +50,15 @@ class SettingsController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Render Settings page
 	 */
 	public function actionIndex() {
-		$model = \JustImageOptimizer::$settings;
-		$model->load( $_POST ) && $saved = $model->save();
+		// check page access. we can edit settings only if connection is valid.
 		if ( ! Connect::connected() ) {
 			$this->render( 'redirect', array(
 				'redirect_url' => admin_url() . 'upload.php?page=just-img-opt-connection',
 			) );
 		}
+
+		$model = \JustImageOptimizer::$settings;
+		$model->load( $_POST ) && $saved = $model->save();
 		$this->render( 'settings/index', array(
 			'tab'   => 'settings',
 			'model' => $model,

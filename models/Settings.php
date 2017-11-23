@@ -11,20 +11,62 @@ use JustCoded\WP\ImageOptimizer\core;
  */
 class Settings extends core\Model {
 
-	const DB_OPT_IMAGE_SIZES = 'joi_image_sizes';
+	const DB_OPT_IMAGE_SIZES   = 'joi_image_sizes';
 	const DB_OPT_AUTO_OPTIMIZE = 'joi_auto_optimize';
-	const DB_OPT_IMAGE_LIMIT = 'joi_image_limit';
-	const DB_OPT_SIZE_LIMIT = 'joi_size_limit';
-	const DB_OPT_BEFORE_REGEN = 'joi_before_regen';
-	const DB_OPT_SIZE_CHECKED = 'joi_image_sizes_all';
-	const DB_OPT_KEEP_ORIGIN = 'joi_keep_origin';
+	const DB_OPT_IMAGE_LIMIT   = 'joi_image_limit';
+	const DB_OPT_SIZE_LIMIT    = 'joi_size_limit';
+	const DB_OPT_BEFORE_REGEN  = 'joi_before_regen';
+	const DB_OPT_SIZE_CHECKED  = 'joi_image_sizes_all';
+	const DB_OPT_KEEP_ORIGIN   = 'joi_keep_origin';
 
-	public $image_sizes;
-	public $auto_optimize;
-	public $image_limit;
-	public $size_limit;
-	public $before_regen;
+	/**
+	 * Optimize all image sizes or not.
+	 *
+	 * @var bool
+	 */
 	public $image_sizes_all;
+
+	/**
+	 * Image size keys to optimize
+	 *
+	 * @var array
+	 */
+	public $image_sizes;
+
+	/**
+	 * Automatically optimize new images
+	 *
+	 * @var bool
+	 */
+	public $auto_optimize;
+
+	/**
+	 * Images limit per one optimization request
+	 *
+	 * @var int
+	 */
+	public $image_limit;
+
+	/**
+	 * Files size limit per one optimization request
+	 *
+	 * @var int
+	 */
+	public $size_limit;
+
+	/**
+	 * Regenerate thumbnails before optimization
+	 *
+	 * @var bool
+	 */
+	public $before_regen;
+
+	/**
+	 * Keep original image without optimization
+	 * (always true)
+	 *
+	 * @var bool
+	 */
 	public $keep_origin;
 
 	/**
