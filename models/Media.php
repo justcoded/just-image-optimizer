@@ -11,13 +11,13 @@ use JustCoded\WP\ImageOptimizer\core;
  */
 class Media extends core\Model {
 
-	const DB_META_IMAGES_STATS = '_just_img_meta_stats';
-	const DB_META_IMAGE_DU = '_just_img_meta_du';
-	const DB_META_IMAGE_SAVING = '_just_img_meta_saving';
+	const DB_META_IMAGES_STATS         = '_just_img_meta_stats';
+	const DB_META_IMAGE_DU             = '_just_img_meta_du';
+	const DB_META_IMAGE_SAVING         = '_just_img_meta_saving';
 	const DB_META_IMAGE_SAVING_PERCENT = '_just_img_meta_saving_percent';
 
 	const DB_OPT_SIZES_BEFORE = '_just_img_opt_sizes_before';
-	const DB_OPT_SAVING_SIZE = '_just_img_opt_saving_size';
+	const DB_OPT_SAVING_SIZE  = '_just_img_opt_saving_size';
 
 	/**
 	 * Set before images statistics
@@ -46,6 +46,7 @@ class Media extends core\Model {
 	 * @var array $after_main_attach_stats
 	 */
 	public $after_main_attach_stats = array();
+
 	/**
 	 * Arguments query array to use.
 	 *
@@ -62,6 +63,9 @@ class Media extends core\Model {
 
 	public $saving_size;
 
+	/**
+	 * Media constructor.
+	 */
 	public function __construct() {
 		$this->saving_size = ( get_option( self::DB_OPT_SAVING_SIZE ) ? get_option( self::DB_OPT_SAVING_SIZE ) : 0 );
 	}
@@ -138,8 +142,9 @@ class Media extends core\Model {
 	 *
 	 * @return array
 	 */
-	static function get_uploads_path() {
+	public static function get_uploads_path() {
 		$path = array();
+		// TODO: check this with multisite.
 		foreach ( glob( wp_upload_dir()['basedir'] . '/*', GLOB_ONLYDIR ) as $upload ) {
 			foreach ( glob( $upload . '/*', GLOB_ONLYDIR ) as $upload_dir ) {
 				$path[] = $upload_dir;
@@ -179,6 +184,8 @@ class Media extends core\Model {
 	/**
 	 * Get size stats after optimize for each size in KB
 	 *
+	 * @param int $attach_id Attachment ID.
+	 *
 	 * @return float|null|array
 	 */
 	public function get_saving_size_stats( $attach_id ) {
@@ -216,6 +223,8 @@ class Media extends core\Model {
 	/**
 	 * Get saving percent after optimize for each size
 	 *
+	 * @param int $attach_id Attachment ID.
+	 *
 	 * @return float|int|array
 	 */
 	public function get_percent_saving_stats( $attach_id ) {
@@ -242,7 +251,7 @@ class Media extends core\Model {
 	/**
 	 * Get total filesizes attachments in bytes
 	 *
-	 * @param int $id Attachment ID.
+	 * @param int  $id Attachment ID.
 	 * @param bool $stats For get total size = false or sizes array = true.
 	 *
 	 * @return int|float|boolean|array
@@ -254,25 +263,24 @@ class Media extends core\Model {
 		$sizes_array = array();
 		$attachments = wp_get_attachment_metadata( $id );
 		$get_path    = $this->get_uploads_path();
-		if ( $attachments ) {
-			foreach ( $attachments['sizes'] as $size_key => $attachment ) {
-				foreach ( $get_path as $path ) {
-					if ( $wp_filesystem->exists( $path . '/' . $attachment['file'] ) ) {
-						$sizes_array[ $size_key ] = $this->get_filesize( $path . '/' . $attachment['file'] );
-					}
+		if ( ! $attachments ) {
+			return 0;
+		}
+
+		foreach ( $attachments['sizes'] as $size_key => $attachment ) {
+			foreach ( $get_path as $path ) {
+				if ( $wp_filesystem->exists( $path . '/' . $attachment['file'] ) ) {
+					$sizes_array[ $size_key ] = $this->get_filesize( $path . '/' . $attachment['file'] );
 				}
 			}
-			foreach ( $sizes_array as $size ) {
-				$total_size = $total_size + $size;
-			}
-			if ( $stats === true ) {
-				return $sizes_array;
-			} else {
-				return $total_size;
-			}
-
+		}
+		foreach ( $sizes_array as $size ) {
+			$total_size = $total_size + $size;
+		}
+		if ( true === $stats ) {
+			return $sizes_array;
 		} else {
-			return 0;
+			return $total_size;
 		}
 	}
 
@@ -304,12 +312,12 @@ class Media extends core\Model {
 	 *
 	 * @return array
 	 */
-	static function image_dimensions() {
+	public static function image_dimensions() {
 		global $_wp_additional_image_sizes;
 		$additional_sizes = get_intermediate_image_sizes();
 		$sizes            = array();
 
-		// Create the full array with sizes and crop info
+		// Create the full array with sizes and crop info.
 		foreach ( $additional_sizes as $_size ) {
 			if ( in_array( $_size, array( 'thumbnail', 'medium', 'large' ) ) ) {
 				$sizes[ $_size ]['width']  = get_option( $_size . '_size_w' );
@@ -319,18 +327,18 @@ class Media extends core\Model {
 				$sizes[ $_size ] = array(
 					'width'  => $_wp_additional_image_sizes[ $_size ]['width'],
 					'height' => $_wp_additional_image_sizes[ $_size ]['height'],
-					'crop'   => $_wp_additional_image_sizes[ $_size ]['crop']
+					'crop'   => $_wp_additional_image_sizes[ $_size ]['crop'],
 				);
 			}
 		}
-		//Medium Large
+		// Medium Large.
 		if ( ! isset( $sizes['medium_large'] ) || empty( $sizes['medium_large'] ) ) {
 			$width  = intval( get_option( 'medium_large_size_w' ) );
 			$height = intval( get_option( 'medium_large_size_h' ) );
 
 			$sizes['medium_large'] = array(
 				'width'  => $width,
-				'height' => $height
+				'height' => $height,
 			);
 		}
 
@@ -341,7 +349,7 @@ class Media extends core\Model {
 	/**
 	 * Get statistics for image sizes
 	 *
-	 * @param int $id Attachment id.
+	 * @param int    $id Attachment id.
 	 * @param string $key Image size key.
 	 *
 	 * @return array
@@ -355,10 +363,10 @@ class Media extends core\Model {
 					foreach ( $stat as $sizes ) {
 						foreach ( $sizes as $size_key => $size_stat ) {
 							if ( $size_key === $key ) {
-								if ( $stat_key === 'percent_stats' ) {
+								if ( 'percent_stats' === $stat_key ) {
 									$stats_array[ $size_key ]['percent_stats'] = $size_stat;
 								}
-								if ( $stat_key === 'size_stats' ) {
+								if ( 'size_stats' === $stat_key ) {
 									$stats_array[ $size_key ]['size_stats'] = $size_stat;
 								}
 							}
@@ -382,7 +390,7 @@ class Media extends core\Model {
 	 */
 	public function get_images_stat( $all = false ) {
 		$args = $this->query_args;
-		if ( $all === false ) {
+		if ( false === $all ) {
 			$args['meta_query'] = array(
 				array(
 					'key'   => '_just_img_opt_queue',
@@ -484,7 +492,7 @@ class Media extends core\Model {
 	 */
 	public function get_disk_space_size() {
 		$total_size = $this->get_images_disk_usage();
-		if ( $this->saving_size !== 0 ) {
+		if ( 0 !== $this->saving_size ) {
 			return $total_size - $this->saving_size;
 		} else {
 			return $total_size;
@@ -515,7 +523,8 @@ class Media extends core\Model {
 		$size_limit = 0;
 		$size_array = array();
 		$array_ids  = array();
-		if ( is_array( \JustImageOptimizer::$settings->image_sizes ) && \JustImageOptimizer::$settings->size_limit !== '0' ) {
+		// TODO: wrong condition for image sizes. you should limit always, even if "all" is selected.
+		if ( is_array( \JustImageOptimizer::$settings->image_sizes ) && 0 !== \JustImageOptimizer::$settings->size_limit ) {
 			foreach ( $attach_ids as $attach_id ) {
 				$size_array[ $attach_id ] = $this->get_total_filesizes( $attach_id, true );
 			}
