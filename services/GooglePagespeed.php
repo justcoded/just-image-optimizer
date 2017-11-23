@@ -7,9 +7,14 @@ use JustCoded\WP\ImageOptimizer\models;
 
 class GooglePagespeed implements ImageOptimizerInterface {
 
-	const API_URL = 'https://www.googleapis.com/pagespeedonline/v1/runPagespeed?';
+	const API_URL           = 'https://www.googleapis.com/pagespeedonline/v1/runPagespeed?';
 	const OPTIMIZE_CONTENTS = 'https://www.googleapis.com/pagespeedonline/v3beta1/optimizeContents?';
 
+	/**
+	 * Service API key
+	 *
+	 * @var string
+	 */
 	public $api_key;
 
 	/**
@@ -23,9 +28,9 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	}
 
 	/**
-	 * Check API key.
+	 * Check Service credentials to be valid
 	 *
-	 * @return int Return flag.
+	 * @return bool
 	 */
 	public function check_api_key() {
 		$check_url = 'http://code.google.com/speed/page-speed/';
@@ -54,12 +59,16 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	}
 
 	/**
-	 * Upload optimized images.
+	 * Optimize images and save to destination directory
 	 *
-	 * @param string $optimize_contents_url Page with images.
+	 * @param int[]  $attach_ids Attachment ids to optimize.
+	 * @param string $dst Directory to save image to.
+	 *
+	 * @return mixed
 	 */
-	public function upload_optimize_images( $attach_id, $tmp_images ) {
-		$base_attach_ids = base64_encode( implode( ',', $attach_id ) );
+	public function upload_optimize_images( $attach_ids, $dst ) {
+		// TODO: use wp_remote_get() instead of direct cURL.
+		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
 		$upload_dir      = WP_CONTENT_DIR;
 		$google_img_path = $upload_dir . '/tmp/image/';
 		$ch              = curl_init();
@@ -72,15 +81,15 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		curl_close( $ch );
 		fclose( $file );
 
-		$unzipfile = unzip_file( $upload_dir . '/optimize_contents.zip', $tmp_images );
+		$unzipfile = unzip_file( $upload_dir . '/optimize_contents.zip', $dst );
 		if ( $unzipfile ) {
-			// Get array of all source files
+			// Get array of all source files.
 			$files = scandir( $google_img_path );
 			foreach ( $files as $file ) {
-				if ( in_array( $file, array( ".", ".." ) ) ) {
+				if ( in_array( $file, array( '.', '..' ), true ) ) {
 					continue;
 				}
-				copy( $google_img_path . $file, $tmp_images . $file );
+				copy( $google_img_path . $file, $dst . $file );
 			}
 			if ( is_dir( $google_img_path ) ) {
 				Optimizer::delete_dir( $google_img_path );
@@ -130,5 +139,3 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		}
 	}
 }
-
-?>

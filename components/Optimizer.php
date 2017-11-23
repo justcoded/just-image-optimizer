@@ -15,7 +15,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
-		$this->run_cron();
+		$this->setup_cron();
 		add_action( 'wp_ajax_manual_optimize', array( $this, 'manual_optimize' ) );
 		add_action( 'add_attachment', array( $this, 'set_attachment_in_queue' ) );
 	}
@@ -23,8 +23,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	/**
 	 * Run cron job by Settings param
 	 */
-	protected function run_cron() {
-		if ( \JustImageOptimizer::$settings->auto_optimize === '1' ) {
+	protected function setup_cron() {
+		if ( \JustImageOptimizer::$settings->auto_optimize ) {
 			add_filter( 'cron_schedules', array( $this, 'add_schedule' ) );
 			add_action( 'init', array( $this, 'add_cron_event' ) );
 			add_action( 'optimizer_image_cron', array( $this, 'auto_optimizer' ) );
@@ -33,9 +33,16 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
 	 * Add Optimizer Image cron interval function.
+	 *
+	 * @param array $schedules An array of non-default cron schedules. Default empty.
+	 *
+	 * @return array
 	 */
 	public function add_schedule( $schedules ) {
-		$schedules['just_image_optimizer'] = array( 'interval' => 60 * 5, 'display' => 'Optimizer Image Cron Work' );
+		$schedules['just_image_optimizer'] = array(
+			'interval' => 60 * 5,
+			'display'  => 'Optimizer Image Cron Work',
+		);
 
 		return $schedules;
 	}
@@ -45,7 +52,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 *
 	 * @param int $post_id Attachment id.
 	 */
-	function set_attachment_in_queue( $post_id ) {
+	public function set_attachment_in_queue( $post_id ) {
 		update_post_meta( $post_id, '_just_img_opt_queue', 1 );
 	}
 
@@ -81,7 +88,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 					'compare' => 'NOT EXISTS',
 					'value'   => '',
 				),
-			)
+			),
 		);
 		$set_queue  = new \WP_Query( $queue_args );
 		while ( $set_queue->have_posts() ) {
@@ -100,6 +107,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public static function get_uploads_path() {
 		$path = array();
+		// TODO: check on multisite.
 		foreach ( glob( wp_upload_dir()['basedir'] . '/*', GLOB_ONLYDIR ) as $upload ) {
 			foreach ( glob( $upload . '/*', GLOB_ONLYDIR ) as $upload_dir ) {
 				$path[] = $upload_dir;
@@ -147,16 +155,18 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Ajax function for manual image optimize
 	 */
 	public function manual_optimize() {
-		$this->optimize_images( [ $_POST['attach_id'] ] );
-		$attach_id       = $_POST['attach_id'];
-		$model           = new Media();
+		$attach_id = $_POST['attach_id'];
+
+		$this->optimize_images( [ $attach_id ] );
+		$model     = new Media();
+
 		$data_statistics = array(
 			'saving_percent' => get_post_meta( $attach_id, $model::DB_META_IMAGE_SAVING_PERCENT, true ),
 			'saving_size'    => get_post_meta( $attach_id, $model::DB_META_IMAGE_SAVING, true ),
 			'total_size'     => get_post_meta( $attach_id, $model::DB_META_IMAGE_DU, true ),
 			'count_images'   => $model->get_count_images( $attach_id ),
 		);
-		header( "Content-Type: application/json; charset=" . get_bloginfo( 'charset' ) );
+		header( 'Content-Type: application/json; charset=' . get_bloginfo( 'charset' ) );
 		echo wp_json_encode( $data_statistics );
 		wp_die();
 	}
@@ -169,10 +179,10 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	protected function optimize_images( array $attach_ids ) {
 		global $wp_filesystem;
 		$media = new Media();
-		//add filter for WP_FIlesystem permission
+		// add filter for WP_FIlesystem permission.
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
 		WP_Filesystem();
-		//set statistics and status before replace images
+		// set statistics and status before replace images.
 		foreach ( $attach_ids as $attach_id ) {
 			$media->before_main_attach_stats[ $attach_id ] = $media->get_total_filesizes( $attach_id, false );
 			$media->before_optimize_stats[ $attach_id ]    = array(
@@ -180,13 +190,14 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			);
 			update_post_meta( $attach_id, '_just_img_opt_queue', 2 );
 		}
-		//upload images from service
+		// upload images from service.
 		$dir = WP_CONTENT_DIR . '/tmp/';
-		\JustImageOptimizer::$service->upload_optimize_images( $media->size_limit( $attach_ids ) , $dir );
-		$get_image           = scandir( $dir );
-		$get_path            = $this->get_uploads_path();
+		\JustImageOptimizer::$service->upload_optimize_images( $media->size_limit( $attach_ids ), $dir );
+
+		$get_image = scandir( $dir );
+		$get_path  = $this->get_uploads_path();
 		$media->set_before_sizes();
-		//process for replace images
+		// process image replacement.
 		if ( ! empty( $get_image ) ) {
 			foreach ( $get_image as $key => $file ) {
 				if ( $wp_filesystem->is_file( $dir . $file ) ) {
@@ -199,7 +210,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			}
 			self::delete_dir( $dir );
 		}
-		//set statistics and status after replace images
+
+		// set statistics and status after replace images.
 		foreach ( $attach_ids as $attach_id ) {
 			$media->after_main_attach_stats[ $attach_id ] = $media->get_total_filesizes( $attach_id, false );
 			$media->after_optimize_stats[ $attach_id ]    = array(
