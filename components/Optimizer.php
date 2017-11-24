@@ -158,7 +158,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		$attach_id = $_POST['attach_id'];
 
 		$this->optimize_images( [ $attach_id ] );
-		$model     = new Media();
+		$model = new Media();
 
 		$data_statistics = array(
 			'saving_percent' => get_post_meta( $attach_id, $model::DB_META_IMAGE_SAVING_PERCENT, true ),
@@ -178,7 +178,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	protected function optimize_images( array $attach_ids ) {
 		global $wp_filesystem;
-		$media = new Media();
+		$media      = new Media();
+		$attach_ids = $media->size_limit( $attach_ids );
 		// add filter for WP_FIlesystem permission.
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
 		WP_Filesystem();
@@ -192,7 +193,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		}
 		// upload images from service.
 		$dir = WP_CONTENT_DIR . '/tmp/';
-		\JustImageOptimizer::$service->upload_optimize_images( $media->size_limit( $attach_ids ), $dir );
+		\JustImageOptimizer::$service->upload_optimize_images( $attach_ids, $dir );
 
 		$get_image = scandir( $dir );
 		$get_path  = $this->get_uploads_path();

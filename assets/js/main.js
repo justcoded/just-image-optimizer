@@ -18,7 +18,7 @@ jQuery(document).ready(function ($) {
       var $api_key = $('#api_key').val();
       var $service = $('#service').val();
       var data = {
-         action: 'check_api_connect',
+         action: 'joi_check_api_connect',
          api_key: $api_key,
          service: $service
       };

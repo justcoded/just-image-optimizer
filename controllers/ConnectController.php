@@ -73,7 +73,7 @@ class ConnectController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	public function check_api_connect() {
 		$service           = services\ImageOptimizerFactory::create( $_POST['service'], $_POST['api_key'] );
 		$connection_status = $service->check_api_key();
-		if ( '1' === $connection_status ) {
+		if ( $connection_status ) {
 			flush_rewrite_rules();
 		}
 		echo $connection_status;

@@ -11,13 +11,13 @@ use JustCoded\WP\ImageOptimizer\core;
  */
 class Media extends core\Model {
 
-	const DB_META_IMAGES_STATS         = '_just_img_meta_stats';
-	const DB_META_IMAGE_DU             = '_just_img_meta_du';
-	const DB_META_IMAGE_SAVING         = '_just_img_meta_saving';
+	const DB_META_IMAGES_STATS = '_just_img_meta_stats';
+	const DB_META_IMAGE_DU = '_just_img_meta_du';
+	const DB_META_IMAGE_SAVING = '_just_img_meta_saving';
 	const DB_META_IMAGE_SAVING_PERCENT = '_just_img_meta_saving_percent';
 
 	const DB_OPT_SIZES_BEFORE = '_just_img_opt_sizes_before';
-	const DB_OPT_SAVING_SIZE  = '_just_img_opt_saving_size';
+	const DB_OPT_SAVING_SIZE = '_just_img_opt_saving_size';
 
 	/**
 	 * Set before images statistics
@@ -251,7 +251,7 @@ class Media extends core\Model {
 	/**
 	 * Get total filesizes attachments in bytes
 	 *
-	 * @param int  $id Attachment ID.
+	 * @param int $id Attachment ID.
 	 * @param bool $stats For get total size = false or sizes array = true.
 	 *
 	 * @return int|float|boolean|array
@@ -266,7 +266,6 @@ class Media extends core\Model {
 		if ( ! $attachments ) {
 			return 0;
 		}
-
 		foreach ( $attachments['sizes'] as $size_key => $attachment ) {
 			foreach ( $get_path as $path ) {
 				if ( $wp_filesystem->exists( $path . '/' . $attachment['file'] ) ) {
@@ -349,7 +348,7 @@ class Media extends core\Model {
 	/**
 	 * Get statistics for image sizes
 	 *
-	 * @param int    $id Attachment id.
+	 * @param int $id Attachment id.
 	 * @param string $key Image size key.
 	 *
 	 * @return array
@@ -417,7 +416,7 @@ class Media extends core\Model {
 			$disk_usage = $disk_usage + $this->get_total_filesizes( get_the_ID(), false );
 		}
 
-		return (int) number_format_i18n( $disk_usage / 1048576 );
+		return round( $disk_usage / 1048576, 2 );
 	}
 
 	/**
@@ -517,6 +516,7 @@ class Media extends core\Model {
 	 * Check size limit images optimization
 	 *
 	 * @param array $attach_ids Array attach ids.
+	 *
 	 * @return array Array attach ids.
 	 */
 	public function size_limit( array $attach_ids ) {
@@ -524,14 +524,14 @@ class Media extends core\Model {
 		$size_array = array();
 		$array_ids  = array();
 		// TODO: wrong condition for image sizes. you should limit always, even if "all" is selected.
-		if ( is_array( \JustImageOptimizer::$settings->image_sizes ) && 0 !== \JustImageOptimizer::$settings->size_limit ) {
+		if ( is_array( \JustImageOptimizer::$settings->image_sizes ) && '0' !== \JustImageOptimizer::$settings->size_limit ) {
 			foreach ( $attach_ids as $attach_id ) {
 				$size_array[ $attach_id ] = $this->get_total_filesizes( $attach_id, true );
 			}
 			foreach ( \JustImageOptimizer::$settings->image_sizes as $value_size ) {
 				foreach ( $attach_ids as $attach_id ) {
 					if ( ! empty( $size_array[ $attach_id ][ $value_size ] ) ) {
-						$size_limit  = $size_limit + $size_array[ $attach_id ][ $value_size ];
+						$size_limit              = $size_limit + $size_array[ $attach_id ][ $value_size ];
 						$array_ids[ $attach_id ] = $attach_id;
 					}
 					if ( number_format_i18n( $size_limit / 1048576 ) >= \JustImageOptimizer::$settings->size_limit ) {

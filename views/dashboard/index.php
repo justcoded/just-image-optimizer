@@ -19,7 +19,9 @@
 		<div class="column middle">
 			<h2 class="head-title">Progress</h2>
 			<div id="progress" style="height: 500px; width: 95%;"></div>
-			<p><?php echo $model->get_images_stat( false ); ?> images in queue
+			<p><?php echo ( $model->get_images_stat( false ) === '0' ?
+					$model->get_images_stat( false ) :
+					$model->get_in_queue_image_count() ); ?> images in queue
 				of <?php echo $model->get_images_stat( true ); ?> images</p>
 		</div>
 		<div class="column middle">
