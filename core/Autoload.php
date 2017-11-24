@@ -23,12 +23,10 @@ class Autoloader {
 		$class_path = str_replace( '\\', '/', $class_name );
 
 		// check if this class is related to the plugin namespace. exit if not.
-		if ( strpos( $class_path, 'justimageoptimizer' ) !== 0 ) {
+		if ( strpos( $class_path, 'JustCoded/WP/ImageOptimizer' ) !== 0 ) {
 			return;
 		}
-
-		$path = preg_replace( '/^JustCoded\WP\ImageOptimizer\//', JUSTIMAGEOPTIMIZER_ROOT . '/', $class_path ) . '.php';
-
+		$path = preg_replace( '/^JustCoded\/WP\/ImageOptimizer\//', JUSTIMAGEOPTIMIZER_ROOT . '/', $class_path ) . '.php';
 		if ( is_file( $path ) ) {
 			require_once( $path );
 		}
