@@ -204,7 +204,10 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 				if ( $wp_filesystem->is_file( $dir . $file ) ) {
 					foreach ( $get_path as $path ) {
 						if ( $wp_filesystem->exists( $path . '/' . $file ) ) {
-							$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
+							$optimize_image_size = getimagesize( $dir . $file );
+							if ( 25 < $optimize_image_size[0] && 25 < $optimize_image_size[1] ) {
+								$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
+							}
 						}
 					}
 				}

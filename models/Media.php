@@ -491,7 +491,9 @@ class Media extends core\Model {
 	 */
 	public function get_disk_space_size() {
 		$total_size = $this->get_images_disk_usage();
-		if ( 0 !== $this->saving_size ) {
+		if ( 0 !== $this->saving_size && $total_size < $this->saving_size ) {
+			return 0;
+		} elseif ( 0 !== $this->saving_size ) {
 			return $total_size - $this->saving_size;
 		} else {
 			return $total_size;
@@ -523,24 +525,17 @@ class Media extends core\Model {
 		$size_limit = 0;
 		$size_array = array();
 		$array_ids  = array();
-		// TODO: wrong condition for image sizes. you should limit always, even if "all" is selected.
-		if ( is_array( \JustImageOptimizer::$settings->image_sizes ) && '0' !== \JustImageOptimizer::$settings->size_limit ) {
+		if ( '0' !== \JustImageOptimizer::$settings->size_limit ) {
 			foreach ( $attach_ids as $attach_id ) {
-				$size_array[ $attach_id ] = $this->get_total_filesizes( $attach_id, true );
+				$size_array[ $attach_id ] = $this->get_total_filesizes( $attach_id );
 			}
-			foreach ( \JustImageOptimizer::$settings->image_sizes as $value_size ) {
-				foreach ( $attach_ids as $attach_id ) {
-					if ( ! empty( $size_array[ $attach_id ][ $value_size ] ) ) {
-						$size_limit              = $size_limit + $size_array[ $attach_id ][ $value_size ];
-						$array_ids[ $attach_id ] = $attach_id;
-					}
-					if ( number_format_i18n( $size_limit / 1048576 ) >= \JustImageOptimizer::$settings->size_limit ) {
-						break;
-					}
+			foreach ( $attach_ids as $attach_id ) {
+				if ( (int) number_format_i18n( $size_limit / 1048576 ) >= (int) \JustImageOptimizer::$settings->size_limit ) {
+					return $array_ids;
 				}
+				$size_limit              = $size_limit + $size_array[ $attach_id ];
+				$array_ids[ $attach_id ] = $attach_id;
 			}
-
-			return $array_ids;
 		}
 
 		return $attach_ids;
