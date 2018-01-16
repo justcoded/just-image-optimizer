@@ -15,10 +15,12 @@ jQuery(document).ready(function ($) {
    });
    $('#api_connect').on('click', function(e) {
       e.preventDefault();
-      var $api_key = $('#_just_img_opt_api_key').val();
+      var $api_key = $('#api_key').val();
+      var $service = $('#service').val();
       var data = {
-         action: 'ajax_check_api',
-         api_key: $api_key
+         action: 'joi_check_api_connect',
+         api_key: $api_key,
+         service: $service
       };
       $.post( ajaxurl, data, function( response ) {
          console.log(response);
@@ -38,4 +40,14 @@ jQuery(document).ready(function ($) {
          $($selector_block).css('display', 'block');
       }
    }
+   $('#find_api').on('click', function(e) {
+      e.preventDefault();
+      var x = document.getElementById("instructions-api");
+      if (x.style.display === "none") {
+         x.style.display = "block";
+      } else {
+         x.style.display = "none";
+      }
+
+   });
 });

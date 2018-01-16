@@ -1,12 +1,12 @@
 <?php
 
-namespace justimageoptimizer\core;
+namespace JustCoded\WP\ImageOptimizer\core;
 
 /**
  * Class Singleton
  * Singleton design pattern basic class.
  *
- * @package justimageoptimizer\core
+ * @package JustCoded\WP\ImageOptimizer\core
  */
 class Singleton {
 	/**

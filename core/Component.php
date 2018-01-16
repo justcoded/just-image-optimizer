@@ -1,6 +1,7 @@
 <?php
 
-namespace justimageoptimizer\core;
+namespace JustCoded\WP\ImageOptimizer\core;
+use JustCoded\WP\ImageOptimizer\models\Settings;
 
 /**
  * Base class for plugin features and components.
@@ -20,7 +21,7 @@ class Component {
 	public function render( $path, $data = null ) {
 		$__view = JUSTIMAGEOPTIMIZER_ROOT . '/views/' . $path . '.php';
 		if ( ! is_file( $__view ) ) {
-			$ml_message = __( '{class}::render() : Unable to load {file}', \justImageOptimizer::TEXTDOMAIN );
+			$ml_message = __( '{class}::render() : Unable to load {file}', \JustImageOptimizer::TEXTDOMAIN );
 			$ml_message = strtr( $ml_message, array(
 				'{class}' => get_class( $this ),
 				'{file}'  => $__view,
