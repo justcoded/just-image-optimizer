@@ -78,6 +78,7 @@ class JustImageOptimizer extends core\Singleton {
 			new controllers\ConnectController();
 			new controllers\SettingsController();
 			new controllers\DashboardController();
+			new controllers\MigrateController();
 		}
 	}
 

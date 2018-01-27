@@ -24,9 +24,11 @@ class DashboardController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Add new page to the WordPress Menu
 	 */
 	public function init_dashboard_menu() {
+		$page_title = \JustImageOptimizer::$plugin_name;
+
 		add_media_page(
-			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+			$page_title,
+			$page_title,
 			'manage_options',
 			'just-img-opt-dashboard',
 			array( $this, 'actionIndex' )
