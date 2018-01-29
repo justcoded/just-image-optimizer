@@ -7,10 +7,9 @@ namespace JustCoded\WP\ImageOptimizer\core;
  * Used as base class for all specific-version migrations
  * Contains generic functions to speed-up migrations development
  *
- * @package jcf\core
+ * @package JustCoded\WP\ImageOptimizer\core
  */
-abstract class Migration
-{
+abstract class Migration {
 	const MODE_TEST = 'test';
 	const MODE_UPDATE = 'update';
 
@@ -34,8 +33,7 @@ abstract class Migration
 	 * Migration constructor.
 	 * Init main settings, which were similar to all versions
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 	}
 
 	/**
@@ -62,15 +60,15 @@ abstract class Migration
 	/**
 	 * Function to be called to remove old settings after update
 	 */
-	protected function cleanup(){}
+	protected function cleanup() {
+	}
 
 	/**
 	 * Check if migration run in test mode (no need to cleanup old settings)
 	 *
 	 * @return bool
 	 */
-	public function isTestMode()
-	{
+	public function isTestMode() {
 		return $this->mode !== self::MODE_UPDATE;
 	}
 
@@ -81,9 +79,8 @@ abstract class Migration
 	 *
 	 * @return array
 	 */
-	public function runTest( $data )
-	{
-		$this->setData($data);
+	public function runTest( $data ) {
+		$this->setData( $data );
 
 		return $this->test();
 	}
@@ -92,14 +89,13 @@ abstract class Migration
 	 * Update data to match new format
 	 *
 	 * @param array|null $data
-	 * @param string     $mode
+	 * @param string $mode
 	 *
 	 * @return array
 	 */
-	public function runUpdate( $data, $mode = 'test' )
-	{
-		$this->setData($data);
-		$this->mode = ($mode == self::MODE_UPDATE) ? self::MODE_UPDATE : self::MODE_TEST;
+	public function runUpdate( $data, $mode = 'test' ) {
+		$this->setData( $data );
+		$this->mode = ( $mode == self::MODE_UPDATE ) ? self::MODE_UPDATE : self::MODE_TEST;
 
 		$this->updated = $this->update();
 
@@ -109,23 +105,21 @@ abstract class Migration
 	/**
 	 * Run clean up of old data after update
 	 */
-	public function runCleanup()
-	{
+	public function runCleanup() {
 		if ( $this->updated ) {
 			$this->cleanup();
 		}
 	}
 
 	/**
-	 * Set data from input or read data from settings if input parameter is empty
+	 * Set data from input
 	 *
 	 * @param array|null $data
 	 *
 	 * @return array
 	 */
-	public function setData( $data )
-	{
-		if ( ! empty($data) ) {
+	public function setData( $data ) {
+		if ( ! empty( $data ) ) {
 			$this->data = $data;
 		} else {
 			$this->readData();

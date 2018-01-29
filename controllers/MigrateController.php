@@ -8,22 +8,19 @@ use JustCoded\WP\ImageOptimizer\models;
  * Class MigrateController
  * Perform migrate operations
  */
-class MigrateController extends \JustCoded\WP\ImageOptimizer\core\Component
-{
+class MigrateController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	/**
 	 * MigrateController constructor.
 	 * Init WP hooks
 	 */
-	public function __construct()
-	{
-		add_action('admin_menu', array( $this, 'initRoutes' ));
+	public function __construct() {
+		add_action( 'admin_menu', array( $this, 'initRoutes' ) );
 	}
 
 	/**
 	 * Replace main menu "Just Custom Fields" with migration page
 	 */
-	public function initRoutes()
-	{
+	public function initRoutes() {
 		$page_title = \JustImageOptimizer::$plugin_name;
 
 		add_submenu_page(
@@ -41,37 +38,37 @@ class MigrateController extends \JustCoded\WP\ImageOptimizer\core\Component
 	 *
 	 * @return bool
 	 */
-	public function actionIndex()
-	{
-		$model = new models\Migrate();
+	public function actionIndex() {
+		$model  = new models\Migrate();
+		$errors = "";
 
 		// check that we have something to migrate.
-		// $version = $model->getStorageVersion();
-		// if ( ! version_compare( $version, \JustImageOptimizer::$version, '<') ) {
-		// 	return $this->actionUpgraded();
-		// }
+		$version = get_option( 'joi_version' );
+		if ( ! version_compare( $version, \JustImageOptimizer::$version, '<' ) ) {
+			return $this->actionUpgraded();
+		}
 
-		// $migrations = $model->findMigrations();
+		$migrations = $model->findMigrations();
 
-		// // check form submit and migrate
-		// if ( $model->load($_POST) ) {
-		// 	if ( $model->migrate($migrations) ) {
-		// 		return $this->actionUpgraded();
-		// 	}
-		// }
-		// // if no submit we test migrate to show possible warnings
-		// else {
-		// 	$warnings = $model->testMigrate($migrations);
-		// }
+		// check form submit and migrate
+		if ( $model->load( $_POST ) ) {
+			if ( $model->migrate( $migrations ) ) {
+				return $this->actionUpgraded();
+			} else {
+				$errors = $model->migrate( $migrations );
+			}
+		} // if no submit we test migrate to show possible warnings
+		else {
+			$warnings = $model->testMigrate( $migrations );
+		}
 
-		// $errors = $model->getErrors();
-
-		return $this->render('migrate/index', 
+		return $this->render( 'migrate/index',
 			array(
-			// 'migrations' => $migrations,
-			// 'warnings' => $warnings,
-			// 'errors' =>   $errors,
-		)
+				'tab'        => 'migrate',
+				'migrations' => $migrations,
+				'warnings'   => $warnings,
+				'errors'     => $errors,
+			)
 		);
 	}
 
@@ -80,9 +77,10 @@ class MigrateController extends \JustCoded\WP\ImageOptimizer\core\Component
 	 *
 	 * @return bool
 	 */
-	public function actionUpgraded()
-	{
-		return $this->render('migrate/upgraded');
+	public function actionUpgraded() {
+		return $this->render( 'migrate/upgraded', array(
+			'tab' => 'migrate',
+		) );
 	}
 
 }

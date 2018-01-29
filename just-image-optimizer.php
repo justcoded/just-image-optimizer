@@ -65,6 +65,8 @@ class JustImageOptimizer extends core\Singleton {
 		self::$plugin_name = __( 'Just Image Optimizer', self::TEXTDOMAIN );
 		self::$version     = 0.100;
 
+		register_activation_hook( __FILE__, array( $this, 'initDB' ) );
+
 		// init global static objects.
 		self::$settings = new models\Settings();
 		self::$service  = services\ImageOptimizerFactory::create();
@@ -80,6 +82,13 @@ class JustImageOptimizer extends core\Singleton {
 			new controllers\DashboardController();
 			new controllers\MigrateController();
 		}
+	}
+
+	// init joi plugin Media DB
+	public function initDB() {
+		$migrate    = new models\Migrate;
+		$migrations = $migrate->findMigrations();
+		$migrate->migrate( $migrations );
 	}
 
 }
