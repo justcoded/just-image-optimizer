@@ -37,13 +37,6 @@ abstract class Migration {
 	}
 
 	/**
-	 * This method read Data in a unique way for this particular version
-	 *
-	 * @return void
-	 */
-	abstract protected function readData();
-
-	/**
 	 * Test data compatibility with newer version
 	 *
 	 * @return array
@@ -56,12 +49,6 @@ abstract class Migration {
 	 * @return void
 	 */
 	abstract protected function update();
-
-	/**
-	 * Function to be called to remove old settings after update
-	 */
-	protected function cleanup() {
-	}
 
 	/**
 	 * Check if migration run in test mode (no need to cleanup old settings)
@@ -79,8 +66,7 @@ abstract class Migration {
 	 *
 	 * @return array
 	 */
-	public function runTest( $data ) {
-		$this->setData( $data );
+	public function runTest() {
 
 		return $this->test();
 	}
@@ -93,37 +79,12 @@ abstract class Migration {
 	 *
 	 * @return array
 	 */
-	public function runUpdate( $data, $mode = 'test' ) {
-		$this->setData( $data );
+	public function runUpdate( $mode = 'test' ) {
 		$this->mode = ( $mode == self::MODE_UPDATE ) ? self::MODE_UPDATE : self::MODE_TEST;
 
 		$this->updated = $this->update();
 
 		return $this->data;
-	}
-
-	/**
-	 * Run clean up of old data after update
-	 */
-	public function runCleanup() {
-		if ( $this->updated ) {
-			$this->cleanup();
-		}
-	}
-
-	/**
-	 * Set data from input
-	 *
-	 * @param array|null $data
-	 *
-	 * @return array
-	 */
-	public function setData( $data ) {
-		if ( ! empty( $data ) ) {
-			$this->data = $data;
-		} else {
-			$this->readData();
-		}
 	}
 }
 

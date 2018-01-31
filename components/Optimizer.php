@@ -101,23 +101,6 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	}
 
 	/**
-	 * Get all date upload dir
-	 *
-	 * @return array
-	 */
-	public static function get_uploads_path() {
-		$path = array();
-		// TODO: check on multisite.
-		foreach ( glob( wp_upload_dir()['basedir'] . '/*', GLOB_ONLYDIR ) as $upload ) {
-			foreach ( glob( $upload . '/*', GLOB_ONLYDIR ) as $upload_dir ) {
-				$path[] = $upload_dir;
-			}
-		}
-
-		return $path;
-	}
-
-	/**
 	 * Function for init filesystem accesses
 	 *
 	 * @return string
@@ -185,10 +168,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		WP_Filesystem();
 		// set statistics and status before replace images.
 		foreach ( $attach_ids as $attach_id ) {
-			$media->before_main_attach_stats[ $attach_id ] = $media->get_total_filesizes( $attach_id, false );
-			$media->before_optimize_stats[ $attach_id ]    = array(
-				'b_stats' => $media->get_total_filesizes( $attach_id, true ),
-			);
+			$media->save_stats( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
 			update_post_meta( $attach_id, '_just_img_opt_queue', 2 );
 		}
 		// upload images from service.
@@ -196,8 +176,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		\JustImageOptimizer::$service->upload_optimize_images( $attach_ids, $dir );
 
 		$get_image = scandir( $dir );
-		$get_path  = $this->get_uploads_path();
-		$media->set_before_sizes();
+		$get_path  = $media->get_uploads_path();
 		// process image replacement.
 		if ( ! empty( $get_image ) ) {
 			foreach ( $get_image as $key => $file ) {
@@ -217,13 +196,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 		// set statistics and status after replace images.
 		foreach ( $attach_ids as $attach_id ) {
-			$media->after_main_attach_stats[ $attach_id ] = $media->get_total_filesizes( $attach_id, false );
-			$media->after_optimize_stats[ $attach_id ]    = array(
-				'a_stats' => $media->get_total_filesizes( $attach_id, true ),
-			);
-			$media->save( $attach_id );
+			$media->update_stats( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
 			update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
 		}
-		$media->set_saving_size();
 	}
 }

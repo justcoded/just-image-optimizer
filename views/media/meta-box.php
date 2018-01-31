@@ -22,17 +22,30 @@
 					<?php echo esc_html( "{$meta['x_ratio']}:{$meta['y_ratio']}" ); ?> )
 				<?php endif; ?>
 			</td>
+			<td>
+				<?php $stats = $model->get_attachment_stats( $id, 'full' ); ?>
+				<?php if ( ! empty( $stats[0]->saving_size ) ) : ?>
+					<strong><?php echo size_format( $stats[0]->saving_size ); ?>
+						, <?php echo $stats[0]->percent; ?>% saved</strong>
+				<?php else: ?>
+					<strong>0% saved</strong>
+				<?php endif; ?>
+
+			</td>
 		</tr>
 	<?php endif; ?>
 	<tr class="optimize-stats">
-		<?php if ( get_post_meta( $id, $model::DB_META_IMAGE_SAVING, true ) ) : ?>
-			<td><strong>Image Optimization</strong></td>
+		<td><strong>Image Optimization</strong></td>
+		<?php $total_stats = $model->get_total_attachment_stats( $id ); ?>
+		<?php if ( ! empty( $total_stats[0]->percent ) ) : ?>
 			<td>
-				<p><?php echo get_post_meta( $id, $model::DB_META_IMAGE_SAVING_PERCENT, true ); ?> saved
-					(<?php echo get_post_meta( $id, $model::DB_META_IMAGE_SAVING, true ); ?>)</p>
-				<p>disk usage: <?php echo get_post_meta( $id, $model::DB_META_IMAGE_DU, true ); ?>
-					(<?php echo $model->get_count_images( $id ) ?> images) </p>
+				<p><?php echo $total_stats[0]->percent; ?>% saved
+					(<?php echo size_format( $total_stats[0]->saving_size ); ?>)</p>
+				<p>disk usage: <?php echo size_format( $total_stats[0]->disk_usage ); ?>
+					(<?php echo $model->get_count_images( $id ); ?> images) </p>
 			</td>
+		<?php else : ?>
+			<td><strong>0% saved</strong></td>
 		<?php endif; ?>
 	</tr>
 	<?php if ( ! empty( $meta['sizes'] ) ) : ?>
@@ -43,14 +56,12 @@
 			<tr style="border-top: 1px solid #eee;">
 				<td><?php echo esc_html( $key ); ?></td>
 				<td><?php echo esc_html( "{$params['width']} x {$params['height']}" ); ?> px</td>
-				<?php $stats = $model->get_stats( $id, $key ); ?>
-				<?php if ( isset( $stats[ $key ] ) ) : ?>
-					<?php if ( $stats[ $key ]['percent_stats'] && $stats[ $key ]['size_stats'] ) : ?>
-						<td><strong><?php echo size_format( $stats[ $key ]['percent_stats'] ); ?>
-								, <?php echo $stats[ $key ]['size_stats']; ?>% saved</strong></td>
-					<?php else : ?>
-						<td><strong>0% saved</strong></td>
-					<?php endif; ?>
+				<?php $stats = $model->get_attachment_stats( $id, $key ); ?>
+				<?php if ( ! empty( $stats[0]->saving_size ) ) : ?>
+					<td><strong><?php echo size_format( $stats[0]->saving_size ); ?>
+							, <?php echo $stats[0]->percent; ?>% saved</strong></td>
+				<?php else: ?>
+					<td><strong>0% saved</strong></td>
 				<?php endif; ?>
 			</tr>
 		<?php endforeach; ?>

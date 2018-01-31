@@ -2,6 +2,7 @@
 namespace JustCoded\WP\ImageOptimizer\models;
 
 use JustCoded\WP\ImageOptimizer\core;
+use JustCoded\WP\ImageOptimizer\core\Migration;
 
 class Migrate extends core\Model {
 	/**
@@ -11,6 +12,19 @@ class Migrate extends core\Model {
 	 * @var string
 	 */
 	public $upgrade_storage;
+
+	/**
+	 * HTML error message with link to admin upgrade page
+	 */
+	public static function adminUpgradeNotice() {
+		$link_text = __( 'Update migrations', \JustImageOptimizer::TEXTDOMAIN );
+		$link      = '<a href="' . admin_url( 'upload.php?page=just-img-opt-migrate' ) . '" class="button-primary">' . $link_text . '</a>';
+
+		$warning = __( 'You need to update your migrations to continue using the plugin. {link}', \JustImageOptimizer::TEXTDOMAIN );
+		$warning = str_replace( '{link}', $link, $warning );
+
+		printf( '<div class="%1$s"><p>%2$s</p></div>', 'notice notice-error', $warning );
+	}
 
 	/**
 	 * Search available migrations
@@ -95,29 +109,15 @@ class Migrate extends core\Model {
 	 * @return boolean
 	 */
 	public function migrate( $migrations ) {
-		$updated = '';
 		if ( ! empty( $migrations ) ) {
 			set_time_limit( 0 );
 
-			$data = null;
 			foreach ( $migrations as $ver => $m ) {
-				$data = $m->runUpdate( $data, \JustCoded\WP\ImageOptimizer\core\Migration::MODE_UPDATE );
+				$m->runUpdate( Migration::MODE_UPDATE );
 			}
 			update_option( 'joi_version', \JustImageOptimizer::$version );
-		} else {
-			$migrations = array();
-			$updated    = true;
 		}
 
-		// do cleanup
-		if ( $updated ) {
-			foreach ( $migrations as $ver => $m ) {
-				$m->runCleanup();
-			}
-
-			return true;
-		} else {
-			return 'Error! Upgrade failed. Please contact us through github to help you and update migration scripts.';
-		}
+		return true;
 	}
 }

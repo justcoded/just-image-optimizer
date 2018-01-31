@@ -62,14 +62,12 @@ class MigrateController extends \JustCoded\WP\ImageOptimizer\core\Component {
 			$warnings = $model->testMigrate( $migrations );
 		}
 
-		return $this->render( 'migrate/index',
-			array(
-				'tab'        => 'migrate',
-				'migrations' => $migrations,
-				'warnings'   => $warnings,
-				'errors'     => $errors,
-			)
-		);
+		return $this->render( 'migrate/index', array(
+			'tab'        => 'migrate',
+			'migrations' => $migrations,
+			'warnings'   => $warnings,
+			'errors'     => $errors,
+		) );
 	}
 
 	/**

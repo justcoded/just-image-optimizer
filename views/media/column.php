@@ -6,15 +6,21 @@ if ( ! in_array( get_post_mime_type( $id ), $allowed_images ) ) {
 	return;
 }
 $image_status = get_post_meta( $id, '_just_img_opt_queue', true );
+$total_stats = $model->get_total_attachment_stats( $id );
 ?>
 <?php if ( $image_status === '3' ) : ?>
-	<p><?php echo get_post_meta( $id, $model::DB_META_IMAGE_SAVING_PERCENT, true ); ?> saved
-		(<?php echo get_post_meta( $id, $model::DB_META_IMAGE_SAVING, true ); ?>)</p>
-	<p>disk usage: <?php echo get_post_meta( $id, $model::DB_META_IMAGE_DU, true ); ?>
-		(<?php echo $model->get_count_images( $id ) ?> images) </p>
+	<?php if ( ! empty( $total_stats[0]->percent ) ) : ?>
+	<p><?php echo $total_stats[0]->percent; ?>% saved
+		(<?php echo size_format( $total_stats[0]->saving_size ); ?>)</p>
+	<p>disk usage: <?php echo size_format( $total_stats[0]->disk_usage ); ?>
+		(<?php echo $model->get_count_images( $id ); ?> images) </p>
+	<?php endif; ?>
 <?php elseif ( $image_status === '1' ) : ?>
 	<p>Queued (#<?php echo $id; ?>)</p>
 	<a class="optimize-now" href="#<?php echo $id; ?>" data-attach-id="<?php echo $id; ?>">optimize now</a>
 <?php else: ?>
 	<a class="optimize-now" href="#<?php echo $id; ?>" data-attach-id="<?php echo $id; ?>">optimize now</a>
 <?php endif; ?>
+<td>
+
+</td>

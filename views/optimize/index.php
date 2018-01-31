@@ -17,7 +17,7 @@ use JustCoded\WP\ImageOptimizer\models\Settings;
 	$size_array = array();
 	if ( is_array( $settings->image_sizes ) ) {
 		foreach ( $attach_ids as $attach_id ) {
-			$size_array[ $attach_id ] = $media->get_total_filesizes( $attach_id, true );
+			$size_array[ $attach_id ] = $media->get_file_sizes( $attach_id, 'single' );
 		}
 		foreach ( $settings->image_sizes as $value_size ) {
 			foreach ( $attach_ids as $attach_id ) {

@@ -63,7 +63,7 @@ class JustImageOptimizer extends core\Singleton {
 	protected function __construct() {
 		// init plugin name and version.
 		self::$plugin_name = __( 'Just Image Optimizer', self::TEXTDOMAIN );
-		self::$version     = 0.100;
+		self::$version     = '0.100';
 
 		register_activation_hook( __FILE__, array( $this, 'initDB' ) );
 
@@ -80,7 +80,9 @@ class JustImageOptimizer extends core\Singleton {
 			new controllers\ConnectController();
 			new controllers\SettingsController();
 			new controllers\DashboardController();
-			new controllers\MigrateController();
+			if ( $this->checkMigrationsAvailable() ) {
+				new controllers\MigrateController();
+			}
 		}
 	}
 
@@ -89,6 +91,29 @@ class JustImageOptimizer extends core\Singleton {
 		$migrate    = new models\Migrate;
 		$migrations = $migrate->findMigrations();
 		$migrate->migrate( $migrations );
+	}
+
+	/**
+	 * Check plugin version
+	 *
+	 * @return bool
+	 */
+	public function checkMigrationsAvailable() {
+		$version = get_option( 'joi_version' );
+
+		if ( version_compare( $version, self::$version, '<' ) ) {
+			// print notice if we're not on migrate page
+			if ( empty( $_GET['page'] ) || $_GET['page'] != 'just-img-opt-migrate' ) {
+				add_action( 'admin_notices', array(
+					'\JustCoded\WP\ImageOptimizer\models\Migrate',
+					'adminUpgradeNotice',
+				) );
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

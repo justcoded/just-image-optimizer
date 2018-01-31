@@ -2,17 +2,12 @@
 
 namespace JustCoded\WP\ImageOptimizer\migrations;
 
+use JustCoded\WP\ImageOptimizer\models;
+
 /**
  * Class m0x100
  */
 class m0x100 extends \JustCoded\WP\ImageOptimizer\core\Migration {
-	/**
-	 * Read data from storage
-	 */
-	public function readData() {
-
-	}
-
 	/**
 	 * There are no changes in components structure
 	 *
@@ -31,25 +26,20 @@ class m0x100 extends \JustCoded\WP\ImageOptimizer\core\Migration {
 	public function update() {
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
-		$table_name      = $wpdb->prefix . 'joi_media';
+		$table_name      = $wpdb->prefix . models\Media::TABLE_IMAGE_STATS;
 		$sql             = "CREATE TABLE $table_name (
-			media_id     mediumint(9) NOT NULL AUTO_INCREMENT,
-			attach_id    smallint(5)  NOT NULL,
-			media_key    VARCHAR(50)  NOT NULL,
-			media_value  VARCHAR(255) NOT NULL,
-			UNIQUE KEY media_id (media_id)
+			id           mediumint(9) NOT NULL AUTO_INCREMENT,
+			attach_id    mediumint(9) NOT NULL,
+			size         VARCHAR(255) NOT NULL,
+			b_file_size  VARCHAR(255) NOT NULL,
+			a_file_size  VARCHAR(255) NOT NULL,
+			PRIMARY KEY (id)
 		) $charset_collate;";
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		dbDelta( $sql );
+
 		return true;
-	}
-
-	/**
-	 * Run clean up after update
-	 */
-	public function cleanup() {
-
 	}
 }
 

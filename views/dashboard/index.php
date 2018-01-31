@@ -19,7 +19,7 @@
 		<div class="column middle">
 			<h2 class="head-title">Progress</h2>
 			<div id="progress" style="height: 500px; width: 95%;"></div>
-			<p><?php echo ( $model->get_images_stat( false ) === '0' ?
+			<p><?php echo( $model->get_images_stat( false ) === '0' ?
 					$model->get_images_stat( false ) :
 					$model->get_in_queue_image_count() ); ?> images in queue
 				of <?php echo $model->get_images_stat( true ); ?> images</p>
@@ -27,9 +27,10 @@
 		<div class="column middle">
 			<h2 class="head-title">Saving</h2>
 			<div id="saving" style="height: 500px; width: 95%;"></div>
-			<p> <?php echo $model->saving_size; ?>MB
-				/ <?php echo $model->get_saving_percent_dashboard(); ?>% saving,
-				disk usage: <?php echo $model->get_images_disk_usage(); ?>MB</p>
+			<?php $dash_stats = $model->get_dashboard_attachment_stats(); ?>
+			<p> <?php echo( ! empty( $dash_stats[0]->saving_size ) ? size_format( $dash_stats[0]->saving_size ) : 0 ); ?>
+				/ <?php echo( ! empty( $dash_stats[0]->percent ) ? $dash_stats[0]->percent : 0 ); ?>% saving,
+				disk usage: <?php echo size_format( $model->get_images_disk_usage() ); ?></p>
 		</div>
 		<div class="column-l">
 			<h2 class="head-title">We recommends</h2>
@@ -60,7 +61,8 @@
 			]);
 			var data2 = google.visualization.arrayToDataTable([
 				['Optimizer', 'Saving'],
-				['Saved, MB', <?php echo $model->saving_size; ?> ],
+				['Saved, MB', <?php echo( ! empty( $dash_stats[0]->saving_size ) ?
+					$model->size_format_mb( $dash_stats[0]->saving_size ) : 0 ); ?> ],
 				['Disk space, MB', <?php echo $model->get_disk_space_size(); ?> ]
 			]);
 
