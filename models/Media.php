@@ -35,7 +35,7 @@ class Media extends core\Model {
 	/**
 	 * Save attachment stats before optimize
 	 *
-	 * @param int $attach_id Attach ID.
+	 * @param int   $attach_id Attach ID.
 	 * @param array $stats Array with stats attachments.
 	 */
 	public function save_stats( $attach_id, $stats ) {
@@ -57,7 +57,7 @@ class Media extends core\Model {
 	/**
 	 * Update attachment stats after optimize
 	 *
-	 * @param int $attach_id Attach ID.
+	 * @param int   $attach_id Attach ID.
 	 * @param array $stats Array with stats attachments.
 	 */
 	public function update_stats( $attach_id, $stats ) {
@@ -107,7 +107,7 @@ class Media extends core\Model {
 	/**
 	 * Get single attachment stats
 	 *
-	 * @param int $attach_id Attach ID.
+	 * @param int    $attach_id Attach ID.
 	 * @param string $size Attachment size.
 	 *
 	 * @return object
@@ -145,8 +145,9 @@ class Media extends core\Model {
 			"
 			SELECT ( sum( " . self::DB_B_FILE_SIZE . " )
 				   - sum( " . self::DB_A_FILE_SIZE . " ) ) AS saving_size,
-				   round( ( ( sum( " . self::DB_B_FILE_SIZE . " )
-				   - sum( " . self::DB_A_FILE_SIZE . " ) ) / %s * 100 ), 2 ) AS percent
+				   round( ( sum( " . self::DB_B_FILE_SIZE . " )
+				   - sum( " . self::DB_A_FILE_SIZE . " ) )
+				   / %s * 100, 2 ) AS percent
 			FROM $table_name
 			",
 			$media_disk_usage
@@ -165,8 +166,9 @@ class Media extends core\Model {
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
 		$wpdb->delete(
 			$table_name,
-			array( 'ID' => $attach_id )
+			array( self::DB_ATTACH_ID => $attach_id )
 		);
+		update_post_meta( $attach_id, '_just_img_opt_queue', 1 );
 	}
 
 	/**
@@ -202,8 +204,8 @@ class Media extends core\Model {
 	/**
 	 * Get total|single filesizes attachments in bytes
 	 *
-	 * @param int $id Attachment ID.
-	 * @param string $stats For get total size = 'total' or sizes array = 'single'.
+	 * @param int    $id Attachment ID.
+	 * @param string $type For get total size = 'total' or sizes array = 'single'.
 	 *
 	 * @return int|float|boolean|array
 	 */
@@ -379,20 +381,21 @@ class Media extends core\Model {
 			$space_size = $total_size;
 		}
 
-		return $this->size_format_mb( $space_size );
+		return $space_size;
 	}
 
 	/**
 	 * Get size format without units
 	 *
-	 * @param  int|float $bytes Size in bytes.
+	 * @param  int $bytes Size in bytes.
 	 *
-	 * @return int|float
+	 * @return array
 	 */
-	public function size_format_mb( $bytes ) {
-
-		$result = $bytes / pow( 1024, 2 );
-		$size   = intval( str_replace( '.', ',', strval( round( $result, 2 ) ) ) );
+	public function size_format_explode( $bytes ) {
+		$size = array(
+			'bytes' => $bytes,
+			'unit'  => size_format( $bytes ),
+		);
 
 		return $size;
 	}
@@ -410,7 +413,7 @@ class Media extends core\Model {
 		$array_ids  = array();
 		if ( '0' !== \JustImageOptimizer::$settings->size_limit ) {
 			foreach ( $attach_ids as $attach_id ) {
-				$size_array[ $attach_id ] = $this->get_file_sizes( $attach_id, 'single' );
+				$size_array[ $attach_id ] = $this->get_file_sizes( $attach_id, 'total' );
 			}
 			foreach ( $attach_ids as $attach_id ) {
 				if ( (int) number_format_i18n( $size_limit / 1048576 ) >= (int) \JustImageOptimizer::$settings->size_limit ) {

@@ -86,7 +86,9 @@ class JustImageOptimizer extends core\Singleton {
 		}
 	}
 
-	// init joi plugin Media DB
+	/**
+	 * Init joi plugin Media DB
+	 */
 	public function initDB() {
 		$migrate    = new models\Migrate;
 		$migrations = $migrate->findMigrations();

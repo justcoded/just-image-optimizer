@@ -40,7 +40,7 @@
 		<?php if ( ! empty( $total_stats[0]->percent ) ) : ?>
 			<td>
 				<p><?php echo $total_stats[0]->percent; ?>% saved
-					(<?php echo size_format( $total_stats[0]->saving_size ); ?>)</p>
+					(<?php echo ( ! empty( $total_stats[0]->saving_size ) ? size_format( $total_stats[0]->saving_size ) : 0 ); ?>)</p>
 				<p>disk usage: <?php echo size_format( $total_stats[0]->disk_usage ); ?>
 					(<?php echo $model->get_count_images( $id ); ?> images) </p>
 			</td>

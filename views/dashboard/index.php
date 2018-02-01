@@ -1,3 +1,10 @@
+<?php
+$dash_stats          = $model->get_dashboard_attachment_stats();
+$dash_saving_size    = ( ! empty( $dash_stats[0]->saving_size ) ? $dash_stats[0]->saving_size : 0 );
+$dash_saving_percent = ( ! empty( $dash_stats[0]->percent ) ? $dash_stats[0]->percent : 0 );
+$chart_saving        = $model->size_format_explode( $dash_saving_size );
+$chart_disk_space    = $model->size_format_explode( $model->get_disk_space_size() );
+?>
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
 	<?php if ( empty( \JustImageOptimizer::$settings->auto_optimize ) ) : ?>
@@ -27,9 +34,8 @@
 		<div class="column middle">
 			<h2 class="head-title">Saving</h2>
 			<div id="saving" style="height: 500px; width: 95%;"></div>
-			<?php $dash_stats = $model->get_dashboard_attachment_stats(); ?>
-			<p> <?php echo( ! empty( $dash_stats[0]->saving_size ) ? size_format( $dash_stats[0]->saving_size ) : 0 ); ?>
-				/ <?php echo( ! empty( $dash_stats[0]->percent ) ? $dash_stats[0]->percent : 0 ); ?>% saving,
+			<p> <?php echo size_format( $dash_saving_size ); ?>
+				/ <?php echo $dash_saving_percent; ?>% saving,
 				disk usage: <?php echo size_format( $model->get_images_disk_usage() ); ?></p>
 		</div>
 		<div class="column-l">
@@ -61,9 +67,14 @@
 			]);
 			var data2 = google.visualization.arrayToDataTable([
 				['Optimizer', 'Saving'],
-				['Saved, MB', <?php echo( ! empty( $dash_stats[0]->saving_size ) ?
-					$model->size_format_mb( $dash_stats[0]->saving_size ) : 0 ); ?> ],
-				['Disk space, MB', <?php echo $model->get_disk_space_size(); ?> ]
+				['Saved', {
+					v:<?php echo intval( $chart_saving['bytes'] ); ?>,
+					f: "<?php echo $chart_saving['unit']; ?>"
+				}],
+				['Disk space', {
+					v:<?php echo intval( $chart_disk_space['bytes'] ); ?>,
+					f: "<?php echo $chart_disk_space['unit']; ?>"
+				}]
 			]);
 
 			// Optional; add a title and set the width and height of the chart
