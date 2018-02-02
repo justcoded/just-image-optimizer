@@ -11,41 +11,12 @@ use JustCoded\WP\ImageOptimizer\core;
  */
 class Media extends core\Model {
 
-	const DB_META_IMAGES_STATS = '_just_img_meta_stats';
-	const DB_META_IMAGE_DU = '_just_img_meta_du';
-	const DB_META_IMAGE_SAVING = '_just_img_meta_saving';
-	const DB_META_IMAGE_SAVING_PERCENT = '_just_img_meta_saving_percent';
+	const TABLE_IMAGE_STATS = 'image_optimize';
 
-	const DB_OPT_SIZES_BEFORE = '_just_img_opt_sizes_before';
-	const DB_OPT_SAVING_SIZE = '_just_img_opt_saving_size';
-
-	/**
-	 * Set before images statistics
-	 *
-	 * @var array $before_optimize_stats
-	 */
-	public $before_optimize_stats = array();
-
-	/**
-	 * Set after images statistics
-	 *
-	 * @var array $after_optimize_stats
-	 */
-	public $after_optimize_stats = array();
-
-	/**
-	 * Set before image statistics main attach
-	 *
-	 * @var array $before_main_attach_stats
-	 */
-	public $before_main_attach_stats = array();
-
-	/**
-	 * Set after image statistics main attach
-	 *
-	 * @var array $after_main_attach_stats
-	 */
-	public $after_main_attach_stats = array();
+	const DB_ATTACH_ID = 'attach_id';
+	const DB_SIZE = 'size';
+	const DB_B_FILE_SIZE = 'b_file_size';
+	const DB_A_FILE_SIZE = 'a_file_size';
 
 	/**
 	 * Arguments query array to use.
@@ -61,63 +32,128 @@ class Media extends core\Model {
 		'order'          => 'ASC',
 	);
 
-	public $saving_size;
-
 	/**
-	 * Media constructor.
-	 */
-	public function __construct() {
-		$this->saving_size = ( get_option( self::DB_OPT_SAVING_SIZE ) ? get_option( self::DB_OPT_SAVING_SIZE ) : 0 );
-	}
-
-	/**
-	 * Update options
+	 * Save attachment stats before optimize
 	 *
-	 * @param int $id Attach ID.
+	 * @param int   $attach_id Attach ID.
+	 * @param array $stats Array with stats attachments.
 	 */
-	public function save( $id ) {
-		$this->set_sizes_stats( $id );
-		$this->set_stats_main_attach( $id );
+	public function save_stats( $attach_id, $stats ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+
+		foreach ( $stats as $size => $file_size ) {
+			$wpdb->insert(
+				$table_name,
+				array(
+					self::DB_ATTACH_ID   => $attach_id,
+					self::DB_SIZE        => $size,
+					self::DB_B_FILE_SIZE => $file_size,
+				)
+			);
+		}
 	}
 
 	/**
-	 * Update option for saving size after optimization
-	 */
-	public function set_saving_size() {
-		update_option( self::DB_OPT_SAVING_SIZE, $this->get_saving_size() + $this->saving_size );
-	}
-
-	/**
-	 * Update option for before optimize sizes
-	 */
-	public function set_before_sizes() {
-		update_option( self::DB_OPT_SIZES_BEFORE, $this->get_images_disk_usage() );
-	}
-
-	/**
-	 * Set array statistics
+	 * Update attachment stats after optimize
 	 *
-	 * @param int $attach_id Attachment ID.
+	 * @param int   $attach_id Attach ID.
+	 * @param array $stats Array with stats attachments.
 	 */
-	public function set_sizes_stats( $attach_id ) {
-		$stats = array(
-			'percent_stats' => $this->get_saving_size_stats( $attach_id ),
-			'size_stats'    => $this->get_percent_saving_stats( $attach_id ),
-		);
-		update_post_meta( $attach_id, self::DB_META_IMAGES_STATS, maybe_serialize( $stats ) );
+	public function update_stats( $attach_id, $stats ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+		foreach ( $stats as $size => $file_size ) {
+			$wpdb->update(
+				$table_name,
+				array(
+					self::DB_A_FILE_SIZE => $file_size,
+				),
+				array(
+					self::DB_ATTACH_ID => $attach_id,
+					self::DB_SIZE      => $size,
+				)
+			);
+		}
 	}
 
 	/**
-	 * Set stats for main attach image
+	 * Get total attachment stats
 	 *
-	 * @param int $attach_id Attachment ID.
+	 * @param int $attach_id Attach ID.
+	 *
+	 * @return object
 	 */
-	public function set_stats_main_attach( $attach_id ) {
-		$saving_size    = $this->before_main_attach_stats[ $attach_id ] - $this->after_main_attach_stats[ $attach_id ];
-		$saving_percent = round( ( $saving_size / $this->before_main_attach_stats[ $attach_id ] ) * 100, 2 );
-		update_post_meta( $attach_id, self::DB_META_IMAGE_DU, size_format( $this->after_main_attach_stats[ $attach_id ] ) );
-		update_post_meta( $attach_id, self::DB_META_IMAGE_SAVING, size_format( $saving_size ) );
-		update_post_meta( $attach_id, self::DB_META_IMAGE_SAVING_PERCENT, $saving_percent . '%' );
+	public function get_total_attachment_stats( $attach_id ) {
+		global $wpdb;
+		$table_name  = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+		$total_stats = $wpdb->get_results( $wpdb->prepare(
+			"
+			SELECT ( sum( " . self::DB_B_FILE_SIZE . " )
+				   - sum( " . self::DB_A_FILE_SIZE . " ) ) AS saving_size,
+				   round( ( ( sum( " . self::DB_B_FILE_SIZE . " )
+				   - sum( " . self::DB_A_FILE_SIZE . " ) )
+				   / sum( " . self::DB_B_FILE_SIZE . " ) * 100 ), 2 ) as percent,
+				   sum( " . self::DB_A_FILE_SIZE . " ) as disk_usage
+			FROM $table_name
+			WHERE " . self::DB_ATTACH_ID . " = %s
+			",
+			$attach_id
+		), OBJECT );
+
+		return $total_stats;
+	}
+
+	/**
+	 * Get single attachment stats
+	 *
+	 * @param int    $attach_id Attach ID.
+	 * @param string $size Attachment size.
+	 *
+	 * @return object
+	 */
+	public function get_attachment_stats( $attach_id, $size ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+		$stats      = $wpdb->get_results( $wpdb->prepare(
+			"
+			SELECT ( " . self::DB_B_FILE_SIZE . " - " . self::DB_A_FILE_SIZE . " ) AS saving_size,
+				   round( ( ( " . self::DB_B_FILE_SIZE . "
+				   - " . self::DB_A_FILE_SIZE . " )
+				   / " . self::DB_B_FILE_SIZE . " * 100 ), 2 ) as percent
+			FROM $table_name
+			WHERE " . self::DB_ATTACH_ID . " = %s
+			AND " . self::DB_SIZE . " = %s
+			",
+			$attach_id,
+			$size
+		), OBJECT );
+
+		return $stats;
+	}
+
+	/**
+	 * Get dashboard attachment stats
+	 *
+	 * @return object
+	 */
+	public function get_dashboard_attachment_stats() {
+		global $wpdb;
+		$table_name       = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+		$media_disk_usage = $this->get_images_disk_usage();
+		$dashboard_stats  = $wpdb->get_results( $wpdb->prepare(
+			"
+			SELECT ( sum( " . self::DB_B_FILE_SIZE . " )
+				   - sum( " . self::DB_A_FILE_SIZE . " ) ) AS saving_size,
+				   round( ( sum( " . self::DB_B_FILE_SIZE . " )
+				   - sum( " . self::DB_A_FILE_SIZE . " ) )
+				   / %s * 100, 2 ) AS percent
+			FROM $table_name
+			",
+			$media_disk_usage
+		), OBJECT );
+
+		return $dashboard_stats;
 	}
 
 	/**
@@ -126,14 +162,12 @@ class Media extends core\Model {
 	 * @param int $attach_id Attachment ID.
 	 */
 	public function clean_statistics( $attach_id ) {
-		$stats = array(
-			'percent_stats' => '',
-			'size_stats'    => '',
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+		$wpdb->delete(
+			$table_name,
+			array( self::DB_ATTACH_ID => $attach_id )
 		);
-		update_post_meta( $attach_id, self::DB_META_IMAGES_STATS, maybe_serialize( $stats ) );
-		update_post_meta( $attach_id, self::DB_META_IMAGE_DU, '' );
-		update_post_meta( $attach_id, self::DB_META_IMAGE_SAVING, '' );
-		update_post_meta( $attach_id, self::DB_META_IMAGE_SAVING_PERCENT, '' );
 		update_post_meta( $attach_id, '_just_img_opt_queue', 1 );
 	}
 
@@ -167,96 +201,15 @@ class Media extends core\Model {
 		return $attach_filesize;
 	}
 
-
 	/**
-	 * Array map callback method
+	 * Get total|single filesizes attachments in bytes
 	 *
-	 * @param array $key Stats size key.
-	 * @param array $before_stats Stats before optimize.
-	 * @param array $after_stats Stats after optimize.
-	 *
-	 * @return float|int|array
-	 */
-	public function size_map_callback( $key, $before_stats, $after_stats ) {
-		return [ $key => ( $before_stats - $after_stats ) ];
-	}
-
-	/**
-	 * Get size stats after optimize for each size in KB
-	 *
-	 * @param int $attach_id Attachment ID.
-	 *
-	 * @return float|null|array
-	 */
-	public function get_saving_size_stats( $attach_id ) {
-		$size_stats = array();
-		if ( ! empty( $this->before_optimize_stats[ $attach_id ]['b_stats'] ) ) {
-			$size_stats = array_map(
-				array(
-					$this,
-					'size_map_callback',
-				),
-				array_keys( $this->before_optimize_stats[ $attach_id ]['b_stats'] ),
-				$this->before_optimize_stats[ $attach_id ]['b_stats'],
-				$this->after_optimize_stats[ $attach_id ]['a_stats']
-			);
-
-			return $size_stats;
-		}
-
-		return $size_stats;
-	}
-
-	/**
-	 * Array map callback method
-	 *
-	 * @param array $key Stats size key.
-	 * @param array $size_stats Stats optimize in KB.
-	 * @param array $before_stats Stats before optimize.
-	 *
-	 * @return array
-	 */
-	public function percent_map_callback( $key, $size_stats, $before_stats ) {
-		return [ $key => round( ( $size_stats[ $key ] / $before_stats ) * 100, 2 ) ];
-	}
-
-	/**
-	 * Get saving percent after optimize for each size
-	 *
-	 * @param int $attach_id Attachment ID.
-	 *
-	 * @return float|int|array
-	 */
-	public function get_percent_saving_stats( $attach_id ) {
-		$percent_stats = array();
-		$size_stats    = $this->get_saving_size_stats( $attach_id );
-		$before_stats  = $this->before_optimize_stats[ $attach_id ]['b_stats'];
-		if ( ! empty( $this->before_optimize_stats[ $attach_id ]['b_stats'] ) ) {
-			$percent_stats = array_map(
-				array(
-					$this,
-					'percent_map_callback',
-				),
-				array_keys( $before_stats ),
-				$size_stats,
-				$before_stats
-			);
-
-			return $percent_stats;
-		}
-
-		return $percent_stats;
-	}
-
-	/**
-	 * Get total filesizes attachments in bytes
-	 *
-	 * @param int $id Attachment ID.
-	 * @param bool $stats For get total size = false or sizes array = true.
+	 * @param int    $id Attachment ID.
+	 * @param string $type For get total size = 'total' or sizes array = 'single'.
 	 *
 	 * @return int|float|boolean|array
 	 */
-	public function get_total_filesizes( $id, $stats = false ) {
+	public function get_file_sizes( $id, $type ) {
 		global $wp_filesystem;
 		WP_Filesystem();
 		$total_size  = 0;
@@ -266,6 +219,8 @@ class Media extends core\Model {
 		if ( ! $attachments ) {
 			return 0;
 		}
+		//full image
+		$sizes_array['full'] = $this->get_filesize( wp_upload_dir()['basedir'] . '/' . $attachments['file'] );
 		foreach ( $attachments['sizes'] as $size_key => $attachment ) {
 			foreach ( $get_path as $path ) {
 				if ( $wp_filesystem->exists( $path . '/' . $attachment['file'] ) ) {
@@ -276,7 +231,7 @@ class Media extends core\Model {
 		foreach ( $sizes_array as $size ) {
 			$total_size = $total_size + $size;
 		}
-		if ( true === $stats ) {
+		if ( 'single' === $type ) {
 			return $sizes_array;
 		} else {
 			return $total_size;
@@ -316,6 +271,7 @@ class Media extends core\Model {
 		$additional_sizes = get_intermediate_image_sizes();
 		$sizes            = array();
 
+		$sizes['full'] = array();
 		// Create the full array with sizes and crop info.
 		foreach ( $additional_sizes as $_size ) {
 			if ( in_array( $_size, array( 'thumbnail', 'medium', 'large' ) ) ) {
@@ -343,41 +299,6 @@ class Media extends core\Model {
 
 		return $sizes;
 
-	}
-
-	/**
-	 * Get statistics for image sizes
-	 *
-	 * @param int $id Attachment id.
-	 * @param string $key Image size key.
-	 *
-	 * @return array
-	 */
-	public function get_stats( $id, $key ) {
-		$stats_array = array();
-		$stats       = maybe_unserialize( get_post_meta( $id, self::DB_META_IMAGES_STATS, true ) );
-		if ( isset( $stats['size_stats'] ) ) {
-			foreach ( $stats as $stat_key => $stat ) {
-				if ( is_array( $stat ) ) {
-					foreach ( $stat as $sizes ) {
-						foreach ( $sizes as $size_key => $size_stat ) {
-							if ( $size_key === $key ) {
-								if ( 'percent_stats' === $stat_key ) {
-									$stats_array[ $size_key ]['percent_stats'] = $size_stat;
-								}
-								if ( 'size_stats' === $stat_key ) {
-									$stats_array[ $size_key ]['size_stats'] = $size_stat;
-								}
-							}
-						}
-					}
-				}
-			}
-
-			return $stats_array;
-		}
-
-		return $stats_array;
 	}
 
 	/**
@@ -413,10 +334,10 @@ class Media extends core\Model {
 		$query      = new \WP_Query( $args );
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$disk_usage = $disk_usage + $this->get_total_filesizes( get_the_ID(), false );
+			$disk_usage = $disk_usage + $this->get_file_sizes( get_the_ID(), 'total' );
 		}
 
-		return round( $disk_usage / 1048576, 2 );
+		return $disk_usage;
 	}
 
 	/**
@@ -438,29 +359,6 @@ class Media extends core\Model {
 	}
 
 	/**
-	 * Get sizes images with status processed
-	 *
-	 * @return int
-	 */
-	public function get_size_images_processed() {
-		$disk_usage         = 0;
-		$args               = $args = $this->query_args;
-		$args['meta_query'] = array(
-			array(
-				'key'   => '_just_img_opt_queue',
-				'value' => '3',
-			),
-		);
-		$query              = new \WP_Query( $args );
-		while ( $query->have_posts() ) {
-			$query->the_post();
-			$disk_usage = $disk_usage + $this->get_total_filesizes( get_the_ID(), false );
-		}
-
-		return (int) number_format_i18n( $disk_usage / 1048576 );
-	}
-
-	/**
 	 * Get count images in queue from total count
 	 *
 	 * @return int|float
@@ -470,48 +368,36 @@ class Media extends core\Model {
 	}
 
 	/**
-	 * Get disk space sizes from total size
-	 *
-	 * @return int|float
-	 */
-	public function get_saving_size() {
-		$before_sizes = get_option( self::DB_OPT_SIZES_BEFORE );
-		$total_size   = $this->get_images_disk_usage();
-		if ( $before_sizes ) {
-			return $before_sizes - $total_size;
-		} else {
-			return 0;
-		}
-	}
-
-	/**
 	 * Get saving sizes from space size
 	 *
 	 * @return int|float
 	 */
 	public function get_disk_space_size() {
-		$total_size = $this->get_images_disk_usage();
-		if ( 0 !== $this->saving_size && $total_size < $this->saving_size ) {
-			return 0;
-		} elseif ( 0 !== $this->saving_size ) {
-			return $total_size - $this->saving_size;
+		$total_size  = $this->get_images_disk_usage();
+		$saving_size = $this->get_dashboard_attachment_stats();
+		if ( ! empty( $saving_size[0]->saving_size ) ) {
+			$space_size = $total_size - $saving_size[0]->saving_size;
 		} else {
-			return $total_size;
+			$space_size = $total_size;
 		}
 
+		return $space_size;
 	}
 
 	/**
-	 * Get Saving image percent
+	 * Get size format without units
 	 *
-	 * @return int|float
+	 * @param  int $bytes Size in bytes.
+	 *
+	 * @return array
 	 */
-	public function get_saving_percent_dashboard() {
-		if ( $this->get_images_disk_usage() ) {
-			return round( ( $this->saving_size / $this->get_images_disk_usage() ) * 100, 2 );
-		} else {
-			return 0;
-		}
+	public function size_format_explode( $bytes ) {
+		$size = array(
+			'bytes' => $bytes,
+			'unit'  => size_format( $bytes ),
+		);
+
+		return $size;
 	}
 
 	/**
@@ -527,7 +413,7 @@ class Media extends core\Model {
 		$array_ids  = array();
 		if ( '0' !== \JustImageOptimizer::$settings->size_limit ) {
 			foreach ( $attach_ids as $attach_id ) {
-				$size_array[ $attach_id ] = $this->get_total_filesizes( $attach_id );
+				$size_array[ $attach_id ] = $this->get_file_sizes( $attach_id, 'total' );
 			}
 			foreach ( $attach_ids as $attach_id ) {
 				if ( (int) number_format_i18n( $size_limit / 1048576 ) >= (int) \JustImageOptimizer::$settings->size_limit ) {

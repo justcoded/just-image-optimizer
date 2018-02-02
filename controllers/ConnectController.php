@@ -26,10 +26,12 @@ class ConnectController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Add new page to the WordPress Menu
 	 */
 	public function init_admin_menu() {
+		$page_title = \JustImageOptimizer::$plugin_name;
+		
 		add_submenu_page(
 			null,
-			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
-			__( 'Image Optimization', \JustImageOptimizer::TEXTDOMAIN ),
+			$page_title,
+			$page_title,
 			'manage_options',
 			'just-img-opt-connection',
 			array( $this, 'actionIndex' )
