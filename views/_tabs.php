@@ -8,5 +8,7 @@ use JustCoded\WP\ImageOptimizer\models;
 	<a class="nav-tab <?php echo ($tab == 'settings' ? 'nav-tab-active' : ''); ?>" href="<?php echo admin_url() ?>upload.php?page=just-img-opt-settings"><?php _e('Settings', \JustImageOptimizer::TEXTDOMAIN); ?></a>
 <?php endif; ?>
 	<a class="nav-tab <?php echo ($tab == 'connect' ? 'nav-tab-active' : ''); ?>" href="<?php echo admin_url() ?>upload.php?page=just-img-opt-connection"><?php _e('Connect', \JustImageOptimizer::TEXTDOMAIN); ?></a>
+	<?php if( version_compare( get_option( 'joi_version' ), \JustImageOptimizer::$version, '<' ) ) : ?>
 	<a class="nav-tab <?php echo ($tab == 'migrate' ? 'nav-tab-active' : ''); ?>" href="<?php echo admin_url() ?>upload.php?page=just-img-opt-migrate"><?php _e('Migration', \JustImageOptimizer::TEXTDOMAIN); ?></a>
+	<?php endif; ?>
 </h2>

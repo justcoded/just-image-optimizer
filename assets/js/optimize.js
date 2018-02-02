@@ -8,7 +8,7 @@ jQuery(document).ready(function ($) {
             attach_id: attach_id
         };
         $.post( ajaxurl, data, function( response ) {
-            $('.loader').parent().html('<p>' + response.saving_percent + ' saved (' + response.saving_size + ')</p>' +
+            $('.loader').parent().html('<p>' + response.saving_percent + '% saved (' + response.saving_size + ')</p>' +
                 '<p>disk usage: ' + response.total_size + ' (' + response.count_images + ' images)</p>');
         });
     });
