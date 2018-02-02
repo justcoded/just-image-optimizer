@@ -1,10 +1,3 @@
-<?php
-use JustCoded\WP\ImageOptimizer\models\Media;
-
-$test = new Media();
-
-var_dump($test->get_dashboard_attachment_stats());
-?>
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
 	<?php if ( $saved ) : ?>
