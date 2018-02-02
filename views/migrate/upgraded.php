@@ -6,4 +6,4 @@
 		<p>All data upgraded. <a href="<?php echo admin_url( 'options-general.php' ); ?>?page=just-img-opt-settings">View
 				settings</a></p>
 	</div>
-
+</div>

@@ -4,6 +4,7 @@ namespace JustCoded\WP\ImageOptimizer\components;
 
 use JustCoded\WP\ImageOptimizer\models\Settings;
 use JustCoded\WP\ImageOptimizer\models\Media;
+use JustCoded\WP\ImageOptimizer\models\OptimizationLog;
 
 /**
  * Class Optimizer
@@ -162,6 +163,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	protected function optimize_images( array $attach_ids ) {
 		global $wp_filesystem;
 		$media      = new Media();
+		$log        = new OptimizationLog();
 		$attach_ids = $media->size_limit( $attach_ids );
 		// add filter for WP_FIlesystem permission.
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
@@ -169,6 +171,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		// set statistics and status before replace images.
 		foreach ( $attach_ids as $attach_id ) {
 			$media->save_stats( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
+			$log->save_log( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
 			update_post_meta( $attach_id, '_just_img_opt_queue', 2 );
 		}
 		// upload images from service.
@@ -186,6 +189,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 							$optimize_image_size = getimagesize( $dir . $file );
 							if ( 25 < $optimize_image_size[0] && 25 < $optimize_image_size[1] ) {
 								$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
+							} else {
+								$log->save_fail( $file );
 							}
 						}
 					}
@@ -197,6 +202,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		// set statistics and status after replace images.
 		foreach ( $attach_ids as $attach_id ) {
 			$media->update_stats( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
+			$log->update_log( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
 			update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
 		}
 	}

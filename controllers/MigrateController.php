@@ -18,7 +18,7 @@ class MigrateController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	}
 
 	/**
-	 * Replace main menu "Just Custom Fields" with migration page
+	 * Migration page
 	 */
 	public function initRoutes() {
 		$page_title = \JustImageOptimizer::$plugin_name;

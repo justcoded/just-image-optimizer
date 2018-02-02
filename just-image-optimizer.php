@@ -63,7 +63,7 @@ class JustImageOptimizer extends core\Singleton {
 	protected function __construct() {
 		// init plugin name and version.
 		self::$plugin_name = __( 'Just Image Optimizer', self::TEXTDOMAIN );
-		self::$version     = '0.100';
+		self::$version     = '0.200';
 
 		register_activation_hook( __FILE__, array( $this, 'initDB' ) );
 
@@ -80,6 +80,7 @@ class JustImageOptimizer extends core\Singleton {
 			new controllers\ConnectController();
 			new controllers\SettingsController();
 			new controllers\DashboardController();
+			new controllers\OptimizationLogController();
 			if ( $this->checkMigrationsAvailable() ) {
 				new controllers\MigrateController();
 			}
