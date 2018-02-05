@@ -88,6 +88,7 @@ class Migrate extends core\Model {
 	 * @return array
 	 */
 	public function testMigrate( $migrations ) {
+		// TODO: remove data.
 		$data     = null;
 		$warnings = array();
 
@@ -95,6 +96,7 @@ class Migrate extends core\Model {
 			if ( $warning = $m->runTest( $data ) ) {
 				$warnings[ $ver ] = $warning;
 			}
+			// TODO: we can't run update in test.
 			$data = $m->runUpdate( $data );
 		}
 

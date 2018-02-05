@@ -27,6 +27,11 @@ class m0x200 extends \JustCoded\WP\ImageOptimizer\core\Migration {
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 		$table_name      = $wpdb->prefix . models\OptimizationLog::TABLE_IMAGE_LOG;
+		// TODO: rename columns.
+
+		// TODO: add one more table to store: id,  service (string); limits, how many attachments found, removed by limits, total stats after optimize
+		// TODO: add columns: try_id
+
 		$sql             = "CREATE TABLE $table_name (
 			id           mediumint(9) NOT NULL AUTO_INCREMENT,
 			attach_id    mediumint(9) NOT NULL,

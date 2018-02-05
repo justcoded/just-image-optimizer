@@ -13,10 +13,10 @@ class Media extends core\Model {
 
 	const TABLE_IMAGE_STATS = 'image_optimize';
 
-	const DB_ATTACH_ID = 'attach_id';
-	const DB_SIZE = 'size';
-	const DB_B_FILE_SIZE = 'b_file_size';
-	const DB_A_FILE_SIZE = 'a_file_size';
+	const COL_ATTACH_ID = 'attach_id';
+	const COL_IMAGE_SIZE = 'image_size';
+	const COL_BYTES_BEFORE = 'bytes_before';
+	const COL_BYTES_AFTER = 'bytes_after';
 
 	/**
 	 * Arguments query array to use.
@@ -46,9 +46,9 @@ class Media extends core\Model {
 			$wpdb->insert(
 				$table_name,
 				array(
-					self::DB_ATTACH_ID   => $attach_id,
-					self::DB_SIZE        => $size,
-					self::DB_B_FILE_SIZE => $file_size,
+					self::COL_ATTACH_ID    => $attach_id,
+					self::COL_IMAGE_SIZE   => $size,
+					self::COL_BYTES_BEFORE => $file_size,
 				)
 			);
 		}
@@ -67,11 +67,11 @@ class Media extends core\Model {
 			$wpdb->update(
 				$table_name,
 				array(
-					self::DB_A_FILE_SIZE => $file_size,
+					self::COL_BYTES_AFTER => $file_size,
 				),
 				array(
-					self::DB_ATTACH_ID => $attach_id,
-					self::DB_SIZE      => $size,
+					self::COL_ATTACH_ID  => $attach_id,
+					self::COL_IMAGE_SIZE => $size,
 				)
 			);
 		}
@@ -89,14 +89,14 @@ class Media extends core\Model {
 		$table_name  = $wpdb->prefix . self::TABLE_IMAGE_STATS;
 		$total_stats = $wpdb->get_results( $wpdb->prepare(
 			"
-			SELECT ( sum( " . self::DB_B_FILE_SIZE . " )
-				   - sum( " . self::DB_A_FILE_SIZE . " ) ) AS saving_size,
-				   round( ( ( sum( " . self::DB_B_FILE_SIZE . " )
-				   - sum( " . self::DB_A_FILE_SIZE . " ) )
-				   / sum( " . self::DB_B_FILE_SIZE . " ) * 100 ), 2 ) as percent,
-				   sum( " . self::DB_A_FILE_SIZE . " ) as disk_usage
+			SELECT ( sum( " . self::COL_BYTES_BEFORE . " )
+				   - sum( " . self::COL_BYTES_AFTER . " ) ) AS saving_size,
+				   round( ( ( sum( " . self::COL_BYTES_BEFORE . " )
+				   - sum( " . self::COL_BYTES_AFTER . " ) )
+				   / sum( " . self::COL_BYTES_BEFORE . " ) * 100 ), 2 ) as percent,
+				   sum( " . self::COL_BYTES_AFTER . " ) as disk_usage
 			FROM $table_name
-			WHERE " . self::DB_ATTACH_ID . " = %s
+			WHERE " . self::COL_ATTACH_ID . " = %s
 			",
 			$attach_id
 		), OBJECT );
@@ -117,13 +117,13 @@ class Media extends core\Model {
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
 		$stats      = $wpdb->get_results( $wpdb->prepare(
 			"
-			SELECT ( " . self::DB_B_FILE_SIZE . " - " . self::DB_A_FILE_SIZE . " ) AS saving_size,
-				   round( ( ( " . self::DB_B_FILE_SIZE . "
-				   - " . self::DB_A_FILE_SIZE . " )
-				   / " . self::DB_B_FILE_SIZE . " * 100 ), 2 ) as percent
+			SELECT ( " . self::COL_BYTES_BEFORE . " - " . self::COL_BYTES_AFTER . " ) AS saving_size,
+				   round( ( ( " . self::COL_BYTES_BEFORE . "
+				   - " . self::COL_BYTES_AFTER . " )
+				   / " . self::COL_BYTES_BEFORE . " * 100 ), 2 ) as percent
 			FROM $table_name
-			WHERE " . self::DB_ATTACH_ID . " = %s
-			AND " . self::DB_SIZE . " = %s
+			WHERE " . self::COL_ATTACH_ID . " = %s
+			AND " . self::COL_IMAGE_SIZE . " = %s
 			",
 			$attach_id,
 			$size
@@ -143,10 +143,10 @@ class Media extends core\Model {
 		$media_disk_usage = $this->get_images_disk_usage();
 		$dashboard_stats  = $wpdb->get_results( $wpdb->prepare(
 			"
-			SELECT ( sum( " . self::DB_B_FILE_SIZE . " )
-				   - sum( " . self::DB_A_FILE_SIZE . " ) ) AS saving_size,
-				   round( ( sum( " . self::DB_B_FILE_SIZE . " )
-				   - sum( " . self::DB_A_FILE_SIZE . " ) )
+			SELECT ( sum( " . self::COL_BYTES_BEFORE . " )
+				   - sum( " . self::COL_BYTES_AFTER . " ) ) AS saving_size,
+				   round( ( sum( " . self::COL_BYTES_BEFORE . " )
+				   - sum( " . self::COL_BYTES_AFTER . " ) )
 				   / %s * 100, 2 ) AS percent
 			FROM $table_name
 			",
@@ -166,7 +166,7 @@ class Media extends core\Model {
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
 		$wpdb->delete(
 			$table_name,
-			array( self::DB_ATTACH_ID => $attach_id )
+			array( self::COL_ATTACH_ID => $attach_id )
 		);
 		update_post_meta( $attach_id, '_just_img_opt_queue', 1 );
 	}
@@ -205,11 +205,11 @@ class Media extends core\Model {
 	 * Get total|single filesizes attachments in bytes
 	 *
 	 * @param int    $id Attachment ID.
-	 * @param string $type For get total size = 'total' or sizes array = 'single'.
+	 * @param string $type For get total size = 'total' or sizes array = 'single'. // TODO: update single > detailed
 	 *
 	 * @return int|float|boolean|array
 	 */
-	public function get_file_sizes( $id, $type ) {
+	public function get_file_sizes( $id, $type = 'detailed' ) {
 		global $wp_filesystem;
 		WP_Filesystem();
 		$total_size  = 0;

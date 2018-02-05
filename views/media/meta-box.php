@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var \JustCoded\WP\ImageOptimizer\models\Media $model
+ * @var array $meta
+ */
+?>
 <table class="form-table">
 	<?php if ( ! empty( $meta['width'] ) ) : ?>
 		<tr>

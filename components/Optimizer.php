@@ -11,6 +11,8 @@ use JustCoded\WP\ImageOptimizer\models\OptimizationLog;
  */
 class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
+	// TODO: refactor method names (@AP)
+
 	/**
 	 * Class constructor.
 	 * initialize WordPress hooks
@@ -81,6 +83,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			'meta_query'     => array(
 				'relation' => 'OR',
 				array(
+					// TODO: let's rename to _just_img_opt_status.
 					'key'   => '_just_img_opt_queue',
 					'value' => '1',
 				),
@@ -95,6 +98,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		while ( $set_queue->have_posts() ) {
 			$set_queue->the_post();
 			$attach_ids[] = get_the_ID();
+			// TODO: move status keys to constants
 			update_post_meta( get_the_ID(), '_just_img_opt_queue', 1 );
 		}
 		require ABSPATH . 'wp-admin/includes/file.php';
@@ -171,7 +175,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		// set statistics and status before replace images.
 		foreach ( $attach_ids as $attach_id ) {
 			$media->save_stats( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
-			$log->save_log( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
+			$log_id = $log->save_log( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
 			update_post_meta( $attach_id, '_just_img_opt_queue', 2 );
 		}
 		// upload images from service.
@@ -190,7 +194,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 							if ( 25 < $optimize_image_size[0] && 25 < $optimize_image_size[1] ) {
 								$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
 							} else {
-								$log->save_fail( $file );
+								$log->save_fail( $log_id, $file );
 							}
 						}
 					}
@@ -202,7 +206,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		// set statistics and status after replace images.
 		foreach ( $attach_ids as $attach_id ) {
 			$media->update_stats( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
-			$log->update_log( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
+			$log->update_log( $log_id, $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
 			update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
 		}
 	}

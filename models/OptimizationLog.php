@@ -9,10 +9,11 @@ use JustCoded\WP\ImageOptimizer\core;
  *
  * Images Optimization Log
  */
-class OptimizationLog extends core\Model {
+class OptimizationLog extends core\Model {  // TODO: Rename to "Log"
 
 	const TABLE_IMAGE_LOG = 'image_optimization_log';
 
+	// TODO: rename cols.
 	const DB_ATTACH_ID = 'attach_id';
 	const DB_SIZE = 'size';
 	const DB_B_FILE_SIZE = 'b_file_size';
@@ -21,6 +22,7 @@ class OptimizationLog extends core\Model {
 	const DB_FAIL = 'fail';
 	const DB_TIME = 'time';
 
+	// TODO: refactor names (@AP).
 	/**
 	 * Save attachment stats before optimize
 	 *

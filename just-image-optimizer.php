@@ -55,6 +55,9 @@ class JustImageOptimizer extends core\Singleton {
 	 */
 	const TEXTDOMAIN = 'justimageoptimizer';
 
+	// TODO update where needed.
+	const OPT_VERSION = 'jio_version';
+
 	/**
 	 * Plugin main entry point
 	 *
@@ -81,19 +84,21 @@ class JustImageOptimizer extends core\Singleton {
 			new controllers\SettingsController();
 			new controllers\DashboardController();
 			new controllers\OptimizationLogController();
+			// TODO: wrong check.
 			if ( $this->checkMigrationsAvailable() ) {
 				new controllers\MigrateController();
 			}
 		}
 	}
 
+	// TODO: move to separate class as on JCF
+
 	/**
 	 * Init joi plugin Media DB
 	 */
 	public function initDB() {
 		$migrate    = new models\Migrate;
-		$migrations = $migrate->findMigrations();
-		$migrate->migrate( $migrations );
+		$migrate->migrate( $migrate->findMigrations() );
 	}
 
 	/**

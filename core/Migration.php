@@ -13,6 +13,7 @@ abstract class Migration {
 	const MODE_TEST = 'test';
 	const MODE_UPDATE = 'update';
 
+	// TODO: remove data
 	/**
 	 * @var array
 	 */
@@ -84,6 +85,7 @@ abstract class Migration {
 
 		$this->updated = $this->update();
 
+		// TODO: data.
 		return $this->data;
 	}
 }
