@@ -105,19 +105,34 @@ class OptimizationLog extends core\Model {
 	/**
 	 * Get dashboard attachment stats
 	 *
-	 * @return object
+	 * @return array
 	 */
 	public function get_log() {
 		global $wpdb;
-		$table_name       = $wpdb->prefix . self::TABLE_IMAGE_LOG;
-		$log  = $wpdb->get_results(
-			"
-			SELECT *
-			FROM $table_name
-			ORDER BY id DESC
-			"
-			, OBJECT );
+		$table_name     = $wpdb->prefix . self::TABLE_IMAGE_LOG;
+		$result         = array();
+		$items_per_page = 10;
+		$page           = isset( $_GET['cpage'] ) ? abs( (int) $_GET['cpage'] ) : 1;
+		$offset         = ( $page * $items_per_page ) - $items_per_page;
+		$query          = 'SELECT * FROM ' . $table_name;
+		$total_query    = "SELECT COUNT(1) FROM (${query}) AS total_log";
+		$total          = $wpdb->get_var( $total_query );
 
-		return $log;
+		$log = $wpdb->get_results( $query . ' ORDER BY id DESC LIMIT ' . $offset . ', ' . $items_per_page, ARRAY_A );
+
+		$pagination = paginate_links( array(
+			'base'      => add_query_arg( 'cpage', '%#%' ),
+			'format'    => '',
+			'prev_text' => __( '&laquo;' ),
+			'next_text' => __( '&raquo;' ),
+			'total'     => ceil( $total / $items_per_page ),
+			'current'   => $page,
+		) );
+		$result     = array(
+			'log'        => $log,
+			'pagination' => $pagination,
+		);
+
+		return $result;
 	}
 }
