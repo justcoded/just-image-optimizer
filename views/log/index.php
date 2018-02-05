@@ -34,7 +34,7 @@
 			<?php endforeach; ?>
 		<?php else : ?>
 			<tr class="no-items">
-				<td class="colspanchange" colspan="7">No pages found.</td>
+				<td class="colspanchange" colspan="7">Log is empty.</td>
 			</tr>
 		<?php endif; ?>
 		</tbody>
