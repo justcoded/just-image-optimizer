@@ -13,12 +13,6 @@ abstract class Migration {
 	const MODE_TEST = 'test';
 	const MODE_UPDATE = 'update';
 
-	// TODO: remove data
-	/**
-	 * @var array
-	 */
-	protected $data;
-
 	/**
 	 * @var string  test|update
 	 */
@@ -45,7 +39,7 @@ abstract class Migration {
 	abstract protected function test();
 
 	/**
-	 * Update $data property to the latest version
+	 * Update to the latest version
 	 *
 	 * @return void
 	 */
@@ -63,8 +57,6 @@ abstract class Migration {
 	/**
 	 * Run compatibility data test
 	 *
-	 * @param array|null $data
-	 *
 	 * @return array
 	 */
 	public function runTest() {
@@ -75,18 +67,16 @@ abstract class Migration {
 	/**
 	 * Update data to match new format
 	 *
-	 * @param array|null $data
 	 * @param string $mode
 	 *
-	 * @return array
+	 * @return \bool
 	 */
 	public function runUpdate( $mode = 'test' ) {
 		$this->mode = ( $mode == self::MODE_UPDATE ) ? self::MODE_UPDATE : self::MODE_TEST;
 
 		$this->updated = $this->update();
 
-		// TODO: data.
-		return $this->data;
+		return true;
 	}
 }
 

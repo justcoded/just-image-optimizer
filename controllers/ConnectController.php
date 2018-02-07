@@ -27,7 +27,7 @@ class ConnectController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public function init_admin_menu() {
 		$page_title = \JustImageOptimizer::$plugin_name;
-		
+
 		add_submenu_page(
 			null,
 			$page_title,

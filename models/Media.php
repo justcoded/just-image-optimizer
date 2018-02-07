@@ -18,6 +18,10 @@ class Media extends core\Model {
 	const COL_BYTES_BEFORE = 'bytes_before';
 	const COL_BYTES_AFTER = 'bytes_after';
 
+	const STATUS_IN_QUEUE = 1;
+	const STATUS_IN_PROCESS = 2;
+	const STATUS_PROCESSED = 3;
+
 	/**
 	 * Arguments query array to use.
 	 *
@@ -35,7 +39,7 @@ class Media extends core\Model {
 	/**
 	 * Save attachment stats before optimize
 	 *
-	 * @param int   $attach_id Attach ID.
+	 * @param int $attach_id Attach ID.
 	 * @param array $stats Array with stats attachments.
 	 */
 	public function save_stats( $attach_id, $stats ) {
@@ -57,7 +61,7 @@ class Media extends core\Model {
 	/**
 	 * Update attachment stats after optimize
 	 *
-	 * @param int   $attach_id Attach ID.
+	 * @param int $attach_id Attach ID.
 	 * @param array $stats Array with stats attachments.
 	 */
 	public function update_stats( $attach_id, $stats ) {
@@ -107,7 +111,7 @@ class Media extends core\Model {
 	/**
 	 * Get single attachment stats
 	 *
-	 * @param int    $attach_id Attach ID.
+	 * @param int $attach_id Attach ID.
 	 * @param string $size Attachment size.
 	 *
 	 * @return object
@@ -168,7 +172,7 @@ class Media extends core\Model {
 			$table_name,
 			array( self::COL_ATTACH_ID => $attach_id )
 		);
-		update_post_meta( $attach_id, '_just_img_opt_queue', 1 );
+		update_post_meta( $attach_id, '_just_img_opt_status', self::STATUS_IN_QUEUE );
 	}
 
 	/**
@@ -204,8 +208,8 @@ class Media extends core\Model {
 	/**
 	 * Get total|single filesizes attachments in bytes
 	 *
-	 * @param int    $id Attachment ID.
-	 * @param string $type For get total size = 'total' or sizes array = 'single'. // TODO: update single > detailed
+	 * @param int $id Attachment ID.
+	 * @param string $type For get total size = 'total' or sizes array = 'detailed'.
 	 *
 	 * @return int|float|boolean|array
 	 */
@@ -231,7 +235,7 @@ class Media extends core\Model {
 		foreach ( $sizes_array as $size ) {
 			$total_size = $total_size + $size;
 		}
-		if ( 'single' === $type ) {
+		if ( 'detailed' === $type ) {
 			return $sizes_array;
 		} else {
 			return $total_size;
@@ -313,8 +317,8 @@ class Media extends core\Model {
 		if ( false === $all ) {
 			$args['meta_query'] = array(
 				array(
-					'key'   => '_just_img_opt_queue',
-					'value' => '1',
+					'key'   => '_just_img_opt_status',
+					'value' => Media::STATUS_IN_QUEUE,
 				),
 			);
 		}
@@ -349,8 +353,8 @@ class Media extends core\Model {
 		$args               = $args = $this->query_args;
 		$args['meta_query'] = array(
 			array(
-				'key'   => '_just_img_opt_queue',
-				'value' => '3',
+				'key'   => '_just_img_opt_status',
+				'value' => Media::STATUS_PROCESSED,
 			),
 		);
 		$query              = new \WP_Query( $args );

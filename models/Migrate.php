@@ -20,7 +20,7 @@ class Migrate extends core\Model {
 		$link_text = __( 'Update migrations', \JustImageOptimizer::TEXTDOMAIN );
 		$link      = '<a href="' . admin_url( 'upload.php?page=just-img-opt-migrate' ) . '" class="button-primary">' . $link_text . '</a>';
 
-		$warning = __( 'You need to update your migrations to continue using the plugin. {link}', \JustImageOptimizer::TEXTDOMAIN );
+		$warning = __( 'You need to update your migrations to continue using the plugin Just Image Optimizer. {link}', \JustImageOptimizer::TEXTDOMAIN );
 		$warning = str_replace( '{link}', $link, $warning );
 
 		printf( '<div class="%1$s"><p>%2$s</p></div>', 'notice notice-error', $warning );
@@ -33,10 +33,8 @@ class Migrate extends core\Model {
 	 * @return Migration[]
 	 */
 	public function findMigrations() {
-		$version = get_option( 'joi_version' );
-
 		$migrations = array();
-		if ( $migration_files = $this->_getMigrationFiles( $version ) ) {
+		if ( $migration_files = $this->_getMigrationFiles( \JustImageOptimizer::$opt_version ) ) {
 			foreach ( $migration_files as $ver => $file ) {
 				$class_name = '\\JustCoded\\WP\\ImageOptimizer\\migrations\\' . preg_replace( '/\.php$/', '', basename( $file ) );
 
@@ -88,16 +86,12 @@ class Migrate extends core\Model {
 	 * @return array
 	 */
 	public function testMigrate( $migrations ) {
-		// TODO: remove data.
-		$data     = null;
 		$warnings = array();
 
 		foreach ( $migrations as $ver => $m ) {
-			if ( $warning = $m->runTest( $data ) ) {
+			if ( $warning = $m->runTest() ) {
 				$warnings[ $ver ] = $warning;
 			}
-			// TODO: we can't run update in test.
-			$data = $m->runUpdate( $data );
 		}
 
 		return $warnings;
@@ -117,7 +111,7 @@ class Migrate extends core\Model {
 			foreach ( $migrations as $ver => $m ) {
 				$m->runUpdate( Migration::MODE_UPDATE );
 			}
-			update_option( 'joi_version', \JustImageOptimizer::$version );
+			update_option( \JustImageOptimizer::OPT_VERSION, \JustImageOptimizer::$version );
 		}
 
 		return true;

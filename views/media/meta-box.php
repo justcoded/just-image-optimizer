@@ -9,7 +9,7 @@
 		<tr>
 			<td><strong>Full size</strong>
 				<?php if ( in_array( get_post_mime_type( $id ), $allowed_images ) ) :
-					$image_status = get_post_meta( $id, '_just_img_opt_queue', true );
+					$image_status = get_post_meta( $id, '_just_img_opt_status', true );
 					?>
 					<?php if ( $image_status === '1' ) : ?>
 					<br><a class="optimize-now-meta" href="#<?php echo $id; ?>" data-attach-id="<?php echo $id; ?>">optimize

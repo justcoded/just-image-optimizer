@@ -67,7 +67,6 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 * @return mixed
 	 */
 	public function upload_optimize_images( $attach_ids, $dst ) {
-		// TODO: use wp_remote_get() instead of direct cURL.
 		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
 		$upload_dir      = WP_CONTENT_DIR;
 		$google_img_path = $upload_dir . '/tmp/image/';
