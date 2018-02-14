@@ -18,7 +18,7 @@ class MigrateController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	}
 
 	/**
-	 * Replace main menu "Just Custom Fields" with migration page
+	 * Migration page
 	 */
 	public function initRoutes() {
 		$page_title = \JustImageOptimizer::$plugin_name;
@@ -43,8 +43,7 @@ class MigrateController extends \JustCoded\WP\ImageOptimizer\core\Component {
 		$errors = "";
 
 		// check that we have something to migrate.
-		$version = get_option( 'joi_version' );
-		if ( ! version_compare( $version, \JustImageOptimizer::$version, '<' ) ) {
+		if ( ! version_compare( \JustImageOptimizer::$opt_version, \JustImageOptimizer::$version, '<' ) ) {
 			return $this->actionUpgraded();
 		}
 

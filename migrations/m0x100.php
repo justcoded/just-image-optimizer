@@ -30,9 +30,9 @@ class m0x100 extends \JustCoded\WP\ImageOptimizer\core\Migration {
 		$sql             = "CREATE TABLE $table_name (
 			id           mediumint(9) NOT NULL AUTO_INCREMENT,
 			attach_id    mediumint(9) NOT NULL,
-			size         VARCHAR(255) NOT NULL,
-			b_file_size  VARCHAR(255) NOT NULL,
-			a_file_size  VARCHAR(255) NOT NULL,
+			image_size   VARCHAR(255) NOT NULL,
+			bytes_before VARCHAR(255) NOT NULL,
+			bytes_after  VARCHAR(255) NOT NULL,
 			PRIMARY KEY (id)
 		) $charset_collate;";
 

@@ -37,6 +37,13 @@ class JustImageOptimizer extends core\Singleton {
 	public static $version;
 
 	/**
+	 * Database options plugin version
+	 *
+	 * @var float
+	 */
+	public static $opt_version;
+
+	/**
 	 * Current Optimize service
 	 *
 	 * @var services\ImageOptimizerInterface
@@ -56,68 +63,44 @@ class JustImageOptimizer extends core\Singleton {
 	const TEXTDOMAIN = 'justimageoptimizer';
 
 	/**
+	 * Plugin version option name
+	 */
+	const OPT_VERSION = 'joi_version';
+
+	/**
 	 * Plugin main entry point
 	 *
 	 * Protected constructor prevents creating another plugin instance with "new" operator.
 	 */
 	protected function __construct() {
+		$loader = new core\PluginLoader();
 		// init plugin name and version.
 		self::$plugin_name = __( 'Just Image Optimizer', self::TEXTDOMAIN );
-		self::$version     = '0.100';
+		self::$version     = '0.200';
+		self::$opt_version = get_option( self::OPT_VERSION );
+		self::$settings    = new models\Settings();
+		self::$service     = services\ImageOptimizerFactory::create();
 
-		register_activation_hook( __FILE__, array( $this, 'initDB' ) );
-
-		// init global static objects.
-		self::$settings = new models\Settings();
-		self::$service  = services\ImageOptimizerFactory::create();
+		register_activation_hook( __FILE__, array( $loader, 'init_db' ) );
 
 		// init components for media and optimizer.
 		new components\MediaInfo();
 		new components\Optimizer();
 
 		// admin panel option pages.
-		if ( is_admin() ) {
-			new controllers\ConnectController();
-			new controllers\SettingsController();
-			new controllers\DashboardController();
-			if ( $this->checkMigrationsAvailable() ) {
-				new controllers\MigrateController();
+		// we use wp_doing_ajax to prevent version check under ajax
+		if ( ! wp_doing_ajax() && $loader->check_migrations_available() ) {
+			new controllers\MigrateController();
+		} else {
+			// init global static objects.
+			if ( is_admin() ) {
+				new controllers\ConnectController();
+				new controllers\SettingsController();
+				new controllers\DashboardController();
+				new controllers\LogController();
 			}
 		}
 	}
-
-	/**
-	 * Init joi plugin Media DB
-	 */
-	public function initDB() {
-		$migrate    = new models\Migrate;
-		$migrations = $migrate->findMigrations();
-		$migrate->migrate( $migrations );
-	}
-
-	/**
-	 * Check plugin version
-	 *
-	 * @return bool
-	 */
-	public function checkMigrationsAvailable() {
-		$version = get_option( 'joi_version' );
-
-		if ( version_compare( $version, self::$version, '<' ) ) {
-			// print notice if we're not on migrate page
-			if ( empty( $_GET['page'] ) || $_GET['page'] != 'just-img-opt-migrate' ) {
-				add_action( 'admin_notices', array(
-					'\JustCoded\WP\ImageOptimizer\models\Migrate',
-					'adminUpgradeNotice',
-				) );
-			}
-
-			return true;
-		}
-
-		return false;
-	}
-
 }
 
 JustImageOptimizer::run();

@@ -5,7 +5,7 @@ if ( $column_name !== 'optimize' ) {
 if ( ! in_array( get_post_mime_type( $id ), $allowed_images ) ) {
 	return;
 }
-$image_status = get_post_meta( $id, '_just_img_opt_queue', true );
+$image_status = get_post_meta( $id, '_just_img_opt_status', true );
 $total_stats = $model->get_total_attachment_stats( $id );
 ?>
 <?php if ( $image_status === '3' ) : ?>

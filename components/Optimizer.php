@@ -4,11 +4,14 @@ namespace JustCoded\WP\ImageOptimizer\components;
 
 use JustCoded\WP\ImageOptimizer\models\Settings;
 use JustCoded\WP\ImageOptimizer\models\Media;
+use JustCoded\WP\ImageOptimizer\models\Log;
 
 /**
  * Class Optimizer
  */
 class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
+
+	// TODO: refactor method names (@AP)
 
 	/**
 	 * Class constructor.
@@ -53,7 +56,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * @param int $post_id Attachment id.
 	 */
 	public function set_attachment_in_queue( $post_id ) {
-		update_post_meta( $post_id, '_just_img_opt_queue', 1 );
+		update_post_meta( $post_id, '_just_img_opt_status', Media::STATUS_IN_QUEUE );
 	}
 
 	/**
@@ -80,11 +83,11 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			'meta_query'     => array(
 				'relation' => 'OR',
 				array(
-					'key'   => '_just_img_opt_queue',
-					'value' => '1',
+					'key'   => '_just_img_opt_status',
+					'value' => Media::STATUS_IN_QUEUE,
 				),
 				array(
-					'key'     => '_just_img_opt_queue',
+					'key'     => '_just_img_opt_status',
 					'compare' => 'NOT EXISTS',
 					'value'   => '',
 				),
@@ -94,7 +97,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		while ( $set_queue->have_posts() ) {
 			$set_queue->the_post();
 			$attach_ids[] = get_the_ID();
-			update_post_meta( get_the_ID(), '_just_img_opt_queue', 1 );
+			update_post_meta( get_the_ID(), '_just_img_opt_status', Media::STATUS_IN_QUEUE );
 		}
 		require ABSPATH . 'wp-admin/includes/file.php';
 		$this->optimize_images( $attach_ids );
@@ -162,14 +165,19 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	protected function optimize_images( array $attach_ids ) {
 		global $wp_filesystem;
 		$media      = new Media();
+		$log        = new Log();
+		$before_attach_found = $attach_ids;
 		$attach_ids = $media->size_limit( $attach_ids );
 		// add filter for WP_FIlesystem permission.
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
 		WP_Filesystem();
 		// set statistics and status before replace images.
+		$store_id = $log->save_log_store();
 		foreach ( $attach_ids as $attach_id ) {
-			$media->save_stats( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
-			update_post_meta( $attach_id, '_just_img_opt_queue', 2 );
+			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
+			$media->save_stats( $attach_id, $file_sizes );
+			$log->save_log( $attach_id, $file_sizes, $store_id );
+			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_IN_PROCESS );
 		}
 		// upload images from service.
 		$dir = WP_CONTENT_DIR . '/tmp/';
@@ -186,6 +194,9 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 							$optimize_image_size = getimagesize( $dir . $file );
 							if ( 25 < $optimize_image_size[0] && 25 < $optimize_image_size[1] ) {
 								$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
+								$log->save_status( $file, $log->status['optimized'] );
+							} else {
+								$log->save_status( $file, $log->status['aborted'] );
 							}
 						}
 					}
@@ -196,8 +207,10 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 		// set statistics and status after replace images.
 		foreach ( $attach_ids as $attach_id ) {
-			$media->update_stats( $attach_id, $media->get_file_sizes( $attach_id, 'single' ) );
-			update_post_meta( $attach_id, '_just_img_opt_queue', 3 );
+			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
+			$media->update_stats( $attach_id, $file_sizes );
+			$log->update_log( $attach_id, $file_sizes );
+			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_PROCESSED );
 		}
 	}
 }
