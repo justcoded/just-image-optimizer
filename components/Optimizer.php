@@ -11,16 +11,15 @@ use JustCoded\WP\ImageOptimizer\models\Log;
  */
 class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
-	// TODO: refactor method names (@AP)
-
 	/**
 	 * Class constructor.
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
-		$this->setup_cron();
 		add_action( 'wp_ajax_manual_optimize', array( $this, 'manual_optimize' ) );
 		add_action( 'add_attachment', array( $this, 'set_attachment_in_queue' ) );
+
+		$this->setup_cron();
 	}
 
 	/**
@@ -28,9 +27,9 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	protected function setup_cron() {
 		if ( \JustImageOptimizer::$settings->auto_optimize ) {
-			add_filter( 'cron_schedules', array( $this, 'add_schedule' ) );
-			add_action( 'init', array( $this, 'add_cron_event' ) );
-			add_action( 'optimizer_image_cron', array( $this, 'auto_optimizer' ) );
+			add_action( 'init', array( $this, 'check_cron_scheduled' ) );
+			add_filter( 'cron_schedules', array( $this, 'init_cron_schedule' ) );
+			add_action( 'just_image_optimizer_autorun', array( $this, 'auto_optimize' ) );
 		}
 	}
 
@@ -41,13 +40,22 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 *
 	 * @return array
 	 */
-	public function add_schedule( $schedules ) {
+	public function init_cron_schedule( $schedules ) {
 		$schedules['just_image_optimizer'] = array(
-			'interval' => 60 * 5,
-			'display'  => 'Optimizer Image Cron Work',
+			'interval' => 60 * 5, // 5 minutes
+			'display'  => 'Image optimizer background optimization',
 		);
 
 		return $schedules;
+	}
+
+	/**
+	 * Re-schedule our auto optimizer background job if needed.
+	 */
+	public function check_cron_scheduled() {
+		if ( ! wp_next_scheduled( 'just_image_optimizer_autorun' ) ) {
+			wp_schedule_event( time(), 'just_image_optimizer', 'just_image_optimizer_autorun' );
+		}
 	}
 
 	/**
@@ -59,19 +67,11 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		update_post_meta( $post_id, '_just_img_opt_status', Media::STATUS_IN_QUEUE );
 	}
 
-	/**
-	 * Add Optimizer Image cron function.
-	 */
-	public function add_cron_event() {
-		if ( ! wp_next_scheduled( 'optimizer_image_cron' ) ) {
-			wp_schedule_event( time(), 'just_image_optimizer', 'optimizer_image_cron' );
-		}
-	}
 
 	/**
 	 * Auto optimizer cron job.
 	 */
-	public function auto_optimizer() {
+	public function auto_optimize() {
 		$attach_ids = array();
 		$queue_args = array(
 			'post_type'      => 'attachment',
@@ -141,7 +141,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Ajax function for manual image optimize
 	 */
 	public function manual_optimize() {
-		$attach_id = $_POST['attach_id'];
+		$attach_id = (int)$_POST['attach_id'];
 
 		$this->optimize_images( [ $attach_id ] );
 		$model           = new Media();
