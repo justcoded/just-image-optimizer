@@ -30,18 +30,12 @@
 .column {
     float: left;
     width: 40%;
+    min-width: 400px;
 }
 
 .column-l {
     float: left;
     width: 20%;
-}
-
-.column h2 {
-    text-align: center !important;
-}
-.row h1 {
-    margin-left: 40%;
 }
 
 /* Clear floats */

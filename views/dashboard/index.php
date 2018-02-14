@@ -1,4 +1,5 @@
 <?php
+/* @var $model \JustCoded\WP\ImageOptimizer\models\Media */
 $dash_stats          = $model->get_dashboard_attachment_stats();
 $dash_saving_size    = ( ! empty( $dash_stats[0]->saving_size ) ? $dash_stats[0]->saving_size : 0 );
 $dash_saving_percent = ( ! empty( $dash_stats[0]->percent ) ? $dash_stats[0]->percent : 0 );
@@ -22,24 +23,24 @@ $chart_disk_space    = $model->size_format_explode( $model->get_disk_space_size(
 		</div>
 	<?php endif; ?>
 	<div class="row">
-		<h1>Stats</h1>
 		<div class="column middle">
-			<h2 class="head-title">Progress</h2>
-			<div id="progress" style="height: 500px; width: 95%;"></div>
-			<p><?php echo( $model->get_images_stat( false ) === '0' ?
+			<h2>Progress</h2>
+			<p><strong><?php echo( $model->get_images_stat( false ) === '0' ?
 					$model->get_images_stat( false ) :
-					$model->get_in_queue_image_count() ); ?> images in queue
-				of <?php echo $model->get_images_stat( true ); ?> images</p>
+						$model->get_in_queue_image_count() ); ?> images</strong>
+				of <?php echo $model->get_images_stat( true ); ?>
+				are in queue.</p>
+			<div id="progress" style="height: 300px; width: 95%;"></div>
 		</div>
 		<div class="column middle">
-			<h2 class="head-title">Saving</h2>
-			<div id="saving" style="height: 500px; width: 95%;"></div>
-			<p> <?php echo size_format( $dash_saving_size ); ?>
-				/ <?php echo $dash_saving_percent; ?>% saving,
+			<h2>Disk Space Saving</h2>
+			<p><strong><?php echo $dash_saving_percent; ?>% saved</strong> (<?php echo size_format( $dash_saving_size ); ?>),
 				disk usage: <?php echo size_format( $model->get_images_disk_usage() ); ?></p>
+			<div id="saving" style="height: 300px; width: 95%;"></div>
 		</div>
+
 		<div class="column-l">
-			<h2 class="head-title">We recommends</h2>
+			<h2 class="head-title">We recommend</h2>
 			<p class="description">To optimize your site and get high score
 				on Google PageSpeed Insight we
 				recommend such plugins:</p>
@@ -79,12 +80,22 @@ $chart_disk_space    = $model->size_format_explode( $model->get_disk_space_size(
 
 			// Optional; add a title and set the width and height of the chart
 			var options = {
-				sliceVisibilityThreshold: 0, 'title': '', is3D: true, backgroundColor: 'transparent',
-				colors: ['#FE2E2E', '#04B431']
+				sliceVisibilityThreshold: 0,
+				'title': '',
+				is3D: true,
+				backgroundColor: 'transparent',
+				colors: ['#FE2E2E', '#04B431'],
+				chartArea: {left:10,top:'20%',width:'95%',height:'80%'},
+			    fontSize: 12
 			};
 			var options2 = {
-				sliceVisibilityThreshold: 0, 'title': '', is3D: true, backgroundColor: 'transparent',
-				colors: ['#04B431', '#0174DF']
+				sliceVisibilityThreshold: 0,
+				'title': '',
+				is3D: true,
+				backgroundColor: 'transparent',
+				colors: ['#04B431', '#0174DF'],
+                chartArea: {left:10,top:'20%',width:'95%',height:'80%'},
+                fontSize: 12
 			};
 
 			// Display the chart inside the <div> element with id="piechart"

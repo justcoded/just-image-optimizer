@@ -183,7 +183,7 @@ class Media extends core\Model {
 	 */
 	public static function get_uploads_path() {
 		$path = array();
-		// TODO: check this with multisite.
+		// TODO: (after launch) check this with multisite.
 		foreach ( glob( wp_upload_dir()['basedir'] . '/*', GLOB_ONLYDIR ) as $upload ) {
 			foreach ( glob( $upload . '/*', GLOB_ONLYDIR ) as $upload_dir ) {
 				$path[] = $upload_dir;
