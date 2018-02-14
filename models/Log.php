@@ -12,63 +12,59 @@ use JustCoded\WP\ImageOptimizer\models\Connect;
  */
 class Log extends core\Model {
 
-	const TABLE_IMAGE_LOG = 'image_optimization_log';
-	const TABLE_IMAGE_LOG_STORE = 'image_optimization_log_store';
-	//Log Table
+	const TABLE_IMAGE_LOG_DETAILS = 'image_optimize_log_details';
+	const TABLE_IMAGE_LOG = 'image_optimize_log';
+	//Log main Table
+	const COL_REQUEST_ID = 'request_id';
+	const COL_SERVICE = 'service';
+	const COL_IMAGE_LIMIT = 'image_limit';
+	const COL_SIZE_LIMIT = 'size_limit';
+	const COL_TIME = 'time';
+	//Log Details Table
+	const COL_TRY_ID = 'request_id';
 	const COL_ATTACH_ID = 'attach_id';
-	const COL_TRY_ID = 'try_id';
 	const COL_IMAGE_SIZE = 'image_size';
 	const COL_BYTES_BEFORE = 'bytes_before';
 	const COL_BYTES_AFTER = 'bytes_after';
 	const COL_ATTACH_NAME = 'attach_name';
 	const COL_STATUS = 'status';
-	//Log Store Table
-	const COL_STORE_ID = 'store_id';
-	const COL_SERVICE = 'service';
-	const COL_IMAGE_LIMIT = 'image_limit';
-	const COL_SIZE_LIMIT = 'size_limit';
-	const COL_TIME = 'time';
 
-	//Optimized status with message
-	public $status = array(
-		'aborted'   => 'Optimization aborted. Image was 25x25.',
-		'optimized' => 'Optimized',
-		'removed'   => 'Removed from service request.',
-	);
+	const STATUS_PENDING   = 'pending';
+	const STATUS_ABORTED   = 'aborted';
+	const STATUS_OPTIMIZED = 'optimized';
+	const STATUS_REMOVED   = 'removed';
 
-	// TODO: refactor names (@AP).
+	const ITEMS_PER_PAGE   = 20;
+
 	/**
-	 * Save attachment stats before optimize
+	 * Return status mesage based on status.
 	 *
-	 * @param int $attach_id Attach ID.
-	 * @param array $stats Array with stats attachments.
+	 * @param string $status
+	 *
+	 * @return string
 	 */
-	public function save_log( $attach_id, $stats, $store_id ) {
-		global $wpdb;
-		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG;
-
-		foreach ( $stats as $size => $file_size ) {
-			$image_data = image_get_intermediate_size( $attach_id, $size );
-			$wpdb->insert(
-				$table_name,
-				array(
-					self::COL_ATTACH_ID    => $attach_id,
-					self::COL_TRY_ID       => $store_id,
-					self::COL_IMAGE_SIZE   => $size,
-					self::COL_BYTES_BEFORE => $file_size,
-					self::COL_ATTACH_NAME  => $image_data['file'],
-					self::COL_STATUS       => $this->status['removed'],
-				)
-			);
+	public function get_status_message($status) {
+		$statuses = array(
+			'pending'   => 'Request sent',
+			'aborted'   => 'Optimization aborted. Image was 25x25',
+			'optimized' => 'Optimized',
+			'removed'   => 'Removed from service request',
+		);
+		if ( isset($statuses[$status]) ) {
+			return $statuses[$status];
+		} else {
+			return (string)$status;
 		}
 	}
 
 	/**
-	 * Save Log Store
+	 * Save optimization request start
+	 *
+	 * @return int Request log ID.
 	 */
-	public function save_log_store() {
+	public function start_request() {
 		global $wpdb;
-		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG_STORE;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG;
 		$connect    = new Connect();
 		$wpdb->insert(
 			$table_name,
@@ -84,33 +80,65 @@ class Log extends core\Model {
 	}
 
 	/**
-	 * Save optimized status
+	 * Save attachment stats before optimize
 	 *
-	 * @param \string $attach_name Attach name.
+	 * @param int $request_id Request log ID.
+	 * @param int $attach_id Attach ID.
+	 * @param array $stats Array with stats attachments.
 	 */
-	public function save_status( $attach_name, $status ) {
+	public function save_details( $request_id, $attach_id, $stats ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
+
+		foreach ( $stats as $size => $file_size ) {
+			$image_data = image_get_intermediate_size( $attach_id, $size );
+			$wpdb->insert(
+				$table_name,
+				array(
+					self::COL_ATTACH_ID    => $attach_id,
+					self::COL_TRY_ID       => $request_id,
+					self::COL_IMAGE_SIZE   => $size,
+					self::COL_BYTES_BEFORE => $file_size,
+					self::COL_ATTACH_NAME  => $image_data['file'],
+					self::COL_STATUS       => $this->get_status_message(static::STATUS_PENDING),
+				)
+			);
+		}
+	}
+
+
+	/**
+	 * Save specific file status
+	 *
+	 * @param int    $request_id  Request ID.
+	 * @param string $attach_name Attach name.
+	 * @param string $status      Log status
+	 */
+	public function save_status( $request_id, $attach_name, $status ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
 		$wpdb->update(
 			$table_name,
 			array(
-				self::COL_STATUS => $status,
+				self::COL_STATUS => $this->get_status_message($status),
 			),
 			array(
+				self::COL_TRY_ID => $request_id,
 				self::COL_ATTACH_NAME => $attach_name,
 			)
 		);
 	}
 
 	/**
-	 * Update attachment stats after optimize
+	 * Update attachment stats after optimization
 	 *
-	 * @param int $attach_id Attach ID.
+	 * @param int   $request_id  Request ID.
+	 * @param int   $attach_id Attach ID.
 	 * @param array $stats Array with stats attachments.
 	 */
-	public function update_log( $attach_id, $stats ) {
+	public function update_details( $request_id, $attach_id, $stats ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
 		foreach ( $stats as $size => $file_size ) {
 			$wpdb->update(
 				$table_name,
@@ -118,6 +146,7 @@ class Log extends core\Model {
 					self::COL_BYTES_AFTER => $file_size,
 				),
 				array(
+					self::COL_TRY_ID => $request_id,
 					self::COL_ATTACH_ID  => $attach_id,
 					self::COL_IMAGE_SIZE => $size,
 				)
@@ -126,54 +155,40 @@ class Log extends core\Model {
 	}
 
 	/**
-	 * Clear log after Regenerate Thumbnails
-	 *
-	 * @param int $attach_id Attachment ID.
-	 */
-	public function clean_log( $attach_id ) {
-		global $wpdb;
-		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG;
-		$wpdb->delete(
-			$table_name,
-			array( self::COL_ATTACH_ID => $attach_id )
-		);
-	}
-
-	/**
 	 * Get log store data
 	 *
 	 * @return array
 	 */
-	public function get_log_store() {
+	public function get_requests() {
 		global $wpdb;
-		$table_name     = $wpdb->prefix . self::TABLE_IMAGE_LOG_STORE;
-		$table_name2    = $wpdb->prefix . self::TABLE_IMAGE_LOG;
+		$table_name     = $wpdb->prefix . self::TABLE_IMAGE_LOG;
+		$table_name2    = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
 		$result         = array();
-		$items_per_page = 15;
-		$page           = isset( $_GET['store'] ) ? abs( (int) $_GET['store'] ) : 1;
+		$items_per_page = self::ITEMS_PER_PAGE;
+		$page           = isset( $_GET['offset'] ) ? abs( (int) $_GET['offset'] ) : 1;
 		$offset         = ( $page * $items_per_page ) - $items_per_page;
 		$query          = 'SELECT store.*, sum(log.' . self::COL_BYTES_BEFORE . ' - log.' . self::COL_BYTES_AFTER . ') as total_save,
-							COUNT(log.id) as total_count
+								COUNT(log.id) as total_count
 							FROM ' . $table_name . ' AS store
-							INNER JOIN ' . $table_name2 . ' AS log
-							ON log.' . self::COL_TRY_ID . ' = store.' . self::COL_STORE_ID . '
-							GROUP BY store.' . self::COL_STORE_ID . '
+							LEFT JOIN ' . $table_name2 . ' AS log
+							ON log.' . self::COL_TRY_ID . ' = store.' . self::COL_REQUEST_ID . '
+							GROUP BY store.' . self::COL_REQUEST_ID . '
 							';
 		$total_query    = "SELECT COUNT(1) FROM (${query}) AS total_log";
 		$total          = $wpdb->get_var( $total_query );
 
-		$log_store = $wpdb->get_results( $query . ' ORDER BY ' . self::COL_STORE_ID . ' DESC LIMIT ' . $offset . ', ' . $items_per_page, ARRAY_A );
+		$log_store = $wpdb->get_results( $query . ' ORDER BY ' . self::COL_REQUEST_ID . ' DESC LIMIT ' . $offset . ', ' . $items_per_page, ARRAY_A );
 
-		$pagination = paginate_links( array(
-			'base'      => add_query_arg( 'store', '%#%' ),
+		$pagination = array(
+			'base'      => add_query_arg( 'offset', '%#%' ),
 			'format'    => '',
 			'prev_text' => __( '&laquo;' ),
 			'next_text' => __( '&raquo;' ),
 			'total'     => ceil( $total / $items_per_page ),
 			'current'   => $page,
-		) );
+		);
 		$result     = array(
-			'log_store'  => $log_store,
+			'rows'  => $log_store,
 			'pagination' => $pagination,
 		);
 
@@ -181,64 +196,66 @@ class Log extends core\Model {
 	}
 
 	/**
-	 * Get Attachment count stats
+	 * Get dashboard attachment stats
+	 *
+	 * @param int $request_id Request Log ID.
+	 *
+	 * @return array
+	 */
+	public function get_request_details( $request_id ) {
+		global $wpdb;
+		$table_name     = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
+		$query          = 'SELECT * FROM ' . $table_name . '
+							WHERE  ' . self::COL_TRY_ID . ' = ' . $request_id;
+
+		$result = $wpdb->get_results( $query . ' ORDER BY id ASC ', ARRAY_A );
+		return $result;
+	}
+
+	/**
+	 * Get Attachments count by request
+	 *
+	 * @param int $try_id Store log ID.
+	 *
+	 * @return array
+	 */
+	public function attach_count( $try_id ) {
+		global $wpdb;
+		$table_name  = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
+		$attach_stat = $wpdb->get_results( $wpdb->prepare(
+			"
+			SELECT DISTINCT(" . self::COL_ATTACH_ID . ")
+			FROM $table_name as log
+			WHERE " . self::COL_TRY_ID . " = %d
+			",
+			$try_id
+		) );
+
+		return count($attach_stat);
+	}
+
+	/**
+	 * Get Attachment file count stats
 	 *
 	 * @param int $try_id Store log ID.
 	 * @param string $status Attachment optimize status.
 	 *
 	 * @return array
 	 */
-	public function attach_count_stat( $try_id, $status ) {
+	public function files_count_stat( $try_id, $status ) {
 		global $wpdb;
-		$table_name  = $wpdb->prefix . self::TABLE_IMAGE_LOG;
-		$attach_stat = $wpdb->get_results( $wpdb->prepare(
+		$table_name  = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
+		$attach_stat = $wpdb->get_var( $wpdb->prepare(
 			"
-			SELECT COUNT(log.id) as stat
+			SELECT COUNT(log.id)
 			FROM $table_name as log
-			WHERE " . self::COL_TRY_ID . " = %s
+			WHERE " . self::COL_TRY_ID . " = %d
 			AND " . self::COL_STATUS . " = %s
 			",
 			$try_id,
-			$this->status[ $status ]
-		), ARRAY_A );
+			$this->get_status_message( $status )
+		) );
 
 		return $attach_stat;
-	}
-
-	/**
-	 * Get dashboard attachment stats
-	 *
-	 * @param int $store_id Store Log ID.
-	 *
-	 * @return array
-	 */
-	public function get_log( $store_id ) {
-		global $wpdb;
-		$table_name     = $wpdb->prefix . self::TABLE_IMAGE_LOG;
-		$result         = array();
-		$items_per_page = 15;
-		$page           = isset( $_GET['log'] ) ? abs( (int) $_GET['log'] ) : 1;
-		$offset         = ( $page * $items_per_page ) - $items_per_page;
-		$query          = 'SELECT * FROM ' . $table_name . '
-							WHERE  ' . self::COL_TRY_ID . ' = ' . $store_id;
-		$total_query    = "SELECT COUNT(1) FROM (${query}) AS total_log";
-		$total          = $wpdb->get_var( $total_query );
-
-		$log = $wpdb->get_results( $query . ' ORDER BY id DESC LIMIT ' . $offset . ', ' . $items_per_page, ARRAY_A );
-
-		$pagination = paginate_links( array(
-			'base'      => add_query_arg( 'log', '%#%' ),
-			'format'    => '',
-			'prev_text' => __( '&laquo;' ),
-			'next_text' => __( '&raquo;' ),
-			'total'     => ceil( $total / $items_per_page ),
-			'current'   => $page,
-		) );
-		$result     = array(
-			'log'        => $log,
-			'pagination' => $pagination,
-		);
-
-		return $result;
 	}
 }

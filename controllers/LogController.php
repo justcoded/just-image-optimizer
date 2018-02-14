@@ -38,11 +38,11 @@ class LogController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public function actionIndex() {
 		$model    = new models\Log();
-		$store_id = ( isset( $_GET['store_id'] ) ? $_GET['store_id'] : 0 );
-		if ( isset( $store_id ) && ! empty( $store_id ) ) {
+		$request_id = ( isset( $_GET['request_id'] ) ? (int)$_GET['request_id'] : 0 );
+		if ( ! empty( $request_id ) ) {
 			$this->render( 'log/single-log', array(
 				'model'    => $model,
-				'store_id' => $store_id,
+				'request_id' => $request_id,
 				'tab'      => 'log',
 			) );
 		} else {

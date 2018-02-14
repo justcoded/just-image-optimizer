@@ -53,6 +53,7 @@ class Media extends core\Model {
 					self::COL_ATTACH_ID    => $attach_id,
 					self::COL_IMAGE_SIZE   => $size,
 					self::COL_BYTES_BEFORE => $file_size,
+					self::COL_BYTES_AFTER  => $file_size,
 				)
 			);
 		}

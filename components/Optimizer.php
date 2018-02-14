@@ -172,11 +172,12 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
 		WP_Filesystem();
 		// set statistics and status before replace images.
-		$store_id = $log->save_log_store();
+		$request_id = $log->start_request();
+
 		foreach ( $attach_ids as $attach_id ) {
 			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
 			$media->save_stats( $attach_id, $file_sizes );
-			$log->save_log( $attach_id, $file_sizes, $store_id );
+			$log->save_details( $request_id, $attach_id, $file_sizes );
 			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_IN_PROCESS );
 		}
 		// upload images from service.
@@ -194,9 +195,9 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 							$optimize_image_size = getimagesize( $dir . $file );
 							if ( 25 < $optimize_image_size[0] && 25 < $optimize_image_size[1] ) {
 								$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
-								$log->save_status( $file, $log->status['optimized'] );
+								$log->save_status( $request_id, $file, Log::STATUS_OPTIMIZED );
 							} else {
-								$log->save_status( $file, $log->status['aborted'] );
+								$log->save_status( $request_id, $file, Log::STATUS_ABORTED );
 							}
 						}
 					}
@@ -205,11 +206,13 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			self::delete_dir( $dir );
 		}
 
+		// TODO: if images processing failed - clean status to IN QUEUE again, otherwise stats is wrong (bytes_after = 0 and it calculate wrong stats)
+
 		// set statistics and status after replace images.
 		foreach ( $attach_ids as $attach_id ) {
 			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
 			$media->update_stats( $attach_id, $file_sizes );
-			$log->update_log( $attach_id, $file_sizes );
+			$log->update_details( $request_id, $attach_id, $file_sizes );
 			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_PROCESSED );
 		}
 	}
