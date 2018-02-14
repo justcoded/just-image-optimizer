@@ -59,7 +59,7 @@ class SettingsController extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 		$model = \JustImageOptimizer::$settings;
 		$model->load( $_POST ) && $saved = $model->save();
-		$this->render( 'settings/index', array(
+		$this->render( 'dashboard/settings', array(
 			'tab'   => 'settings',
 			'model' => $model,
 			'sizes' => Media::image_dimensions(),

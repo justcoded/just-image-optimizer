@@ -415,7 +415,7 @@ class Media extends core\Model {
 		$size_limit = 0;
 		$size_array = array();
 		$array_ids  = array();
-		if ( '0' !== \JustImageOptimizer::$settings->size_limit ) {
+		if ( 0 < \JustImageOptimizer::$settings->size_limit ) {
 			foreach ( $attach_ids as $attach_id ) {
 				$size_array[ $attach_id ] = $this->get_file_sizes( $attach_id, 'total' );
 			}

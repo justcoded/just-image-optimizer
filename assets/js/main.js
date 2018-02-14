@@ -13,8 +13,14 @@ jQuery(document).ready(function ($) {
          $($selector_block).css('display', 'none');
       }
    });
+   $('#api_key').on('change', function(e) {
+     $('#api_connect').show();
+     $('#submit-connect').prop('disabled', true);
+     $('.notice-error').html('');
+   })
    $('#api_connect').on('click', function(e) {
       e.preventDefault();
+      $('#api_connect').text('Connecting...');
       var $api_key = $('#api_key').val();
       var $service = $('#service').val();
       var data = {
@@ -23,13 +29,15 @@ jQuery(document).ready(function ($) {
          service: $service
       };
       $.post( ajaxurl, data, function( response ) {
-         console.log(response);
+         //console.log(response);
          if( response == '1') {
-            $('.api_status').html('<p>OK</p>');
+            $('.notice-error').html('Connected');
+            $('#api_connect').hide();
             $('#submit-connect').prop('disabled', false);
          } else {
             $('.notice-error').html('API key is invalid');
          }
+        $('#api_connect').text('Connect');
       });
 
    });
