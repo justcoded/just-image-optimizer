@@ -1,6 +1,8 @@
 <?php
 namespace JustCoded\WP\ImageOptimizer\services;
 
+use JustCoded\WP\ImageOptimizer\models\Log;
+
 interface ImageOptimizerInterface {
 
 	/**
@@ -15,8 +17,9 @@ interface ImageOptimizerInterface {
 	 *
 	 * @param int[]  $attach_ids Attachment ids to optimize.
 	 * @param string $dst Directory to save image to.
+	 * @param Log    $log Log object.
 	 *
 	 * @return mixed
 	 */
-	public function upload_optimize_images( $attach_ids, $dst );
+	public function upload_optimize_images( $attach_ids, $dst, $log );
 }

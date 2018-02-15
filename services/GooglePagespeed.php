@@ -63,37 +63,54 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 *
 	 * @param int[]  $attach_ids Attachment ids to optimize.
 	 * @param string $dst Directory to save image to.
+	 * @param models\Log  $log Log object.
 	 *
 	 * @return mixed
 	 */
-	public function upload_optimize_images( $attach_ids, $dst ) {
+	public function upload_optimize_images( $attach_ids, $dst, $log ) {
+		/* @var $wp_filesystem \WP_Filesystem_Direct */
+		global $wp_filesystem;
+
 		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
 		$upload_dir      = WP_CONTENT_DIR;
 		$google_img_path = $upload_dir . '/tmp/image/';
+		$wp_filesystem->is_dir($google_img_path) || $wp_filesystem->mkdir($google_img_path);
+
+		$images_url = home_url( '/just-image-optimize/' . $base_attach_ids );
+		$log->update_info( 'Optimize request: ' . $images_url );
+
+		$archive_file    = $upload_dir . '/optimize_contents.zip';
+		$file_pointer    = fopen( $archive_file, 'w+' );
+		$source          = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . $images_url . '&strategy=desktop';
+
 		$ch              = curl_init();
-		$file            = fopen( $upload_dir . '/optimize_contents.zip', 'w+' );
-		$source          = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . home_url( '/just-image-optimize/' . $base_attach_ids . '' ) . '&strategy=desktop';
 		curl_setopt( $ch, CURLOPT_URL, $source );
-		curl_setopt( $ch, CURLOPT_FILE, $file );
+		curl_setopt( $ch, CURLOPT_FILE, $file_pointer );
 		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
 		curl_exec( $ch );
 		curl_close( $ch );
-		fclose( $file );
+		fclose( $file_pointer );
 
-		$unzipfile = unzip_file( $upload_dir . '/optimize_contents.zip', $dst );
+		$log->update_info( 'Downloaded: ' . $archive_file . ', ' . ((int)@filesize($archive_file)) . 'B' );
+
+		$unzipfile = unzip_file( $archive_file, $dst );
 		if ( ! is_wp_error( $unzipfile ) ) {
 			// Get array of all source files.
 			$files = scandir( $google_img_path );
+			$counter = 0;
 			foreach ( $files as $file ) {
 				if ( in_array( $file, array( '.', '..' ), true ) ) {
 					continue;
 				}
 				copy( $google_img_path . $file, $dst . $file );
+				$counter++;
 			}
 			if ( is_dir( $google_img_path ) ) {
-				Optimizer::delete_dir( $google_img_path );
+				$wp_filesystem->rmdir( $google_img_path );
 			}
-			unlink( $upload_dir . '/optimize_contents.zip' );
+			unlink( $archive_file );
+
+			$log->update_info( 'Extracted: ' . $counter . ' files' );
 		}
 	}
 
