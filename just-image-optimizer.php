@@ -2,10 +2,10 @@
 
 /*
 Plugin Name: Just Image Optimizer
-Description: Optimize your site images (reduce size). Based on Google Page Speed.
-Version: 0.1
+Description: Compress image files, improve performance and boost your SEO rank using Google Page Speed Insights compression and optimization.
+Version: 0.9
 Author: JustCoded
-License: GPL3
+License: GPLv2 or later
 */
 
 define( 'JUSTIMAGEOPTIMIZER_ROOT', dirname( __FILE__ ) );
@@ -76,7 +76,7 @@ class JustImageOptimizer extends core\Singleton {
 		$loader = new core\PluginLoader();
 		// init plugin name and version.
 		self::$plugin_name = __( 'Just Image Optimizer', self::TEXTDOMAIN );
-		self::$version     = '0.200';
+		self::$version     = '0.900';
 		self::$opt_version = get_option( self::OPT_VERSION );
 		self::$settings    = new models\Settings();
 		self::$service     = services\ImageOptimizerFactory::create();

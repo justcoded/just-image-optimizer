@@ -111,8 +111,8 @@ class Migrate extends core\Model {
 			foreach ( $migrations as $ver => $m ) {
 				$m->runUpdate( Migration::MODE_UPDATE );
 			}
-			update_option( \JustImageOptimizer::OPT_VERSION, \JustImageOptimizer::$version );
 		}
+		update_option( \JustImageOptimizer::OPT_VERSION, \JustImageOptimizer::$version );
 
 		return true;
 	}

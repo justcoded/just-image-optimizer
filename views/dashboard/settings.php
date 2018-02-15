@@ -70,6 +70,8 @@
 					<p class="description">* set 0 to turn off this limit.</p>
 				</td>
 			</tr>
+			<?php /*
+            // TODO: add support in future releases.
 			<tr>
 				<th scope="row"><?php _e( 'Regenerate image thumbnails before optimize', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
@@ -81,6 +83,7 @@
 					<p class="description">Can affect server performance if you upload images very often</p>
 				</td>
 			</tr>
+            */ ?>
 		</table>
 		<input
 			type="submit" name="submit-settings" class="button button-primary" value="Save">
