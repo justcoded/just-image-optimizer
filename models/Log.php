@@ -29,31 +29,31 @@ class Log extends core\Model {
 	const COL_ATTACH_NAME = 'attach_name';
 	const COL_STATUS = 'status';
 
-	const STATUS_PENDING   = 'pending';
-	const STATUS_ABORTED   = 'aborted';
+	const STATUS_PENDING = 'pending';
+	const STATUS_ABORTED = 'aborted';
 	const STATUS_OPTIMIZED = 'optimized';
-	const STATUS_REMOVED   = 'removed';
+	const STATUS_REMOVED = 'removed';
 
-	const ITEMS_PER_PAGE   = 20;
+	const ITEMS_PER_PAGE = 20;
 
 	/**
-	 * Return status mesage based on status.
+	 * Return status message based on status.
 	 *
 	 * @param string $status
 	 *
 	 * @return string
 	 */
-	public function get_status_message($status) {
+	public function get_status_message( $status ) {
 		$statuses = array(
 			'pending'   => 'Request sent',
 			'aborted'   => 'Optimization aborted. Image was 25x25',
 			'optimized' => 'Optimized',
 			'removed'   => 'Removed from service request',
 		);
-		if ( isset($statuses[$status]) ) {
-			return $statuses[$status];
+		if ( isset( $statuses[ $status ] ) ) {
+			return $statuses[ $status ];
 		} else {
-			return (string)$status;
+			return (string) $status;
 		}
 	}
 
@@ -82,8 +82,8 @@ class Log extends core\Model {
 	/**
 	 * Save attachment stats before optimize
 	 *
-	 * @param int $request_id Request log ID.
-	 * @param int $attach_id Attach ID.
+	 * @param int   $request_id Request log ID.
+	 * @param int   $attach_id Attach ID.
 	 * @param array $stats Array with stats attachments.
 	 */
 	public function save_details( $request_id, $attach_id, $stats ) {
@@ -91,7 +91,13 @@ class Log extends core\Model {
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
 
 		foreach ( $stats as $size => $file_size ) {
-			$image_data = image_get_intermediate_size( $attach_id, $size );
+			if ( 'full' == $size ) {
+				$full_img_path = explode( '/', get_post_meta( $attach_id, '_wp_attached_file', true ) );
+				$image_data['file'] = $full_img_path[ sizeof( $full_img_path ) - 1 ];
+			} else {
+				$image_data = image_get_intermediate_size( $attach_id, $size );
+			}
+
 			$wpdb->insert(
 				$table_name,
 				array(
@@ -99,20 +105,20 @@ class Log extends core\Model {
 					self::COL_TRY_ID       => $request_id,
 					self::COL_IMAGE_SIZE   => $size,
 					self::COL_BYTES_BEFORE => $file_size,
+					self::COL_BYTES_AFTER  => $file_size,
 					self::COL_ATTACH_NAME  => $image_data['file'],
-					self::COL_STATUS       => $this->get_status_message(static::STATUS_PENDING),
+					self::COL_STATUS       => $this->get_status_message( static::STATUS_PENDING ),
 				)
 			);
 		}
 	}
 
-
 	/**
 	 * Save specific file status
 	 *
-	 * @param int    $request_id  Request ID.
+	 * @param int    $request_id Request ID.
 	 * @param string $attach_name Attach name.
-	 * @param string $status      Log status
+	 * @param string $status Log status
 	 */
 	public function save_status( $request_id, $attach_name, $status ) {
 		global $wpdb;
@@ -120,11 +126,33 @@ class Log extends core\Model {
 		$wpdb->update(
 			$table_name,
 			array(
-				self::COL_STATUS => $this->get_status_message($status),
+				self::COL_STATUS => $this->get_status_message( $status ),
 			),
 			array(
-				self::COL_TRY_ID => $request_id,
+				self::COL_TRY_ID      => $request_id,
 				self::COL_ATTACH_NAME => $attach_name,
+			)
+		);
+	}
+
+	/**
+	 * Update specific file status
+	 *
+	 * @param int    $attach_id Attach ID.
+	 * @param int    $request_id Request ID.
+	 * @param string $status Log status
+	 */
+	public function update_status( $attach_id, $request_id, $status ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
+		$wpdb->update(
+			$table_name,
+			array(
+				self::COL_STATUS => $this->get_status_message( $status ),
+			),
+			array(
+				self::COL_ATTACH_ID => $attach_id,
+				self::COL_TRY_ID    => $request_id,
 			)
 		);
 	}
@@ -132,7 +160,7 @@ class Log extends core\Model {
 	/**
 	 * Update attachment stats after optimization
 	 *
-	 * @param int   $request_id  Request ID.
+	 * @param int   $request_id Request ID.
 	 * @param int   $attach_id Attach ID.
 	 * @param array $stats Array with stats attachments.
 	 */
@@ -146,7 +174,7 @@ class Log extends core\Model {
 					self::COL_BYTES_AFTER => $file_size,
 				),
 				array(
-					self::COL_TRY_ID => $request_id,
+					self::COL_TRY_ID     => $request_id,
 					self::COL_ATTACH_ID  => $attach_id,
 					self::COL_IMAGE_SIZE => $size,
 				)
@@ -188,7 +216,7 @@ class Log extends core\Model {
 			'current'   => $page,
 		);
 		$result     = array(
-			'rows'  => $log_store,
+			'rows'       => $log_store,
 			'pagination' => $pagination,
 		);
 
@@ -204,11 +232,12 @@ class Log extends core\Model {
 	 */
 	public function get_request_details( $request_id ) {
 		global $wpdb;
-		$table_name     = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
-		$query          = 'SELECT * FROM ' . $table_name . '
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
+		$query      = 'SELECT * FROM ' . $table_name . '
 							WHERE  ' . self::COL_TRY_ID . ' = ' . $request_id;
 
 		$result = $wpdb->get_results( $query . ' ORDER BY id ASC ', ARRAY_A );
+
 		return $result;
 	}
 
@@ -231,13 +260,13 @@ class Log extends core\Model {
 			$try_id
 		) );
 
-		return count($attach_stat);
+		return count( $attach_stat );
 	}
 
 	/**
 	 * Get Attachment file count stats
 	 *
-	 * @param int $try_id Store log ID.
+	 * @param int    $try_id Store log ID.
 	 * @param string $status Attachment optimize status.
 	 *
 	 * @return array
