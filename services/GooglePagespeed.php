@@ -81,7 +81,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		fclose( $file );
 
 		$unzipfile = unzip_file( $upload_dir . '/optimize_contents.zip', $dst );
-		if ( $unzipfile ) {
+		if ( ! is_wp_error( $unzipfile ) ) {
 			// Get array of all source files.
 			$files = scandir( $google_img_path );
 			foreach ( $files as $file ) {

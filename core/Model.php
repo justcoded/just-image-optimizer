@@ -24,7 +24,7 @@ class Model {
 	/**
 	 * Set attributes to model
 	 *
-	 * @param type $params
+	 * @param array $params
 	 */
 	public function setAttributes( $params ) {
 		$self = get_class( $this );

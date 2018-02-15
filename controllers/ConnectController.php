@@ -50,7 +50,7 @@ class ConnectController extends \JustCoded\WP\ImageOptimizer\core\Component {
 				) );
 			}
 		}
-		$this->render( 'connect/connect-page', array(
+		$this->render( 'dashboard/connect', array(
 			'model' => $model,
 			'tab'   => 'connect',
 			'saved' => ( isset( $saved ) ? $saved : '' ),

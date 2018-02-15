@@ -28,16 +28,6 @@
 					<?php echo esc_html( "{$meta['x_ratio']}:{$meta['y_ratio']}" ); ?> )
 				<?php endif; ?>
 			</td>
-			<td>
-				<?php $stats = $model->get_attachment_stats( $id, 'full' ); ?>
-				<?php if ( ! empty( $stats[0]->saving_size ) ) : ?>
-					<strong><?php echo size_format( $stats[0]->saving_size ); ?>
-						, <?php echo $stats[0]->percent; ?>% saved</strong>
-				<?php else: ?>
-					<strong>0% saved</strong>
-				<?php endif; ?>
-
-			</td>
 		</tr>
 	<?php endif; ?>
 	<tr class="optimize-stats">

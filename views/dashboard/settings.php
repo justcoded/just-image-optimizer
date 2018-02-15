@@ -17,19 +17,8 @@
 			<tr>
 				<th scope="row"><?php _e( 'Automatically optimize uploads', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
-					<?php
-					$auto_opt_checked   = $model->auto_optimize;
-					$check_auto_default = '';
-					if ( $auto_opt_checked === '1' ) {
-						$check_auto_default = 'checked';
-					} elseif ( $auto_opt_checked === '0' ) {
-						$check_auto_default = '';
-					} else {
-						$check_auto_default = 'checked';
-					}
-					?>
 					<input type="hidden" name="auto_optimize" value="0">
-					<input <?php echo $check_auto_default; ?>
+					<input <?php checked($model->auto_optimize); ?>
 						type="checkbox"
 						name="auto_optimize"
 						value="1">
@@ -37,36 +26,26 @@
 			</tr>
 			<tr class="image_sizes_set">
 				<th scope="row"><?php _e( 'Image sizes to optimize', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
-				<?php
-				$opt_checked       = $model->image_sizes_all;
-				$check_all_default = '';
-				if ( $opt_checked === '1' ) {
-					$check_all_default = 'checked';
-				} elseif ( $opt_checked === '0' ) {
-					$check_all_default = '';
-				} else {
-					$check_all_default = 'checked';
-				}
-				?>
 				<td class="additional_sizes">
 					<input type="hidden" name="image_sizes_all" value="0">
-					<input <?php echo $check_all_default; ?>
-						id="check_all_size" type="checkbox" name="image_sizes_all"
-						value="1">All<br>
-					<span class="size_checked">
-						<input type="hidden" name="image_sizes" value="0">
+					<label for="check_all_size">
+						<input <?php checked($model->image_sizes_all); ?>
+								id="check_all_size" type="checkbox" name="image_sizes_all"
+								value="1">All
+					</label>
+					<div class="size_checked">
+						<input type="hidden" name="image_sizes" value="">
+						<?php $i = 0; ?>
 						<?php foreach ( $sizes as $size => $dimensions ) : ?>
-							<?php if ( is_array( $model->image_sizes ) ) : ?>
-								<input <?php echo( in_array( $size, $model->image_sizes ) ? 'checked' : '' ); ?>
-								type="checkbox"
-								name="image_sizes[]"
-								value="<?php echo $size; ?>"><?php echo $size; ?><br>
-							<?php else : ?>
-								<input type="checkbox" name="image_sizes[]"
-								       value="<?php echo $size; ?>"><?php echo $size; ?><br>
-							<?php endif; ?>
+							<label for="image_size_<?php echo ++$i; ?>" class="label-checkbox">
+								<input <?php checked( in_array( $size, $model->image_sizes ) ); ?>
+										id="image_size_<?php echo $i; ?>"
+										type="checkbox"
+										name="image_sizes[]"
+										value="<?php echo $size; ?>"><?php echo $size; ?>
+							</label>
 						<?php endforeach; ?>
-					</span>
+					</div>
 				</td>
 			</tr>
 			<tr>
@@ -76,35 +55,46 @@
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Bulk images limit', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row"><?php _e( 'Bulk media limit', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input type="text" name="image_limit"
 					       value="<?php echo $model->image_limit; ?>">
-					<p>how many images can be optimized at a time</p>
+					<p class="description">How many Media can be optimized at a time</p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Bulk size limit', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row"><?php _e( 'Bulk filesize limit', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input type="text" name="size_limit" value="<?php echo $model->size_limit; ?>">
-					<p>optimize images, which file size in total is not greater than limit</p>
-					<p>* can decrease Bulk images limit, if original images are very big</p>
-					<p>** use 0 to ignore this limit</p>
+					<p class="description">Filesize limit for one optimization request, in MB.</p>
+					<p class="description">* set 0 to turn off this limit.</p>
 				</td>
 			</tr>
+			<?php /*
+            // TODO: add support in future releases.
 			<tr>
 				<th scope="row"><?php _e( 'Regenerate image thumbnails before optimize', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input type="hidden" name="before_regen" value="0">
-					<input <?php echo( $model->before_regen === '1' ? 'checked' : '' ); ?>
+					<input <?php checked( $model->before_regen ); ?>
 						type="checkbox"
 						name="before_regen"
 						value="1">
-					<p>can affect server performance if you upload images very often</p>
+					<p class="description">Can affect server performance if you upload images very often</p>
 				</td>
 			</tr>
+            */ ?>
 		</table>
 		<input
 			type="submit" name="submit-settings" class="button button-primary" value="Save">
 	</form>
 </div>
+<style>
+	.size_checked {
+		padding-top: 10px;
+	}
+	.label-checkbox {
+		width:200px;
+		display: inline-block;
+	}
+</style>

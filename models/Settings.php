@@ -80,13 +80,23 @@ class Settings extends core\Model {
 	 * Set setting options values
 	 */
 	public function reset() {
-		$this->image_sizes     = maybe_unserialize( get_option( self::DB_OPT_IMAGE_SIZES ) );
-		$this->auto_optimize   = get_option( self::DB_OPT_AUTO_OPTIMIZE );
-		$this->image_limit     = get_option( self::DB_OPT_IMAGE_LIMIT );
-		$this->size_limit      = get_option( self::DB_OPT_SIZE_LIMIT );
+		$this->image_sizes     = maybe_unserialize( get_option( self::DB_OPT_IMAGE_SIZES, array() ) );
+		$this->auto_optimize   = get_option( self::DB_OPT_AUTO_OPTIMIZE, '1' );
+		$this->image_limit     = get_option( self::DB_OPT_IMAGE_LIMIT, 5 );
+		$this->size_limit      = get_option( self::DB_OPT_SIZE_LIMIT, 10 );
 		$this->before_regen    = get_option( self::DB_OPT_BEFORE_REGEN );
-		$this->image_sizes_all = get_option( self::DB_OPT_SIZE_CHECKED );
+		$this->image_sizes_all = get_option( self::DB_OPT_SIZE_CHECKED, '1' );
 		$this->keep_origin     = get_option( self::DB_OPT_KEEP_ORIGIN );
+	}
+
+	/**
+	 * @param array $params
+	 */
+	public function setAttributes( $params ) {
+		parent::setAttributes( $params );
+		if (empty($this->image_sizes)) {
+			$this->image_sizes = array();
+		}
 	}
 
 	/**

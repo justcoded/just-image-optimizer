@@ -40,32 +40,36 @@
 						<div>
 							<ol id="instructions-api" style="display: none">
 								<li>
-									Navigate to <a target="_blank" href="https://console.cloud.google.com/"
+									Navigate to <a target="_blank" href="https://console.cloud.google.com/apis/dashboard"
 									               rel="nofollow">
-										Cloud Platform Console</a>
+										Google Cloud Platform Console</a>.
 								</li>
 								<li>
-									Login with your Google Account (Create a Google account if you do not have one)
+									<strong>Login</strong> with your Google Account (Create a Google account if you do not have one).
 								</li>
 								<li>
-									From the projects list ( is on top left ), select a project or create a new one.
+									From the projects list ( is on top left ), <strong>select a project</strong> or create a new one.
+									<ul>
+										<li>
+											- To create a project set “Project Name” and click “Create”. <br>
+											- Wait until the creation is complete and select newly created project.
+										</li>
+									</ul>
 								</li>
 								<li>
-									For creation project set “Project Name” and click “Create”. Waiting for creation
-									project and select him.
+									After selecting a project. Click on
+										<a href="https://console.developers.google.com/apis/credentials">Dashboard page</a>.
+								</li>
+								<li>Click on <strong>"Enable APIs and Services"</strong> button.</li>
+								<li>Find and enable <strong>PageSpeed Insights</strong> API.</li>
+								<li>
+									After enabling PageSpeed Insights API we need to <strong>create an API key</strong>. Click on
+										<a href="https://console.developers.google.com/apis/credentials">Credentials page</a>.
 								</li>
 								<li>
-									After creation project. Click on <a
-										href="https://console.developers.google.com/apis/credentials">Credentials
-										page</a>
+									Click "Create credentials" and then select "API key".
 								</li>
-								<li>
-									On Credentials page the left, choose "Credentials".
-								</li>
-								<li>
-									Click "Create credentials" and then select API key.
-								</li>
-								<li>Paste this API Key</li>
+								<li>Copy/Paste this API Key in the input field below.</li>
 							</ol>
 						</div>
 					</td>
