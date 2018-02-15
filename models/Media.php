@@ -224,8 +224,6 @@ class Media extends core\Model {
 		if ( ! $attachments ) {
 			return 0;
 		}
-		//full image
-		$sizes_array['full'] = $this->get_filesize( wp_upload_dir()['basedir'] . '/' . $attachments['file'] );
 		foreach ( $attachments['sizes'] as $size_key => $attachment ) {
 			foreach ( $get_path as $path ) {
 				if ( $wp_filesystem->exists( $path . '/' . $attachment['file'] ) ) {
@@ -275,8 +273,6 @@ class Media extends core\Model {
 		global $_wp_additional_image_sizes;
 		$additional_sizes = get_intermediate_image_sizes();
 		$sizes            = array();
-
-		$sizes['full'] = array();
 		// Create the full array with sizes and crop info.
 		foreach ( $additional_sizes as $_size ) {
 			if ( in_array( $_size, array( 'thumbnail', 'medium', 'large' ) ) ) {

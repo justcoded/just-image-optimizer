@@ -91,12 +91,7 @@ class Log extends core\Model {
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
 
 		foreach ( $stats as $size => $file_size ) {
-			if ( 'full' == $size ) {
-				$full_img_path = explode( '/', get_post_meta( $attach_id, '_wp_attached_file', true ) );
-				$image_data['file'] = $full_img_path[ sizeof( $full_img_path ) - 1 ];
-			} else {
-				$image_data = image_get_intermediate_size( $attach_id, $size );
-			}
+			$image_data = image_get_intermediate_size( $attach_id, $size );
 
 			$wpdb->insert(
 				$table_name,
