@@ -46,7 +46,16 @@ class Media extends core\Model {
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
 
+		$exists = $wpdb->get_col( $wpdb->prepare(
+			"SELECT " . self::COL_IMAGE_SIZE . " FROM $table_name WHERE " . self::COL_ATTACH_ID . " = %d",
+			$attach_id
+		));
+
 		foreach ( $stats as $size => $file_size ) {
+			// check row exist first.
+			if ( in_array( $size, $exists ) ) {
+				continue;
+			}
 			$wpdb->insert(
 				$table_name,
 				array(

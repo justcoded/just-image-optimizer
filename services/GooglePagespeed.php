@@ -73,7 +73,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 
 		$base_attach_ids = base64_encode( implode( ',', $attach_ids ) );
 		$upload_dir      = WP_CONTENT_DIR;
-		$google_img_path = $upload_dir . '/tmp/image/';
+		$google_img_path = $dst . '/image/';
 		$wp_filesystem->is_dir($google_img_path) || $wp_filesystem->mkdir($google_img_path);
 
 		$images_url = home_url( '/just-image-optimize/' . $base_attach_ids );
@@ -93,6 +93,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 
 		$log->update_info( 'Downloaded: ' . $archive_file . ', ' . ((int)@filesize($archive_file)) . 'B' );
 
+		// optimized images are placed under /image folder inside the archive, so $google_img_path = $dst . '/image'.
 		$unzipfile = unzip_file( $archive_file, $dst );
 		if ( ! is_wp_error( $unzipfile ) ) {
 			// Get array of all source files.
