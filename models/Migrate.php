@@ -111,8 +111,11 @@ class Migrate extends core\Model {
 			foreach ( $migrations as $ver => $m ) {
 				$m->runUpdate( Migration::MODE_UPDATE );
 			}
+			// TODO: (future releases) check wpdb error inside the migrations and return migration status to not update version in case of error.
+			update_option( \JustImageOptimizer::OPT_VERSION, \JustImageOptimizer::$version );
+		} else {
+			update_option( \JustImageOptimizer::OPT_VERSION, \JustImageOptimizer::$version );
 		}
-		update_option( \JustImageOptimizer::OPT_VERSION, \JustImageOptimizer::$version );
 
 		return true;
 	}
