@@ -102,7 +102,7 @@ class Log extends core\Model {
 					self::COL_BYTES_BEFORE => $file_size,
 					self::COL_BYTES_AFTER  => $file_size,
 					self::COL_ATTACH_NAME  => $image_data['file'],
-					self::COL_STATUS       => $this->get_status_message( static::STATUS_PENDING ),
+					self::COL_STATUS       => static::STATUS_PENDING,
 				)
 			);
 		}
@@ -121,7 +121,7 @@ class Log extends core\Model {
 		$wpdb->update(
 			$table_name,
 			array(
-				self::COL_STATUS => $this->get_status_message( $status ),
+				self::COL_STATUS => $status,
 			),
 			array(
 				self::COL_TRY_ID      => $request_id,
@@ -143,7 +143,7 @@ class Log extends core\Model {
 		$wpdb->update(
 			$table_name,
 			array(
-				self::COL_STATUS => $this->get_status_message( $status ),
+				self::COL_STATUS => $status,
 			),
 			array(
 				self::COL_ATTACH_ID => $attach_id,
@@ -277,7 +277,7 @@ class Log extends core\Model {
 			AND " . self::COL_STATUS . " = %s
 			",
 			$try_id,
-			$this->get_status_message( $status )
+			$status
 		) );
 
 		return $attach_stat;

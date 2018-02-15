@@ -183,41 +183,46 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		// upload images from service.
 		$dir = WP_CONTENT_DIR . '/tmp/';
 		\JustImageOptimizer::$service->upload_optimize_images( $attach_ids, $dir );
-		//check if folder not empty
-		if ( count( glob( $dir ) ) != 0 ) {
-			$get_image = scandir( $dir );
-			$get_path  = $media->get_uploads_path();
-			// process image replacement.
-			if ( ! empty( $get_image ) ) {
-				foreach ( $get_image as $key => $file ) {
-					if ( $wp_filesystem->is_file( $dir . $file ) ) {
-						foreach ( $get_path as $path ) {
-							if ( $wp_filesystem->exists( $path . '/' . $file ) ) {
-								$optimize_image_size = getimagesize( $dir . $file );
-								if ( 25 < $optimize_image_size[0] && 25 < $optimize_image_size[1] ) {
-									$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
-									$log->save_status( $request_id, $file, Log::STATUS_OPTIMIZED );
-								} else {
-									$log->save_status( $request_id, $file, Log::STATUS_ABORTED );
-								}
-							}
-						}
-					}
-				}
-				self::delete_dir( $dir );
-				// set statistics and status after replace images.
-				foreach ( $attach_ids as $attach_id ) {
-					$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
-					$media->update_stats( $attach_id, $file_sizes );
-					$log->update_details( $request_id, $attach_id, $file_sizes );
-					update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_PROCESSED );
-				}
-			}
-		} else {
+
+		// if folder empty - then optimization failed, reset stats
+		$image_files = scandir( $dir );
+		if ( 0 == count( glob( $dir ) ) || empty($image_files) ) {
 			foreach ( $attach_ids as $attach_id ) {
 				$log->update_status( $attach_id, $request_id, Log::STATUS_REMOVED );
 				$media->clean_statistics( $attach_id );
 			}
+			self::delete_dir( $dir );
+			return false;
 		}
+
+		$get_path  = $media->get_uploads_path();
+
+		// process image replacement.
+		foreach ( $image_files as $key => $file ) {
+			if ( $wp_filesystem->is_file( $dir . $file ) ) {
+				foreach ( $get_path as $path ) {
+					if ( $wp_filesystem->exists( $path . '/' . $file ) ) {
+						$optimize_image_size = getimagesize( $dir . $file );
+						if ( 25 < $optimize_image_size[0] && 25 < $optimize_image_size[1] ) {
+							$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
+							$log->save_status( $request_id, $file, Log::STATUS_OPTIMIZED );
+						} else {
+							$log->save_status( $request_id, $file, Log::STATUS_ABORTED );
+						}
+					}
+				}
+			}
+		}
+
+		// set statistics and status after replace images.
+		foreach ( $attach_ids as $attach_id ) {
+			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
+			$media->update_stats( $attach_id, $file_sizes );
+			$log->update_details( $request_id, $attach_id, $file_sizes );
+			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_PROCESSED );
+		}
+
+		self::delete_dir( $dir );
+		return true;
 	}
 }

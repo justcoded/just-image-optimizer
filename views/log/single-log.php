@@ -25,15 +25,15 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 			<?php foreach ( $log_data as $row ) : ?>
 				<tr>
 					<td class="num">
-						<a href="<?php echo get_edit_post_link( $row[ $model::COL_ATTACH_ID ] ); ?>">
-							<?php echo $row[ $model::COL_ATTACH_ID ]; ?>
+						<a href="<?php echo get_edit_post_link( $row[ Log::COL_ATTACH_ID ] ); ?>">
+							<?php echo $row[ Log::COL_ATTACH_ID ]; ?>
 						</a>
 					</td>
-					<td><?php echo $row[ $model::COL_IMAGE_SIZE ]; ?></td>
-					<td><?php echo $row[ $model::COL_ATTACH_NAME ]; ?></td>
-					<td class="num"><?php echo size_format( $row[ $model::COL_BYTES_BEFORE ] ); ?></td>
-					<td class="num"><?php echo size_format( $row[ $model::COL_BYTES_AFTER ] ); ?></td>
-					<td><?php echo $row[ $model::COL_STATUS ]; ?></td>
+					<td><?php echo $row[ Log::COL_IMAGE_SIZE ]; ?></td>
+					<td><?php echo $row[ Log::COL_ATTACH_NAME ]; ?></td>
+					<td class="num"><?php echo size_format( $row[ Log::COL_BYTES_BEFORE ] ); ?></td>
+					<td class="num"><?php echo size_format( $row[ Log::COL_BYTES_AFTER ] ); ?></td>
+					<td><?php echo $model->get_status_message($row[ Log::COL_STATUS ]); ?></td>
 				</tr>
 			<?php endforeach; ?>
 		<?php else : ?>
