@@ -259,13 +259,16 @@ class Media extends core\Model {
 	 */
 	public function get_count_images( $id ) {
 		$count        = 0;
-		$sizes        = array();
+		$files        = array();
 		$get_metadata = wp_get_attachment_metadata( $id );
 		if ( $get_metadata ) {
 			foreach ( $get_metadata['sizes'] as $size ) {
-				$sizes[] = $size;
+				if ( ! isset( $size['file'] ) ) {
+					continue;
+				}
+				$files[ $size['file'] ] = $size;
 			}
-			$count = count( $sizes );
+			$count = count( $files );
 
 			return $count;
 		}
