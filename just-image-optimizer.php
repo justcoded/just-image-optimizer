@@ -2,23 +2,26 @@
 
 /*
 Plugin Name: Just Image Optimizer
-Description: WordPress Plugin Boilerplate based on latest WordPress OOP practices
-Version: 0.1
-Author: Private Company
-License: GPL3
+Description: Compress image files, improve performance and boost your SEO rank using Google Page Speed Insights compression and optimization.
+Version: 0.9
+Author: JustCoded
+License: GPLv2 or later
 */
 
 define( 'JUSTIMAGEOPTIMIZER_ROOT', dirname( __FILE__ ) );
-require_once( JUSTIMAGEOPTIMIZER_ROOT . '/core/Autoload.php' );
+require_once JUSTIMAGEOPTIMIZER_ROOT . '/core/Autoload.php';
 
-use justimageoptimizer\core;
-use justimageoptimizer\components;
+use JustCoded\WP\ImageOptimizer\core;
+use JustCoded\WP\ImageOptimizer\components;
+use JustCoded\WP\ImageOptimizer\services;
+use JustCoded\WP\ImageOptimizer\models;
+use JustCoded\WP\ImageOptimizer\controllers;
 
 /**
- * Class justImageOptimizer
+ * Class JustImageOptimizer
  * Main plugin entry point. Includes components in constructor
  */
-class justImageOptimizer extends core\Singleton {
+class JustImageOptimizer extends core\Singleton {
 	/**
 	 * Textual plugin name
 	 *
@@ -34,9 +37,35 @@ class justImageOptimizer extends core\Singleton {
 	public static $version;
 
 	/**
+	 * Database options plugin version
+	 *
+	 * @var float
+	 */
+	public static $opt_version;
+
+	/**
+	 * Current Optimize service
+	 *
+	 * @var services\ImageOptimizerInterface
+	 */
+	public static $service;
+
+	/**
+	 * Settings model
+	 *
+	 * @var models\Settings
+	 */
+	public static $settings;
+
+	/**
 	 * Plugin text domain for translations
 	 */
 	const TEXTDOMAIN = 'justimageoptimizer';
+
+	/**
+	 * Plugin version option name
+	 */
+	const OPT_VERSION = 'joi_version';
 
 	/**
 	 * Plugin main entry point
@@ -44,14 +73,34 @@ class justImageOptimizer extends core\Singleton {
 	 * Protected constructor prevents creating another plugin instance with "new" operator.
 	 */
 	protected function __construct() {
+		$loader = new core\PluginLoader();
 		// init plugin name and version.
-		self::$plugin_name = __( 'Just Image Optimizer', justImageOptimizer::TEXTDOMAIN );
-		self::$version     = 0.100;
+		self::$plugin_name = __( 'Just Image Optimizer', self::TEXTDOMAIN );
+		self::$version     = '0.900';
+		self::$opt_version = get_option( self::OPT_VERSION );
+		self::$settings    = new models\Settings();
+		self::$service     = services\ImageOptimizerFactory::create();
 
-		// init features, which this plugin is created for.
-		new components\SimonTitlePrefix();
+		register_activation_hook( __FILE__, array( $loader, 'init_db' ) );
+
+		// init components for media and optimizer.
+		new components\MediaInfo();
+		new components\Optimizer();
+
+		// admin panel option pages.
+		// we use wp_doing_ajax to prevent version check under ajax
+		if ( ! wp_doing_ajax() && $loader->check_migrations_available() ) {
+			new controllers\MigrateController();
+		} else {
+			// init global static objects.
+			if ( is_admin() ) {
+				new controllers\ConnectController();
+				new controllers\SettingsController();
+				new controllers\DashboardController();
+				new controllers\LogController();
+			}
+		}
 	}
-
 }
 
-justImageOptimizer::run();
+JustImageOptimizer::run();
