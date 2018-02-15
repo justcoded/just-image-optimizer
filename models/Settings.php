@@ -112,6 +112,8 @@ class Settings extends core\Model {
 		update_option( self::DB_OPT_KEEP_ORIGIN, $this->keep_origin );
 		$this->reset();
 
+		flush_rewrite_rules();
+
 		return true;
 	}
 

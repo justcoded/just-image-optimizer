@@ -66,6 +66,8 @@ class Connect extends core\Model {
 			update_option( self::DB_OPT_STATUS, '1' );
 			$this->reset();
 
+			flush_rewrite_rules();
+
 			return true;
 		} else {
 			update_option( self::DB_OPT_STATUS, '2' );
