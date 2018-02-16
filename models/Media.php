@@ -14,6 +14,7 @@ class Media extends core\Model {
 	const TABLE_IMAGE_STATS = 'image_optimize';
 
 	const COL_ATTACH_ID = 'attach_id';
+	const COL_ATTACH_NAME = 'attach_name';
 	const COL_IMAGE_SIZE = 'image_size';
 	const COL_BYTES_BEFORE = 'bytes_before';
 	const COL_BYTES_AFTER = 'bytes_after';
@@ -52,6 +53,7 @@ class Media extends core\Model {
 		));
 
 		foreach ( $stats as $size => $file_size ) {
+			$image_data = image_get_intermediate_size( $attach_id, $size );
 			// check row exist first.
 			if ( in_array( $size, $exists ) ) {
 				continue;
@@ -60,6 +62,7 @@ class Media extends core\Model {
 				$table_name,
 				array(
 					self::COL_ATTACH_ID    => $attach_id,
+					self::COL_ATTACH_NAME  => $image_data['file'],
 					self::COL_IMAGE_SIZE   => $size,
 					self::COL_BYTES_BEFORE => $file_size,
 					self::COL_BYTES_AFTER  => $file_size,

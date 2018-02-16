@@ -31,11 +31,14 @@ class m0x100 extends \JustCoded\WP\ImageOptimizer\core\Migration {
 		$sql             = "CREATE TABLE $table_stats (
 			id           BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
 			attach_id    BIGINT(20) UNSIGNED NOT NULL,
+			attach_name	 VARCHAR(255) NOT NULL,
 			image_size   VARCHAR(255) NOT NULL,
 			bytes_before VARCHAR(255) NOT NULL,
 			bytes_after  VARCHAR(255) NOT NULL,
 			PRIMARY KEY (id),
 			INDEX ix_attach_id(attach_id),
+			INDEX ix_attach_name(attach_name),
+			INDEX ix_image_size(image_size),
 			FOREIGN KEY (attach_id) 
 				REFERENCES $table_posts(ID) 
 				ON DELETE CASCADE
