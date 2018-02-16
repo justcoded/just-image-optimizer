@@ -20,6 +20,7 @@ class Log extends core\Model {
 	const COL_IMAGE_LIMIT = 'image_limit';
 	const COL_SIZE_LIMIT = 'size_limit';
 	const COL_TIME = 'time';
+	const COL_INFO = 'info';
 	//Log Details Table
 	const COL_TRY_ID = 'request_id';
 	const COL_ATTACH_ID = 'attach_id';
@@ -35,6 +36,13 @@ class Log extends core\Model {
 	const STATUS_REMOVED = 'removed';
 
 	const ITEMS_PER_PAGE = 20;
+
+	/**
+	 * Current running request ID.
+	 *
+	 * @var int
+	 */
+	public $request_id;
 
 	/**
 	 * Return status message based on status.
@@ -76,7 +84,49 @@ class Log extends core\Model {
 			)
 		);
 
-		return $wpdb->insert_id;
+		$this->request_id = $wpdb->insert_id;
+		return $this->request_id;
+	}
+
+	/**
+	 * Store log info as multiline log
+	 *
+	 * @param string $line Line to add to request log info field.
+	 *
+	 * @return bool
+	 */
+	public function update_info( $line ) {
+		global $wpdb;
+		$table   = $wpdb->prefix . self::TABLE_IMAGE_LOG;
+		$request = $this->find( $this->request_id );
+		if ( ! $request ) {
+			return false;
+		}
+		return $wpdb->update(
+			$table,
+			array(
+				self::COL_INFO => $request->info . "\n" . $line,
+			),
+			array(
+				self::COL_REQUEST_ID => $this->request_id,
+			)
+		);
+	}
+
+	/**
+	 * Find log record
+	 *
+	 * @param int $request_id Request ID
+	 *
+	 * @return object
+	 */
+	public function find( $request_id ) {
+		global $wpdb;
+		$table = $wpdb->prefix . self::TABLE_IMAGE_LOG;
+		return $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM $table WHERE " . self::COL_REQUEST_ID . " = %d",
+			$request_id
+		) );
 	}
 
 	/**

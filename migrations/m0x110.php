@@ -36,6 +36,7 @@ class m0X110 extends \JustCoded\WP\ImageOptimizer\core\Migration {
 			image_limit    VARCHAR(255) NOT NULL,
 			size_limit     VARCHAR(255) NOT NULL,
 			time           datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			info           LONGTEXT,
 			PRIMARY KEY (request_id)
 		) $charset_collate;";
 

@@ -10,6 +10,7 @@ License: GPLv2 or later
 
 define( 'JUSTIMAGEOPTIMIZER_ROOT', dirname( __FILE__ ) );
 require_once JUSTIMAGEOPTIMIZER_ROOT . '/core/Autoload.php';
+require_once JUSTIMAGEOPTIMIZER_ROOT . '/functions.php';
 
 use JustCoded\WP\ImageOptimizer\core;
 use JustCoded\WP\ImageOptimizer\components;

@@ -38,6 +38,17 @@ class Connect extends core\Model {
 	public $status;
 
 	/**
+	 * Sanitize rules
+	 *
+	 * @var array
+	 */
+	protected $sanitize = array(
+		'service' => 'key',
+		'api_key' => 'text_field',
+		'status'  => 'int',
+	);
+
+	/**
 	 * Construct for Connect model
 	 */
 	public function __construct() {
@@ -65,6 +76,8 @@ class Connect extends core\Model {
 			update_option( self::DB_OPT_SERVICE, $this->service );
 			update_option( self::DB_OPT_STATUS, '1' );
 			$this->reset();
+
+			flush_rewrite_rules();
 
 			return true;
 		} else {

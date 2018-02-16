@@ -113,31 +113,6 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	}
 
 	/**
-	 * Delete upload dir
-	 *
-	 * @param string $dir_path Path url.
-	 *
-	 * @throws \InvalidArgumentException Check directory.
-	 */
-	public static function delete_dir( $dir_path ) {
-		if ( ! is_dir( $dir_path ) ) {
-			throw new \InvalidArgumentException( "$dir_path must be a directory" );
-		}
-		if ( substr( $dir_path, strlen( $dir_path ) - 1, 1 ) !== '/' ) {
-			$dir_path .= '/';
-		}
-		$files = glob( $dir_path . '*', GLOB_MARK );
-		foreach ( $files as $file ) {
-			if ( is_dir( $file ) ) {
-				self::delete_dir( $file );
-			} else {
-				unlink( $file );
-			}
-		}
-		rmdir( $dir_path );
-	}
-
-	/**
 	 * Ajax function for manual image optimize
 	 */
 	public function manual_optimize() {
@@ -163,6 +138,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * @param array $attach_ids Attachment ids.
 	 */
 	protected function optimize_images( array $attach_ids ) {
+		/* @var $wp_filesystem \WP_Filesystem_Direct */
 		global $wp_filesystem;
 		$media               = new Media();
 		$log                 = new Log();
@@ -182,16 +158,17 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		}
 		// upload images from service.
 		$dir = WP_CONTENT_DIR . '/tmp/';
-		\JustImageOptimizer::$service->upload_optimize_images( $attach_ids, $dir );
+		$wp_filesystem->is_dir( $dir ) || $wp_filesystem->mkdir( $dir );
+		$status = \JustImageOptimizer::$service->upload_optimize_images( $attach_ids, $dir, $log );
 
-		// if folder empty - then optimization failed, reset stats
+		// if folder empty - then optimization failed, reset stats.
 		$image_files = scandir( $dir );
-		if ( 0 == count( glob( $dir ) ) || empty($image_files) ) {
+		if ( ! $status || 0 === count( glob( $dir ) ) || empty( $image_files ) ) {
 			foreach ( $attach_ids as $attach_id ) {
 				$log->update_status( $attach_id, $request_id, Log::STATUS_REMOVED );
 				$media->clean_statistics( $attach_id );
 			}
-			self::delete_dir( $dir );
+			$wp_filesystem->rmdir( $dir, true );
 			return false;
 		}
 
@@ -222,7 +199,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_PROCESSED );
 		}
 
-		self::delete_dir( $dir );
+		$wp_filesystem->rmdir( $dir, true );
 		return true;
 	}
 }

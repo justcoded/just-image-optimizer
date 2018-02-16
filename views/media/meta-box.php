@@ -8,23 +8,26 @@
 	<?php if ( ! empty( $meta['width'] ) ) : ?>
 		<tr>
 			<td><strong>Full size</strong>
-				<?php if ( in_array( get_post_mime_type( $id ), $allowed_images ) ) :
+				<?php if ( in_array( get_post_mime_type( $id ), $allowed_images, true ) ) :
 					$image_status = get_post_meta( $id, '_just_img_opt_status', true );
 					?>
-					<?php if ( $image_status === '1' ) : ?>
-					<br><a class="optimize-now-meta" href="#<?php echo $id; ?>" data-attach-id="<?php echo $id; ?>">optimize
-						now</a>
+					<?php if ( '1' === $image_status ) : ?>
+					<br><a class="optimize-now-meta" href="#<?php echo esc_attr( $id ); ?>" data-attach-id="<?php echo esc_attr( $id ); ?>">
+						optimize now</a>
 				<?php elseif ( empty( $image_status ) ) : ?>
-					<br><a class="optimize-now-meta" href="#<?php echo $id; ?>" data-attach-id="<?php echo $id; ?>">optimize
-						now</a>
+					<br><a class="optimize-now-meta" href="#<?php echo esc_attr( $id ); ?>" data-attach-id="<?php echo esc_attr( $id ); ?>">
+						optimize now</a>
 				<?php endif; ?>
 				<?php endif; ?>
 			</td>
 			<td><strong><?php echo esc_html( "{$meta['width']} x {$meta['height']}" ); ?> px</strong>
 				<?php if ( ! empty( $meta['gcd'] ) ) : ?>
-					( <?php if ( ! empty( $meta['avr_ratio'] ) ) {
+					(
+					<?php
+					if ( ! empty( $meta['avr_ratio'] ) ) :
 						echo '~';
-					} ?>
+					endif;
+					?>
 					<?php echo esc_html( "{$meta['x_ratio']}:{$meta['y_ratio']}" ); ?> )
 				<?php endif; ?>
 			</td>
@@ -35,10 +38,10 @@
 		<?php $total_stats = $model->get_total_attachment_stats( $id ); ?>
 		<?php if ( ! empty( $total_stats[0]->percent ) ) : ?>
 			<td>
-				<p><?php echo $total_stats[0]->percent; ?>% saved
-					(<?php echo ( ! empty( $total_stats[0]->saving_size ) ? size_format( $total_stats[0]->saving_size ) : 0 ); ?>)</p>
+				<p><?php echo esc_html( $total_stats[0]->percent ); ?>% saved
+					(<?php echo esc_html( ! empty( $total_stats[0]->saving_size ) ? size_format( $total_stats[0]->saving_size ) : 0 ); ?>)</p>
 				<p>disk usage: <?php echo size_format( $total_stats[0]->disk_usage ); ?>
-					(<?php echo $model->get_count_images( $id ); ?> images) </p>
+					(<?php echo esc_html( $model->get_count_images( $id ) ); ?> images) </p>
 			</td>
 		<?php else : ?>
 			<td><strong>0% saved</strong></td>
@@ -55,7 +58,7 @@
 				<?php $stats = $model->get_attachment_stats( $id, $key ); ?>
 				<?php if ( ! empty( $stats[0]->saving_size ) ) : ?>
 					<td><strong><?php echo size_format( $stats[0]->saving_size ); ?>
-							, <?php echo $stats[0]->percent; ?>% saved</strong></td>
+							, <?php echo esc_html( $stats[0]->percent ); ?>% saved</strong></td>
 				<?php else: ?>
 					<td><strong>0% saved</strong></td>
 				<?php endif; ?>

@@ -70,6 +70,21 @@ class Settings extends core\Model {
 	public $keep_origin;
 
 	/**
+	 * Sanitize rules
+	 *
+	 * @var array
+	 */
+	protected $sanitize = array(
+		'image_sizes_all' => 'int',
+		'image_sizes.*'   => 'text_field',
+		'auto_optimize'   => 'int',
+		'image_limit'     => 'int',
+		'size_limit'      => 'int',
+		'before_regen'    => 'int',
+		'keep_origin'     => 'int',
+	);
+
+	/**
 	 * Construct for Settings model
 	 */
 	public function __construct() {
@@ -90,11 +105,13 @@ class Settings extends core\Model {
 	}
 
 	/**
-	 * @param array $params
+	 * Set attributes processor
+	 *
+	 * @param array $params Input data.
 	 */
-	public function setAttributes( $params ) {
-		parent::setAttributes( $params );
-		if (empty($this->image_sizes)) {
+	public function set_attributes( $params ) {
+		parent::set_attributes( $params );
+		if ( empty( $this->image_sizes ) ) {
 			$this->image_sizes = array();
 		}
 	}
@@ -111,6 +128,8 @@ class Settings extends core\Model {
 		update_option( self::DB_OPT_SIZE_CHECKED, $this->image_sizes_all );
 		update_option( self::DB_OPT_KEEP_ORIGIN, $this->keep_origin );
 		$this->reset();
+
+		flush_rewrite_rules();
 
 		return true;
 	}

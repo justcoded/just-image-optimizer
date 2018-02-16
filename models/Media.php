@@ -14,6 +14,7 @@ class Media extends core\Model {
 	const TABLE_IMAGE_STATS = 'image_optimize';
 
 	const COL_ATTACH_ID = 'attach_id';
+	const COL_ATTACH_NAME = 'attach_name';
 	const COL_IMAGE_SIZE = 'image_size';
 	const COL_BYTES_BEFORE = 'bytes_before';
 	const COL_BYTES_AFTER = 'bytes_after';
@@ -46,11 +47,22 @@ class Media extends core\Model {
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
 
+		$exists = $wpdb->get_col( $wpdb->prepare(
+			"SELECT " . self::COL_IMAGE_SIZE . " FROM $table_name WHERE " . self::COL_ATTACH_ID . " = %d",
+			$attach_id
+		));
+
 		foreach ( $stats as $size => $file_size ) {
+			$image_data = image_get_intermediate_size( $attach_id, $size );
+			// check row exist first.
+			if ( in_array( $size, $exists ) ) {
+				continue;
+			}
 			$wpdb->insert(
 				$table_name,
 				array(
 					self::COL_ATTACH_ID    => $attach_id,
+					self::COL_ATTACH_NAME  => $image_data['file'],
 					self::COL_IMAGE_SIZE   => $size,
 					self::COL_BYTES_BEFORE => $file_size,
 					self::COL_BYTES_AFTER  => $file_size,
@@ -100,8 +112,11 @@ class Media extends core\Model {
 				   - sum( " . self::COL_BYTES_AFTER . " ) )
 				   / sum( " . self::COL_BYTES_BEFORE . " ) * 100 ), 2 ) as percent,
 				   sum( " . self::COL_BYTES_AFTER . " ) as disk_usage
-			FROM $table_name
-			WHERE " . self::COL_ATTACH_ID . " = %s
+			FROM (
+				SELECT * FROM $table_name
+				WHERE " . self::COL_ATTACH_ID . " = %s
+				GROUP BY " . self::COL_ATTACH_NAME . "
+			) io
 			",
 			$attach_id
 		), OBJECT );
@@ -126,10 +141,12 @@ class Media extends core\Model {
 				   round( ( ( " . self::COL_BYTES_BEFORE . "
 				   - " . self::COL_BYTES_AFTER . " )
 				   / " . self::COL_BYTES_BEFORE . " * 100 ), 2 ) as percent
-			FROM $table_name
-			WHERE " . self::COL_ATTACH_ID . " = %s
-			AND " . self::COL_IMAGE_SIZE . " = %s
-			",
+			FROM (
+				SELECT * FROM $table_name
+				WHERE " . self::COL_ATTACH_ID . " = %s
+				AND " . self::COL_IMAGE_SIZE . " = %s
+				GROUP BY " . self::COL_ATTACH_NAME . "
+			) io",
 			$attach_id,
 			$size
 		), OBJECT );
@@ -153,8 +170,10 @@ class Media extends core\Model {
 				   round( ( sum( " . self::COL_BYTES_BEFORE . " )
 				   - sum( " . self::COL_BYTES_AFTER . " ) )
 				   / %s * 100, 2 ) AS percent
-			FROM $table_name
-			",
+			FROM (
+				SELECT * FROM $table_name
+				GROUP BY " . self::COL_ATTACH_NAME . "
+			) io",
 			$media_disk_usage
 		), OBJECT );
 
@@ -250,13 +269,16 @@ class Media extends core\Model {
 	 */
 	public function get_count_images( $id ) {
 		$count        = 0;
-		$sizes        = array();
+		$files        = array();
 		$get_metadata = wp_get_attachment_metadata( $id );
 		if ( $get_metadata ) {
 			foreach ( $get_metadata['sizes'] as $size ) {
-				$sizes[] = $size;
+				if ( ! isset( $size['file'] ) ) {
+					continue;
+				}
+				$files[ $size['file'] ] = $size;
 			}
-			$count = count( $sizes );
+			$count = count( $files );
 
 			return $count;
 		}

@@ -2,22 +2,25 @@
 if ( $column_name !== 'optimize' ) {
 	return;
 }
-if ( ! in_array( get_post_mime_type( $id ), $allowed_images ) ) {
+if ( ! in_array( get_post_mime_type( $id ), $allowed_images, true ) ) {
 	return;
 }
 $image_status = get_post_meta( $id, '_just_img_opt_status', true );
-$total_stats = $model->get_total_attachment_stats( $id );
+$total_stats  = $model->get_total_attachment_stats( $id );
 ?>
-<?php if ( $image_status === '3' ) : ?>
+<?php if ( '3' === $image_status ) : ?>
 	<?php if ( ! empty( $total_stats[0]->percent ) ) : ?>
-	<p><?php echo $total_stats[0]->percent; ?>% saved
-		(<?php echo ( ! empty( $total_stats[0]->saving_size ) ? size_format( $total_stats[0]->saving_size ) : 0 ); ?>)</p>
-	<p>disk usage: <?php echo size_format( $total_stats[0]->disk_usage ); ?>
-		(<?php echo $model->get_count_images( $id ); ?> images) </p>
+		<p><?php echo esc_html( $total_stats[0]->percent ); ?>% saved
+			(<?php echo esc_html( ! empty( $total_stats[0]->saving_size ) ? size_format( $total_stats[0]->saving_size ) : 0 ); ?>
+			)</p>
+		<p>disk usage: <?php echo size_format( $total_stats[0]->disk_usage ); ?>
+			(<?php echo esc_html( $model->get_count_images( $id ) ); ?> images) </p>
 	<?php endif; ?>
-<?php elseif ( $image_status === '1' ) : ?>
-	<p>Queued (#<?php echo $id; ?>)</p>
-	<a class="optimize-now" href="#<?php echo $id; ?>" data-attach-id="<?php echo $id; ?>">optimize now</a>
+<?php elseif ( '1' === $image_status ) : ?>
+	<p>Queued (#<?php echo esc_html( $id ); ?>)</p>
+	<a class="optimize-now" href="#<?php echo esc_attr( $id ); ?>" data-attach-id="<?php echo esc_attr( $id ); ?>">optimize
+		now</a>
 <?php else: ?>
-	<a class="optimize-now" href="#<?php echo $id; ?>" data-attach-id="<?php echo $id; ?>">optimize now</a>
+	<a class="optimize-now" href="#<?php echo esc_attr( $id ); ?>" data-attach-id="<?php echo esc_attr( $id ); ?>">optimize
+		now</a>
 <?php endif; ?>
