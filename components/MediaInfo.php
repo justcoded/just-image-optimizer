@@ -4,7 +4,6 @@ namespace JustCoded\WP\ImageOptimizer\components;
 
 use JustCoded\WP\ImageOptimizer\models\Settings;
 use JustCoded\WP\ImageOptimizer\models\Media;
-use JustCoded\WP\ImageOptimizer\models\Log;
 
 /**
  * Adds option media info boxes
@@ -36,9 +35,7 @@ class MediaInfo extends \JustCoded\WP\ImageOptimizer\core\Component {
 		if ( ! empty( $_REQUEST['id'] ) ) {
 			$attach_id = $_REQUEST['id'];
 			$media = new Media();
-			$log = new Log();
 			$media->clean_statistics( $attach_id );
-			$log->clean_log( $attach_id );
 		}
 	}
 
