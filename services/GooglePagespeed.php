@@ -64,13 +64,18 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		// download archive file with optimized images.
 		$archive_file = $upload_dir . '/optimize_contents.zip';
 		$source       = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . $images_url . '&strategy=desktop';
-		wp_remote_get( $source,
-			array(
-				'timeout'  => 120,
-				'stream'   => true,
-				'filename' => $archive_file,
-			)
-		);
+
+		$response = wp_remote_get( $source, array(
+			'httpversion' => '1.1',
+			'sslverify'   => false,
+			'timeout'     => 120,
+			'stream'      => true,
+			'filename'    => $archive_file,
+		) );
+		if ( is_wp_error( $response ) ) {
+			$log->update_info( 'WP Error: ' . $response->get_error_message() );
+			return false;
+		}
 
 		$log->update_info( 'Downloaded: ' . $archive_file . ', ' . ( (int) @filesize( $archive_file ) ) . 'B' );
 
@@ -97,6 +102,10 @@ class GooglePagespeed implements ImageOptimizerInterface {
 			unlink( $archive_file );
 
 			$log->update_info( 'Extracted: ' . $counter . ' files' );
+			return $counter;
+		} else {
+			$log->update_info( 'WP Error: ' . $unzipfile->get_error_message() );
+			return false;
 		}
 	}
 

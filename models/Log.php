@@ -95,13 +95,10 @@ class Log extends core\Model {
 	 *
 	 * @return bool
 	 */
-	public function update_info($line) {
+	public function update_info( $line ) {
 		global $wpdb;
-		$table = $wpdb->prefix . self::TABLE_IMAGE_LOG;
-		$request = $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM $table WHERE " . self::COL_REQUEST_ID . " = %d",
-			$this->request_id
-		));
+		$table   = $wpdb->prefix . self::TABLE_IMAGE_LOG;
+		$request = $this->find( $this->request_id );
 		if ( ! $request ) {
 			return false;
 		}
@@ -114,6 +111,22 @@ class Log extends core\Model {
 				self::COL_REQUEST_ID => $this->request_id,
 			)
 		);
+	}
+
+	/**
+	 * Find log record
+	 *
+	 * @param int $request_id Request ID
+	 *
+	 * @return object
+	 */
+	public function find( $request_id ) {
+		global $wpdb;
+		$table = $wpdb->prefix . self::TABLE_IMAGE_LOG;
+		return $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM $table WHERE " . self::COL_REQUEST_ID . " = %d",
+			$request_id
+		) );
 	}
 
 	/**

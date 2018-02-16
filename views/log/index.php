@@ -37,7 +37,7 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 					</td>
 					<td><?php echo esc_html( $row[ Log::COL_TIME ] ); ?></td>
 					<td><?php echo esc_html( $row[ Log::COL_SERVICE ] ); ?></td>
-					<td class="num"><?php echo esc_html( $row[ Log::COL_IMAGE_LIMIT ] ); ?> img / <?php echo esc_html( $row[ Log::COL_SIZE_LIMIT ] ); ?>MB</td>
+					<td class="num"><?php echo esc_html( $row[ Log::COL_IMAGE_LIMIT ] ); ?> attachm. / <?php echo esc_html( $row[ Log::COL_SIZE_LIMIT ] ); ?>MB</td>
 					<td class="num"><?php echo esc_html( $model->attach_count( $request_id ) ); ?></td>
 					<td class="num"><?php echo esc_html( $total_files = ! empty( $row['total_count'] ) ? $row['total_count'] : '0' ); ?></td>
 					<td class="num"><?php echo esc_html( $optimized = $model->files_count_stat( $request_id, Log::STATUS_OPTIMIZED ) ); ?></td>

@@ -1,5 +1,6 @@
 <?php
 /* @var $model Log */
+/* @var $log object */
 /* @var $request_id int */
 
 use JustCoded\WP\ImageOptimizer\models\Log;
@@ -9,6 +10,12 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 	<h2><small><a href="<?php echo admin_url() ?>upload.php?page=just-img-opt-log">All Requests</a> &raquo;</small>
 		Request #<?php echo esc_html( $request_id ); ?> details</h2>
 
+	<h3>Details</h3>
+	<p>
+		<?php echo nl2br( esc_html($log->info) ); ?>
+	</p>
+
+	<h3>Attachments</h3>
 	<table class="wp-list-table widefat fixed striped pages">
 		<thead>
 		<tr>

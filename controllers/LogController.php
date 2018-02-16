@@ -43,6 +43,7 @@ class LogController extends \JustCoded\WP\ImageOptimizer\core\Component {
 			$this->render( 'log/single-log', array(
 				'model'    => $model,
 				'request_id' => $request_id,
+				'log'   => $model->find( $request_id ),
 				'tab'      => 'log',
 			) );
 		} else {

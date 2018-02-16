@@ -158,12 +158,12 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		}
 		// upload images from service.
 		$dir = WP_CONTENT_DIR . '/tmp/';
-		$wp_filesystem->is_dir($dir) || $wp_filesystem->mkdir($dir);
-		\JustImageOptimizer::$service->upload_optimize_images( $attach_ids, $dir, $log );
+		$wp_filesystem->is_dir( $dir ) || $wp_filesystem->mkdir( $dir );
+		$status = \JustImageOptimizer::$service->upload_optimize_images( $attach_ids, $dir, $log );
 
-		// if folder empty - then optimization failed, reset stats
+		// if folder empty - then optimization failed, reset stats.
 		$image_files = scandir( $dir );
-		if ( 0 == count( glob( $dir ) ) || empty($image_files) ) {
+		if ( ! $status || 0 === count( glob( $dir ) ) || empty( $image_files ) ) {
 			foreach ( $attach_ids as $attach_id ) {
 				$log->update_status( $attach_id, $request_id, Log::STATUS_REMOVED );
 				$media->clean_statistics( $attach_id );
