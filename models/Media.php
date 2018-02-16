@@ -112,8 +112,11 @@ class Media extends core\Model {
 				   - sum( " . self::COL_BYTES_AFTER . " ) )
 				   / sum( " . self::COL_BYTES_BEFORE . " ) * 100 ), 2 ) as percent,
 				   sum( " . self::COL_BYTES_AFTER . " ) as disk_usage
-			FROM $table_name
-			WHERE " . self::COL_ATTACH_ID . " = %s
+			FROM (
+				SELECT * FROM $table_name
+				WHERE " . self::COL_ATTACH_ID . " = %s
+				GROUP BY " . self::COL_ATTACH_NAME . "
+			) io
 			",
 			$attach_id
 		), OBJECT );
@@ -138,10 +141,12 @@ class Media extends core\Model {
 				   round( ( ( " . self::COL_BYTES_BEFORE . "
 				   - " . self::COL_BYTES_AFTER . " )
 				   / " . self::COL_BYTES_BEFORE . " * 100 ), 2 ) as percent
-			FROM $table_name
-			WHERE " . self::COL_ATTACH_ID . " = %s
-			AND " . self::COL_IMAGE_SIZE . " = %s
-			",
+			FROM (
+				SELECT * FROM $table_name
+				WHERE " . self::COL_ATTACH_ID . " = %s
+				AND " . self::COL_IMAGE_SIZE . " = %s
+				GROUP BY " . self::COL_ATTACH_NAME . "
+			) io",
 			$attach_id,
 			$size
 		), OBJECT );
@@ -165,8 +170,10 @@ class Media extends core\Model {
 				   round( ( sum( " . self::COL_BYTES_BEFORE . " )
 				   - sum( " . self::COL_BYTES_AFTER . " ) )
 				   / %s * 100, 2 ) AS percent
-			FROM $table_name
-			",
+			FROM (
+				SELECT * FROM $table_name
+				GROUP BY " . self::COL_ATTACH_NAME . "
+			) io",
 			$media_disk_usage
 		), OBJECT );
 
