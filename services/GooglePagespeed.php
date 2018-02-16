@@ -35,20 +35,16 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	public function check_api_key() {
 		$check_url = 'http://code.google.com/speed/page-speed/';
 		$url_req   = self::API_URL . 'url=' . $check_url . '&key=' . $this->api_key . '';
-		$ch        = wp_remote_get( $url_req, array( 'timeout' => 60 ) );
-		$result    = wp_remote_retrieve_response_code( $ch );
-		if ( $result === 200 ) {
-			return true;
-		}
-
-		return false;
+		$response  = wp_remote_get( $url_req, array( 'timeout' => 60 ) );
+		$code      = wp_remote_retrieve_response_code( $response );
+		return ( 200 === $code );
 	}
 
 	/**
 	 * Optimize images and save to destination directory
 	 *
-	 * @param int[] $attach_ids Attachment ids to optimize.
-	 * @param string $dst Directory to save image to.
+	 * @param int[]      $attach_ids Attachment ids to optimize.
+	 * @param string     $dst Directory to save image to.
 	 * @param models\Log $log Log object.
 	 *
 	 * @return mixed
@@ -65,7 +61,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		$images_url = home_url( '/just-image-optimize/' . $base_attach_ids );
 		$log->update_info( 'Optimize request: ' . $images_url );
 
-		//download archive file with optimized images
+		// download archive file with optimized images.
 		$archive_file = $upload_dir . '/optimize_contents.zip';
 		$source       = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . $images_url . '&strategy=desktop';
 		wp_remote_get( $source,
@@ -89,6 +85,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 					continue;
 				}
 				copy( $google_img_path . $file, $dst . $file );
+				// fix for .jpeg files. Google renames them into .jpg, so we make a copy to keep previous name.
 				if ( strpos( $file, '.jpg' ) !== false ) {
 					copy( $google_img_path . $file, $dst . str_replace( '.jpg', '.jpeg', $file ) );
 				}
