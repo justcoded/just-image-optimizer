@@ -33,7 +33,7 @@ class MediaInfo extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public function clean_stats() {
 		if ( ! empty( $_REQUEST['id'] ) ) {
-			$attach_id = $_REQUEST['id'];
+			$attach_id = (int) $_REQUEST['id'];
 			$media = new Media();
 			$media->clean_statistics( $attach_id );
 		}

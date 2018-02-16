@@ -38,6 +38,17 @@ class Connect extends core\Model {
 	public $status;
 
 	/**
+	 * Sanitize rules
+	 *
+	 * @var array
+	 */
+	protected $sanitize = array(
+		'service' => 'key',
+		'api_key' => 'text_field',
+		'status'  => 'int',
+	);
+
+	/**
 	 * Construct for Connect model
 	 */
 	public function __construct() {

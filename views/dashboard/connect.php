@@ -17,7 +17,7 @@
 				<td><label for="service">
 						<input type="hidden" name="service" value="0">
 						<input
-							<?php echo( $model->service === 'google_insights' ? 'checked' : '' ); ?>
+							<?php checked( $model->service, 'google_insights' ); ?>
 							type="checkbox"
 							id="service"
 							name="service"
@@ -77,9 +77,10 @@
 				<tr>
 					<th scope="row"><?php _e( 'API Status', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 					<td class="api_status">
-						<input type="hidden" name="status" value="<?php $model->status; ?>">
+						<input type="hidden" name="status" value="<?php esc_attr($model->status); ?>">
 						<?php if ( $model->status === '1' ) : ?>
-							<p>OK</p>
+							<button id="api_connect" class="hidden">Connect</button>
+							<p class="notice-error">Connected</p>
 						<?php else: ?>
 							<button id="api_connect">Connect</button>
 							<p class="notice-error"></p>

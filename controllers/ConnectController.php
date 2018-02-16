@@ -73,12 +73,16 @@ class ConnectController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Ajax function for check valid API key
 	 */
 	public function check_api_connect() {
-		$service           = services\ImageOptimizerFactory::create( $_POST['service'], $_POST['api_key'] );
-		$connection_status = $service->check_api_key();
-		if ( $connection_status ) {
-			flush_rewrite_rules();
+		try {
+			$service = services\ImageOptimizerFactory::create(
+				sanitize_key( $_POST['service'] ),
+				sanitize_text_field( $_POST['api_key'] )
+			);
+			$connection_status = $service->check_api_key();
+			echo esc_attr( $connection_status );
+		} catch ( \Exception $e ) {
+			echo '0';
 		}
-		echo $connection_status;
 		exit();
 	}
 }

@@ -25,16 +25,16 @@ $chart_disk_space    = $model->size_format_explode( $model->get_disk_space_size(
 	<div class="row">
 		<div class="column middle">
 			<h2>Progress</h2>
-			<p><strong><?php echo( $model->get_images_stat( false ) === '0' ?
+			<p><strong><?php echo esc_html( $model->get_images_stat( false ) === '0' ?
 					$model->get_images_stat( false ) :
 						$model->get_in_queue_image_count() ); ?> images</strong>
-				of <?php echo $model->get_images_stat( true ); ?>
+				of <?php echo esc_html( $model->get_images_stat( true ) ); ?>
 				are in queue.</p>
 			<div id="progress" style="height: 300px; width: 95%;"></div>
 		</div>
 		<div class="column middle">
 			<h2>Disk Space Saving</h2>
-			<p><strong><?php echo $dash_saving_percent; ?>% saved</strong> (<?php echo size_format( $dash_saving_size ); ?>),
+			<p><strong><?php echo esc_html($dash_saving_percent); ?>% saved</strong> (<?php echo size_format( $dash_saving_size ); ?>),
 				disk usage: <?php echo size_format( $model->get_images_disk_usage() ); ?></p>
 			<div id="saving" style="height: 300px; width: 95%;"></div>
 		</div>
@@ -62,19 +62,19 @@ $chart_disk_space    = $model->size_format_explode( $model->get_disk_space_size(
 		function drawChart() {
 			var data = google.visualization.arrayToDataTable([
 				['Optimizer', 'Progress'],
-				['In queue', <?php echo $model->get_in_queue_image_count(); ?>],
-				['Optimized images', <?php echo $model->get_count_images_processed(); ?>]
+				['In queue', <?php echo (int) $model->get_in_queue_image_count(); ?>],
+				['Optimized images', <?php echo (int) $model->get_count_images_processed(); ?>]
 
 			]);
 			var data2 = google.visualization.arrayToDataTable([
 				['Optimizer', 'Saving'],
 				['Saved', {
 					v:<?php echo intval( $chart_saving['bytes'] ); ?>,
-					f: "<?php echo $chart_saving['unit']; ?>"
+					f: "<?php echo esc_attr($chart_saving['unit']); ?>"
 				}],
 				['Disk space', {
 					v:<?php echo intval( $chart_disk_space['bytes'] ); ?>,
-					f: "<?php echo $chart_disk_space['unit']; ?>"
+					f: "<?php echo esc_attr($chart_disk_space['unit']); ?>"
 				}]
 			]);
 
