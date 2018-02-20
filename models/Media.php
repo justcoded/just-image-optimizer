@@ -95,6 +95,36 @@ class Media extends core\Model {
 	}
 
 	/**
+	 * Find image stats row (attach_id - image_size) by ID
+	 *
+	 * @param int $id Stats table ID.
+	 *
+	 * @return array|null|object|void
+	 */
+	public static function find_stats_by_id( $id ) {
+		global $wpdb;
+		$table = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE `id` = %d", $id ) );
+	}
+
+	/**
+	 * Find image stats row (attach_id - image_size) by ID
+	 *
+	 * @param int $id Stats table ID.
+	 *
+	 * @return array|null|object|void
+	 */
+	public static function find_stats( $attach_id, $image_size ) {
+		global $wpdb;
+		$table = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+		return $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM $table WHERE `attach_id` = %d AND `image_size` = %s",
+			$attach_id,
+			$image_size
+		) );
+	}
+
+	/**
 	 * Get total attachment stats
 	 *
 	 * @param int $attach_id Attach ID.
