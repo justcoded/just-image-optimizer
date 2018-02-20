@@ -156,6 +156,11 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		}
 	}
 
+	/**
+	 * Print a page with all image attachment sizes to scan it with google.
+	 *
+	 * @param array $attach_ids Attachment IDs for optimization.
+	 */
 	protected function render_images_page( $attach_ids ) {
 		require ABSPATH . 'wp-admin/includes/file.php';
 
