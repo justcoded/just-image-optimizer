@@ -188,6 +188,11 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		}
 	}
 
+	/**
+	 * Proxy to print real attachment image under custom URL with ID.
+	 *
+	 * @param int $image_size_id  Image stats size ID.
+	 */
 	protected function render_image_proxy( $image_size_id ) {
 		if ( $row = models\Media::find_stats_by_id( $image_size_id ) ) {
 			$metadata = wp_get_attachment_metadata( $row->attach_id );
