@@ -1,5 +1,12 @@
 <?php
-use JustCoded\WP\ImageOptimizer\models\Settings;
+/**
+ * Template vars:
+ *
+ * @var $service \JustCoded\WP\ImageOptimizer\services\GooglePagespeed
+ * @var $media \JustCoded\WP\ImageOptimizer\models\Media
+ * @var $settings Settings
+ * @var $attach_ids array
+ */
 
 ?>
 <!DOCTYPE html>
@@ -15,9 +22,11 @@ use JustCoded\WP\ImageOptimizer\models\Settings;
 	<?php
 	$a_ids = $media->size_limit( $attach_ids );
 	if ( is_array( $settings->image_sizes ) ) {
-		foreach ( $settings->image_sizes as $value_size ) {
+		foreach ( $settings->image_sizes as $image_size ) {
 			foreach ( $a_ids as $attach_id ) {
-				echo '<img src="' . esc_url( wp_get_attachment_image_url( $attach_id, $value_size ) ) . '" />';
+				if ( $img_src = $service->get_image_proxy_url( $attach_id, $image_size ) ) {
+					echo '<img src="' . esc_url( $img_src ) . '" />';
+				}
 			}
 		}
 	}

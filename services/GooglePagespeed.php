@@ -3,6 +3,7 @@
 namespace JustCoded\WP\ImageOptimizer\services;
 
 use JustCoded\WP\ImageOptimizer\components\Optimizer;
+use JustCoded\WP\ImageOptimizer\core\Component;
 use JustCoded\WP\ImageOptimizer\models;
 
 class GooglePagespeed implements ImageOptimizerInterface {
@@ -23,8 +24,8 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 */
 	public function __construct() {
 		add_filter( 'query_vars', array( $this, 'query_vars' ), 0 );
-		add_action( 'parse_request', array( $this, 'view' ), 0 );
-		add_action( 'init', array( $this, 'rewrite_url' ), 0 );
+		add_action( 'parse_request', array( $this, 'parse_request' ), 0 );
+		add_action( 'init', array( $this, 'add_rewrite_rules' ), 0 );
 	}
 
 	/**
@@ -58,7 +59,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		$google_img_path = $dst . '/image/';
 		$wp_filesystem->is_dir( $google_img_path ) || $wp_filesystem->mkdir( $google_img_path );
 
-		$images_url = home_url( '/just-image-optimize/' . $base_attach_ids );
+		$images_url = home_url( '/just-image-optimize/google/' . $base_attach_ids );
 		$log->update_info( 'Optimize request: ' . $images_url );
 
 		// download archive file with optimized images.
@@ -86,13 +87,19 @@ class GooglePagespeed implements ImageOptimizerInterface {
 			$files   = scandir( $google_img_path );
 			$counter = 0;
 			foreach ( $files as $file ) {
-				if ( in_array( $file, array( '.', '..' ), true ) ) {
+				if ( in_array( $file, array( '.', '..' ), true ) ||
+					! preg_match( '/([\d]+)\.(.+)/', $file, $match )
+				) {
 					continue;
 				}
-				copy( $google_img_path . $file, $dst . $file );
-				// fix for .jpeg files. Google renames them into .jpg, so we make a copy to keep previous name.
-				if ( strpos( $file, '.jpg' ) !== false ) {
-					copy( $google_img_path . $file, $dst . str_replace( '.jpg', '.jpeg', $file ) );
+				// find media stats row corresponding to this image.
+				if ( ! $stats_row = models\Media::find_stats_by_id( $match[1] ) ) {
+					continue;
+				}
+
+				// copy optimized image under real filename.
+				if ( ! $wp_filesystem->is_file( $dst . $stats_row->attach_name ) ) {
+					copy( $google_img_path . $file, $dst . $stats_row->attach_name );
 				}
 				$counter ++;
 			}
@@ -112,8 +119,9 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	/**
 	 * Add custom rewrite url.
 	 */
-	public function rewrite_url() {
-		add_rewrite_rule( '^just-image-optimize/?', 'index.php?just-image-optimize=true', 'top' );
+	public function add_rewrite_rules() {
+		add_rewrite_rule( '^just-image-optimize/google/image/([\d]+)', 'index.php?just-image-optimize=google-image&image_size_id=$matches[1]', 'top' );
+		add_rewrite_rule( '^just-image-optimize/google/(.+)', 'index.php?just-image-optimize=google-page&attach_ids=$matches[1]', 'top' );
 	}
 
 	/**
@@ -125,6 +133,8 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 */
 	public function query_vars( $query_vars ) {
 		$query_vars[] = 'just-image-optimize';
+		$query_vars[] = 'attach_ids';
+		$query_vars[] = 'image_size_id';
 
 		return $query_vars;
 	}
@@ -132,21 +142,64 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	/**
 	 * Render optimize page for upload images
 	 */
-	public function view() {
+	public function parse_request() {
 		global $wp;
-		$optimizer = new Optimizer();
-		if ( isset( $wp->query_vars['just-image-optimize'] ) ) {
-			require ABSPATH . 'wp-admin/includes/file.php';
-			$query_var_url = $_SERVER['REQUEST_URI'];
-			$parse_url     = explode( '/', $query_var_url );
-			$attach_ids    = base64_decode( end( $parse_url ) );
-			$attach_ids    = explode( ',', $attach_ids );
-			$optimizer->render( 'optimize/index', array(
-				'attach_ids' => $attach_ids,
-				'media'      => new models\Media(),
-				'settings'   => \JustImageOptimizer::$settings,
-			) );
-			exit;
+		if ( ! empty( $wp->query_vars['just-image-optimize'] ) ) {
+			switch ( $wp->query_vars['just-image-optimize'] ) {
+				case 'google-page':
+					$this->render_images_page( $wp->query_vars['attach_ids'] );
+					break;
+
+				case 'google-image':
+					$this->render_image_proxy( $wp->query_vars['image_size_id'] );
+			}
 		}
+	}
+
+	protected function render_images_page( $attach_ids ) {
+		require ABSPATH . 'wp-admin/includes/file.php';
+
+		// extract attach ids.
+		$attach_ids    = base64_decode( $attach_ids );
+		$attach_ids    = explode( ',', $attach_ids );
+
+		(new Component())->render( 'optimize/google-page-speed', array(
+			'attach_ids' => $attach_ids,
+			'service'    => $this,
+			'media'      => new models\Media(),
+			'settings'   => \JustImageOptimizer::$settings,
+		) );
+		exit;
+	}
+
+	/**
+	 * Generate image proxy URL to be able identify images after optimization.
+	 *
+	 * @param int    $attach_id  Attach to optimize.
+	 * @param string $image_size Image size to optimize.
+	 *
+	 * @return string Image proxy URL.
+	 */
+	public function get_image_proxy_url( $attach_id, $image_size ) {
+		if ( $row = models\Media::find_stats( $attach_id, $image_size ) ) {
+			$filename_parts = explode( '.', $row->attach_name );
+			$extension = end( $filename_parts );
+			return home_url( "/just-image-optimize/google/image/{$row->id}.{$extension}" );
+		}
+	}
+
+	protected function render_image_proxy( $image_size_id ) {
+		if ( $row = models\Media::find_stats_by_id( $image_size_id ) ) {
+			$metadata = wp_get_attachment_metadata( $row->attach_id );
+			$path     = get_attached_file( $row->attach_id, true );
+			if ( ! empty( $metadata['sizes'][ $row->image_size ] ) ) {
+				$mime_type = $metadata['sizes'][ $row->image_size ]['mime-type'];
+				$file      = dirname( $path ) . '/' . $row->attach_name;
+
+				header( 'Content-type: ' . $mime_type );
+				readfile( $file );
+			}
+		}
+		exit;
 	}
 }
