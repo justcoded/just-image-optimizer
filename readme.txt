@@ -16,29 +16,29 @@ Just Image Optimizer use Google Page Speed Insights API to compress image files,
 
 == Description ==
 
-This is the only one plugin, which can help you to pass Google Page Speed image size optimization test. Futhremore, it
-compress image file sizes, so you get performance boost and improve your SEO rand in Google.
+It's the only plugin that will help you pass Google Page Speed image size optimization test. Furthermore, it
+compresses image file size, so you get a performance boost and improve your page rank in Google.
 
-Plugin uses Google Page Speed Insights API to optimized images. All you need is a Google console account and an API key.
+The plugin uses Google Page Speed Insights API to optimize images. All you need is a Google console account and an API key.
 
-Image Optimization is run in background, on Google servers, so the site won't loose any performance. There are no special server requirements.
+Image Optimization runs in the background on Google servers, so the site will keep its performance intact. There are no special server requirements.
 
 = Issues tracker =
 
-If you have any issues or ideas, please raise an issue on our github repository:
+If you have any feedback or ideas, please raise an issue in our GitHub repository:
 https://github.com/justcoded/just-image-optimizer/issues
 
-= Plugins compatibility =
+= Plugin compatibility =
 
-We plan to add compatibility with such plugins in next releases:
+In the upcoming releases, we plan to add compatibility with such plugins :
 
 * [Regenerate Thumbnails](https://wordpress.org/plugins/regenerate-thumbnails/)
 * [Just Responsive Images](https://wordpress.org/plugins/just-responsive-images/)
 
 == Installation ==
 
-1. Upload the `just-image-optimizer` plugin to your `/wp-content/plugins/` directory.
-2. Activate the plugin through the 'Plugins' menu in WordPress.
+1. Upload a `just-image-optimizer` plugin to your `/wp-content/plugins/` directory.
+2. Activate the plugin through 'Plugins' menu in WordPress.
 3. Configure your API key and desired settings via the `Media -> Just Image Optimizer` settings page.
 4. Done!
 
@@ -46,8 +46,9 @@ We plan to add compatibility with such plugins in next releases:
 
 = Can I revert original images quality? =
 
-To revert original quality of the images you can use [Regenerate Thumbnails](https://wordpress.org/plugins/regenerate-thumbnails/) plugin.
-Just regenerate single image or all images at once to create new images from original source.
+To revert original quality of the images, you can use [Regenerate Thumbnails](https://wordpress.org/plugins/regenerate-thumbnails/) plugin.
+
+Just regenerate a single image or all images at once to create new images from the source.
 
 == Screenshots ==
 
@@ -58,7 +59,7 @@ Just regenerate single image or all images at once to create new images from ori
 
 == Upgrade Notice ==
 
-There are no any special actions required during the upgrade.
+No special actions are required during the upgrade.
 
 == Changelog ==
 
