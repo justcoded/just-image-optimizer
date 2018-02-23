@@ -37,7 +37,7 @@ In the upcoming releases, we plan to add compatibility with such plugins :
 
 == Installation ==
 
-1. Upload a `just-image-optimizer` plugin to your `/wp-content/plugins/` directory.
+1. Upload `just-image-optimizer` plugin to your `/wp-content/plugins/` directory.
 2. Activate the plugin through 'Plugins' menu in WordPress.
 3. Configure your API key and desired settings via the `Media -> Just Image Optimizer` settings page.
 4. Done!
