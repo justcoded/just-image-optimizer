@@ -1,7 +1,7 @@
 <?php
 
 /*
-Plugin Name: Just Image Optimizer
+Plugin Name: Just Image Optimizer BETA
 Description: Compress image files, improve performance and boost your SEO rank using Google Page Speed Insights compression and optimization.
 Version: 0.9
 Author: JustCoded
