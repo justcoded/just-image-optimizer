@@ -16,8 +16,7 @@ Just Image Optimizer use Google Page Speed Insights API to compress image files,
 
 == Description ==
 
-It's the only plugin that will help you pass Google Page Speed image size optimization test. Furthermore, it
-compresses image file size, so you get a performance boost and improve your page rank in Google.
+It's the only plugin that will help you pass Google Page Speed image size optimization test. Furthermore, it compresses image file size, so you get a performance boost and improve your page rank in Google.
 
 The plugin uses Google Page Speed Insights API to optimize images. All you need is a Google console account and an API key.
 
