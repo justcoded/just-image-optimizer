@@ -12,7 +12,7 @@ License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Stable tag: trunk
 
-Just Image Optimizer use Google Page Speed Insights API to compress image files, improve performance and boost your SEO rank.
+Just Image Optimizer uses Google Page Speed Insights API to compress image files, improve performance and boost your SEO rank.
 
 == Description ==
 
