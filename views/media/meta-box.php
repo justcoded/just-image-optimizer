@@ -12,7 +12,7 @@ use JustCoded\WP\ImageOptimizer\models\Media;
 		<tr>
 			<td><strong>Full size</strong>
 				<?php if ( in_array( get_post_mime_type( $id ), $allowed_images, true ) ) :
-					$image_status = get_post_meta( $id, '_just_img_opt_status', true );
+					$image_status = (int) get_post_meta( $id, '_just_img_opt_status', true );
 					?>
 					<?php if ( Media::STATUS_IN_PROCESS === $image_status ) : ?>
 						<br>Optimizing is in progress...

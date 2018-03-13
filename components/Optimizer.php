@@ -118,15 +118,15 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public function manual_optimize() {
 		$attach_id = (int) $_POST['attach_id'];
+		$model           = new Media();
 
 		// TODO: update condition and move tries count to settings.
-		$tries = 1;
+		$tries = 0;
 		do {
 			$this->optimize_images( [ $attach_id ] );
-			$optimize_status = get_post_meta( $attach_id, '_just_img_opt_status', true );
-		} while ( Media::STATUS_PROCESSED !== $optimize_status && 3 >= $tries++ );
+			$optimize_status = $model->check_optimization_status( $attach_id );
+		} while ( Media::STATUS_PROCESSED !== $optimize_status && 3 > $tries++ );
 
-		$model           = new Media();
 		$attach_stats    = $model->get_total_attachment_stats( $attach_id );
 		$data_statistics = array(
 			'saving_percent' => ( ! empty( $attach_stats[0]->percent ) ? $attach_stats[0]->percent : 0 ),
@@ -176,7 +176,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 				$log->update_status( $attach_id, $request_id, Log::STATUS_REMOVED );
 				// TODO: check that without clean all works fine.
 				// $media->clean_statistics( $attach_id );
-				update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_IN_QUEUE );
+				$optimize_status = $media->check_optimization_status( $attach_id );
+				update_post_meta( $attach_id, '_just_img_opt_status', $optimize_status );
 			}
 			$wp_filesystem->rmdir( $dir, true );
 			return false;

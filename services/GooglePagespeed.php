@@ -66,12 +66,12 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		$google_img_path = $dst . '/image/';
 		$wp_filesystem->is_dir( $google_img_path ) || $wp_filesystem->mkdir( $google_img_path );
 
-		$images_url = home_url( '/just-image-optimize/google/' . $base_attach_ids );
+		$images_url = home_url( '/just-image-optimize/google/' . $base_attach_ids ) . '?' . rand( 0, 10000 );
 		$log->update_info( 'Optimize request: ' . $images_url );
 
 		// download archive file with optimized images.
 		$archive_file = $upload_dir . '/optimize_contents.zip';
-		$source       = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . $images_url . '&strategy=desktop';
+		$source       = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . rawurlencode( $images_url ) . '&strategy=desktop';
 
 		$response = wp_remote_get( $source, array(
 			'httpversion' => '1.1',
