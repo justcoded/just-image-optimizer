@@ -19,6 +19,13 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	public $api_key;
 
 	/**
+	 * Cache for storing attach filenames, which were printed on page.
+	 *
+	 * @var array
+	 */
+	private $attach_filenames = array();
+
+	/**
 	 * Class constructor.
 	 * initialize WordPress hooks
 	 */
@@ -187,9 +194,14 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 */
 	public function get_image_proxy_url( $attach_id, $image_size ) {
 		if ( $row = models\Media::find_stats( $attach_id, $image_size ) ) {
-			$filename_parts = explode( '.', $row->attach_name );
-			$extension = end( $filename_parts );
-			return home_url( "/just-image-optimize/google/image/{$row->id}.{$extension}" );
+			// small cache to skip duplicated filenames.
+			if ( ! isset( $this->attach_filenames[ $row->attach_name ] ) ) {
+				$filename_parts = explode( '.', $row->attach_name );
+				$extension      = end( $filename_parts );
+
+				$this->attach_filenames[ $row->attach_name ] = $row->attach_name;
+				return home_url( "/just-image-optimize/google/image/{$row->id}.{$extension}" );
+			}
 		}
 	}
 

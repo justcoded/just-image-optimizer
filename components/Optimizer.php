@@ -73,6 +73,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public function auto_optimize() {
 		$attach_ids = array();
+		// TODO: add condition to check how many tries passed.
 		$queue_args = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -118,7 +119,13 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	public function manual_optimize() {
 		$attach_id = (int) $_POST['attach_id'];
 
-		$this->optimize_images( [ $attach_id ] );
+		// TODO: update condition and move tries count to settings.
+		$tries = 1;
+		do {
+			$this->optimize_images( [ $attach_id ] );
+			$optimize_status = get_post_meta( $attach_id, '_just_img_opt_status', true );
+		} while ( Media::STATUS_PROCESSED !== $optimize_status && 3 >= $tries++ );
+
 		$model           = new Media();
 		$attach_stats    = $model->get_total_attachment_stats( $attach_id );
 		$data_statistics = array(
@@ -153,6 +160,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		foreach ( $attach_ids as $attach_id ) {
 			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
 			$media->save_stats( $attach_id, $file_sizes );
+			// TODO: update log, so it save only not optimized images.
 			$log->save_details( $request_id, $attach_id, $file_sizes );
 			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_IN_PROCESS );
 		}
@@ -166,7 +174,9 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		if ( ! $status || 0 === count( glob( $dir ) ) || empty( $image_files ) ) {
 			foreach ( $attach_ids as $attach_id ) {
 				$log->update_status( $attach_id, $request_id, Log::STATUS_REMOVED );
-				$media->clean_statistics( $attach_id );
+				// TODO: check that without clean all works fine.
+				// $media->clean_statistics( $attach_id );
+				update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_IN_QUEUE );
 			}
 			$wp_filesystem->rmdir( $dir, true );
 			return false;
@@ -196,7 +206,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
 			$media->update_stats( $attach_id, $file_sizes );
 			$log->update_details( $request_id, $attach_id, $file_sizes );
-			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_PROCESSED );
+			$optimize_status = $media->check_optimization_status( $attach_id );
+			update_post_meta( $attach_id, '_just_img_opt_status', $optimize_status );
 		}
 
 		$wp_filesystem->rmdir( $dir, true );

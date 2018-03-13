@@ -1,8 +1,11 @@
 <?php
 /**
- * @var \JustCoded\WP\ImageOptimizer\models\Media $model
+ * @var Media $model
  * @var array $meta
  */
+
+use JustCoded\WP\ImageOptimizer\models\Media;
+
 ?>
 <table class="form-table">
 	<?php if ( ! empty( $meta['width'] ) ) : ?>
@@ -11,13 +14,14 @@
 				<?php if ( in_array( get_post_mime_type( $id ), $allowed_images, true ) ) :
 					$image_status = get_post_meta( $id, '_just_img_opt_status', true );
 					?>
-					<?php if ( '1' === $image_status ) : ?>
-					<br><a class="optimize-now-meta" href="#<?php echo esc_attr( $id ); ?>" data-attach-id="<?php echo esc_attr( $id ); ?>">
-						optimize now</a>
-				<?php elseif ( empty( $image_status ) ) : ?>
-					<br><a class="optimize-now-meta" href="#<?php echo esc_attr( $id ); ?>" data-attach-id="<?php echo esc_attr( $id ); ?>">
-						optimize now</a>
-				<?php endif; ?>
+					<?php if ( Media::STATUS_IN_PROCESS === $image_status ) : ?>
+						<br>Optimizing is in progress...
+					<?php elseif( Media::STATUS_PROCESSED !== $image_status ) :
+						$button_text = ( Media::STATUS_PARTIALY_PROCESSED !== $image_status ) ? 'try again' : 'optimize now';
+					?>
+						<br><a class="optimize-now-meta" href="#<?php echo esc_attr( $id ); ?>" data-attach-id="<?php echo esc_attr( $id ); ?>">
+							<?php echo esc_html( $button_text ); ?></a>
+					<?php endif; ?>
 				<?php endif; ?>
 			</td>
 			<td><strong><?php echo esc_html( "{$meta['width']} x {$meta['height']}" ); ?> px</strong>

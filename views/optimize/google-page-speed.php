@@ -20,10 +20,9 @@
 <body <?php body_class(); ?>>
 <div id="wrapper">
 	<?php
-	$a_ids = $media->size_limit( $attach_ids );
-	if ( is_array( $settings->image_sizes ) ) {
-		foreach ( $settings->image_sizes as $image_size ) {
-			foreach ( $a_ids as $attach_id ) {
+	foreach ( $attach_ids as $attach_id ) {
+		if ( $image_sizes = $media->get_queued_image_sizes( $attach_id ) ) {
+			foreach ( $image_sizes as $image_size ) {
 				if ( $img_src = $service->get_image_proxy_url( $attach_id, $image_size ) ) {
 					echo '<img src="' . esc_url( $img_src ) . '" />';
 				}
