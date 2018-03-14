@@ -23,8 +23,10 @@
 	foreach ( $attach_ids as $attach_id ) {
 		if ( $image_sizes = $media->get_queued_image_sizes( $attach_id ) ) {
 			foreach ( $image_sizes as $image_size ) {
-				if ( $img_src = $service->get_image_proxy_url( $attach_id, $image_size ) ) {
-					echo '<img src="' . esc_url( $img_src ) . '" />';
+				if( in_array( $image_size, $settings->image_sizes ) ) {
+					if ( $img_src = $service->get_image_proxy_url( $attach_id, $image_size ) ) {
+						echo '<img src="' . esc_url( $img_src ) . '" />';
+					}
 				}
 			}
 		}

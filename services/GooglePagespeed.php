@@ -175,8 +175,6 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		$attach_ids    = base64_decode( $attach_ids );
 		$attach_ids    = explode( ',', $attach_ids );
 
-		// TODO: filter not optimized image sizes by settings which image sizes we need to convert.
-
 		(new Component())->render( 'optimize/google-page-speed', array(
 			'attach_ids' => $attach_ids,
 			'service'    => $this,
