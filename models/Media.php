@@ -274,6 +274,8 @@ class Media extends core\Model {
 		if ( ! $attachments ) {
 			return 0;
 		}
+		
+		// TODO: skip original file inside sizes (JRI 1.4+ compabitility).
 		foreach ( $attachments['sizes'] as $size_key => $attachment ) {
 			foreach ( $get_path as $path ) {
 				if ( $wp_filesystem->exists( $path . '/' . $attachment['file'] ) ) {
