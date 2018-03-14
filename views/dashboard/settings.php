@@ -70,6 +70,13 @@
 					<p class="description">* set 0 to turn off this limit.</p>
 				</td>
 			</tr>
+			<tr>
+				<th scope="row"><?php _e( 'Tries count', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
+				<td>
+					<input type="text" name="tries_count" value="<?php echo $model->tries_count; ?>">
+					<p class="description">Tries count for optimization request</p>
+				</td>
+			</tr>
 			<?php /*
             // TODO: add support in future releases.
 			<tr>

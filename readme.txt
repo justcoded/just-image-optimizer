@@ -1,8 +1,9 @@
 === Just Image Optimizer ===
 Contributors: aprokopenko
-Plugin Name: Just Image Optimizer BETA
-Version: 0.9
+Plugin Name: Just Image Optimizer
+Version: 1.0
 Description: Compress image files, improve performance and boost your SEO rank using Google Page Speed Insights compression and optimization.
+Tags: image, resize, optimize, optimise, compress, performance, optimisation, optimise JPG, pictures, optimizer, Google Page Speed
 Author: JustCoded
 Author URI: https://justcoded.com
 Requires at least: 4.4
@@ -16,8 +17,7 @@ Just Image Optimizer uses Google Page Speed Insights API to compress image files
 
 == Description ==
 
-It's the only plugin that will help you pass Google Page Speed image size optimization test. Furthermore, it
-compresses image file size, so you get a performance boost and improve your page rank in Google.
+It's the only plugin that will help you pass Google Page Speed image size optimization test. Furthermore, it compresses image file size, so you get a performance boost and improve your page rank in Google.
 
 The plugin uses Google Page Speed Insights API to optimize images. All you need is a Google console account and an API key.
 
@@ -30,10 +30,11 @@ https://github.com/justcoded/just-image-optimizer/issues
 
 = Plugin compatibility =
 
-In the upcoming releases, we plan to add compatibility with such plugins :
+In the upcoming releases, we plan to add compatibility with such plugins and features:
 
 * [Regenerate Thumbnails](https://wordpress.org/plugins/regenerate-thumbnails/)
 * [Just Responsive Images](https://wordpress.org/plugins/just-responsive-images/)
+* WordPress MultiSite installation
 
 == Installation ==
 
@@ -62,6 +63,10 @@ Just regenerate a single image or all images at once to create new images from t
 No special actions are required during the upgrade.
 
 == Changelog ==
+
+= 1.0 =
+* Upgraded optimization logic to continuosly optimizing images with several tries, due to unstable Google Page Speed API responses.
+* Improved Log.
 
 = 0.9 =
 * First beta version of the plugin. We still work on compatibility with 3rd party plugins and WordPress MultiSite installation.

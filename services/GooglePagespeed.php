@@ -19,6 +19,13 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	public $api_key;
 
 	/**
+	 * Cache for storing attach filenames, which were printed on page.
+	 *
+	 * @var array
+	 */
+	private $attach_filenames = array();
+
+	/**
 	 * Class constructor.
 	 * initialize WordPress hooks
 	 */
@@ -59,12 +66,12 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		$google_img_path = $dst . '/image/';
 		$wp_filesystem->is_dir( $google_img_path ) || $wp_filesystem->mkdir( $google_img_path );
 
-		$images_url = home_url( '/just-image-optimize/google/' . $base_attach_ids );
+		$images_url = home_url( '/just-image-optimize/google/' . $base_attach_ids ) . '?' . rand( 0, 10000 );
 		$log->update_info( 'Optimize request: ' . $images_url );
 
 		// download archive file with optimized images.
 		$archive_file = $upload_dir . '/optimize_contents.zip';
-		$source       = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . $images_url . '&strategy=desktop';
+		$source       = self::OPTIMIZE_CONTENTS . 'key=' . $this->api_key . '&url=' . rawurlencode( $images_url ) . '&strategy=desktop';
 
 		$response = wp_remote_get( $source, array(
 			'httpversion' => '1.1',
@@ -187,9 +194,14 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 */
 	public function get_image_proxy_url( $attach_id, $image_size ) {
 		if ( $row = models\Media::find_stats( $attach_id, $image_size ) ) {
-			$filename_parts = explode( '.', $row->attach_name );
-			$extension = end( $filename_parts );
-			return home_url( "/just-image-optimize/google/image/{$row->id}.{$extension}" );
+			// small cache to skip duplicated filenames.
+			if ( ! isset( $this->attach_filenames[ $row->attach_name ] ) ) {
+				$filename_parts = explode( '.', $row->attach_name );
+				$extension      = end( $filename_parts );
+
+				$this->attach_filenames[ $row->attach_name ] = $row->attach_name;
+				return home_url( "/just-image-optimize/google/image/{$row->id}.{$extension}" );
+			}
 		}
 	}
 

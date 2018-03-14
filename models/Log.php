@@ -140,7 +140,17 @@ class Log extends core\Model {
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_LOG_DETAILS;
 
+		$settings      = \JustImageOptimizer::$settings;
+		$not_optimized = Media::get_queued_image_sizes( $attach_id );
+
 		foreach ( $stats as $size => $file_size ) {
+			// skip image sizes which we do not optimize by settings or they are optimized already.
+			if ( ! in_array( $size, $not_optimized, true )
+				|| ( ! $settings->image_sizes_all && ! in_array( $size, $settings->image_sizes, true ) )
+			) {
+				continue;
+			}
+
 			$image_data = image_get_intermediate_size( $attach_id, $size );
 
 			$wpdb->insert(

@@ -13,15 +13,16 @@ class Media extends core\Model {
 
 	const TABLE_IMAGE_STATS = 'image_optimize';
 
-	const COL_ATTACH_ID = 'attach_id';
-	const COL_ATTACH_NAME = 'attach_name';
-	const COL_IMAGE_SIZE = 'image_size';
+	const COL_ATTACH_ID    = 'attach_id';
+	const COL_ATTACH_NAME  = 'attach_name';
+	const COL_IMAGE_SIZE   = 'image_size';
 	const COL_BYTES_BEFORE = 'bytes_before';
-	const COL_BYTES_AFTER = 'bytes_after';
+	const COL_BYTES_AFTER  = 'bytes_after';
 
-	const STATUS_IN_QUEUE = 1;
-	const STATUS_IN_PROCESS = 2;
-	const STATUS_PROCESSED = 3;
+	const STATUS_IN_QUEUE           = 1;
+	const STATUS_IN_PROCESS         = 2;
+	const STATUS_PROCESSED          = 3;
+	const STATUS_PARTIALY_PROCESSED = 4;
 
 	/**
 	 * Arguments query array to use.
@@ -40,7 +41,7 @@ class Media extends core\Model {
 	/**
 	 * Save attachment stats before optimize
 	 *
-	 * @param int $attach_id Attach ID.
+	 * @param int   $attach_id Attach ID.
 	 * @param array $stats Array with stats attachments.
 	 */
 	public function save_stats( $attach_id, $stats ) {
@@ -478,6 +479,69 @@ class Media extends core\Model {
 		}
 
 		return $attach_ids;
+	}
+
+	/**
+	 * Check optimization table and define what is the real optimization status.
+	 *
+	 * @param int $attach_id Attachment ID to check.
+	 *
+	 * @return int  real image optimization status
+	 */
+	public static function check_optimization_status( int $attach_id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+
+		$tried_images = $wpdb->get_var( $wpdb->prepare(
+			"
+			SELECT COUNT(`id`)
+			FROM $table_name
+			WHERE `attach_id` = %d
+			",
+			$attach_id
+		) );
+		
+		$failed_images = $wpdb->get_var( $wpdb->prepare(
+			"
+			SELECT COUNT(`id`)
+			FROM $table_name
+			WHERE `attach_id` = %d
+				AND `bytes_before` <= `bytes_after`
+			",
+			$attach_id
+		) );
+		
+		$status = static::STATUS_IN_QUEUE;
+		if ( $tried_images ) {
+			$status = static::STATUS_PROCESSED;
+			if ( $failed_images ) {
+				$status = static::STATUS_PARTIALY_PROCESSED;
+			}
+		}
+
+		return $status;
+	}
+
+	/**
+	 * Get queued image sizes, which are not optimized yet.
+	 *
+	 * @param int $attach_id Attachment ID to get image sizes in queue.
+	 *
+	 * @return string[] image sizes names
+	 */
+	public static function get_queued_image_sizes( int $attach_id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
+		$queued_images = $wpdb->get_col( $wpdb->prepare(
+			"
+			SELECT image_size
+			FROM $table_name
+			WHERE `attach_id` = %d
+				AND `bytes_before` <= `bytes_after`
+			",
+			$attach_id
+		) );
+		return $queued_images;
 	}
 
 }
