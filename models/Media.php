@@ -506,7 +506,7 @@ class Media extends core\Model {
 			SELECT COUNT(`id`)
 			FROM $table_name
 			WHERE `attach_id` = %d
-				AND `bytes_before` <= `bytes_after` 
+				AND `bytes_before` <= `bytes_after`
 			",
 			$attach_id
 		) );
@@ -537,7 +537,7 @@ class Media extends core\Model {
 			SELECT image_size
 			FROM $table_name
 			WHERE `attach_id` = %d
-				AND `bytes_before` <= `bytes_after` 
+				AND `bytes_before` <= `bytes_after`
 			",
 			$attach_id
 		) );

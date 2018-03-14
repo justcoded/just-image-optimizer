@@ -73,7 +73,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public function auto_optimize() {
 		$attach_ids = array();
-		// TODO: add condition to check how many tries passed.
+
 		$queue_args = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -95,13 +95,17 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			),
 		);
 		$set_queue  = new \WP_Query( $queue_args );
+
 		while ( $set_queue->have_posts() ) {
 			$set_queue->the_post();
 			$attach_ids[] = get_the_ID();
 			update_post_meta( get_the_ID(), '_just_img_opt_status', Media::STATUS_IN_QUEUE );
 		}
-		require ABSPATH . 'wp-admin/includes/file.php';
-		$this->optimize_images( $attach_ids );
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		$tries = 1;
+		do {
+			$this->optimize_images( $attach_ids );
+		} while ( \JustImageOptimizer::$settings->tries_count > $tries++ );
 	}
 
 	/**
@@ -118,14 +122,13 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public function manual_optimize() {
 		$attach_id = (int) $_POST['attach_id'];
-		$model           = new Media();
+		$model     = new Media();
 
-		// TODO: update condition and move tries count to settings.
-		$tries = 0;
+		$tries = 1;
 		do {
 			$this->optimize_images( [ $attach_id ] );
 			$optimize_status = $model->check_optimization_status( $attach_id );
-		} while ( Media::STATUS_PROCESSED !== $optimize_status && 3 > $tries++ );
+		} while ( Media::STATUS_PROCESSED !== $optimize_status && \JustImageOptimizer::$settings->tries_count > $tries++ );
 
 		$attach_stats    = $model->get_total_attachment_stats( $attach_id );
 		$data_statistics = array(
@@ -143,6 +146,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Function for optimize images
 	 *
 	 * @param array $attach_ids Attachment ids.
+	 *
+	 * @return boolean
 	 */
 	protected function optimize_images( array $attach_ids ) {
 		/* @var $wp_filesystem \WP_Filesystem_Direct */
@@ -158,10 +163,12 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		$request_id = $log->start_request();
 
 		foreach ( $attach_ids as $attach_id ) {
+			$optimize_status = $media->check_optimization_status( $attach_id );
 			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
 			$media->save_stats( $attach_id, $file_sizes );
-			// TODO: update log, so it save only not optimized images.
-			$log->save_details( $request_id, $attach_id, $file_sizes );
+			if( Media::STATUS_PROCESSED !== $optimize_status ) {
+				$log->save_details( $request_id, $attach_id, $file_sizes );
+			}
 			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_IN_PROCESS );
 		}
 		// upload images from service.
@@ -174,8 +181,6 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		if ( ! $status || 0 === count( glob( $dir ) ) || empty( $image_files ) ) {
 			foreach ( $attach_ids as $attach_id ) {
 				$log->update_status( $attach_id, $request_id, Log::STATUS_REMOVED );
-				// TODO: check that without clean all works fine.
-				// $media->clean_statistics( $attach_id );
 				$optimize_status = $media->check_optimization_status( $attach_id );
 				update_post_meta( $attach_id, '_just_img_opt_status', $optimize_status );
 			}

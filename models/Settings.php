@@ -18,6 +18,7 @@ class Settings extends core\Model {
 	const DB_OPT_BEFORE_REGEN  = 'joi_before_regen';
 	const DB_OPT_SIZE_CHECKED  = 'joi_image_sizes_all';
 	const DB_OPT_KEEP_ORIGIN   = 'joi_keep_origin';
+	const DB_OPT_TRIES_COUNT   = 'joi_tries_count';
 
 	/**
 	 * Optimize all image sizes or not.
@@ -47,6 +48,12 @@ class Settings extends core\Model {
 	 */
 	public $image_limit;
 
+	/**
+	 * Tries count for optimization request
+	 *
+	 * @var int
+	 */
+	public $tries_count;
 	/**
 	 * Files size limit per one optimization request
 	 *
@@ -80,6 +87,7 @@ class Settings extends core\Model {
 		'auto_optimize'   => 'int',
 		'image_limit'     => 'int',
 		'size_limit'      => 'int',
+		'tries_count'     => 'int',
 		'before_regen'    => 'int',
 		'keep_origin'     => 'int',
 	);
@@ -99,6 +107,7 @@ class Settings extends core\Model {
 		$this->auto_optimize   = get_option( self::DB_OPT_AUTO_OPTIMIZE, '1' );
 		$this->image_limit     = get_option( self::DB_OPT_IMAGE_LIMIT, 5 );
 		$this->size_limit      = get_option( self::DB_OPT_SIZE_LIMIT, 10 );
+		$this->tries_count     = get_option( self::DB_OPT_TRIES_COUNT, 3 );
 		$this->before_regen    = get_option( self::DB_OPT_BEFORE_REGEN );
 		$this->image_sizes_all = get_option( self::DB_OPT_SIZE_CHECKED, '1' );
 		$this->keep_origin     = get_option( self::DB_OPT_KEEP_ORIGIN );
@@ -127,6 +136,7 @@ class Settings extends core\Model {
 		update_option( self::DB_OPT_AUTO_OPTIMIZE, $this->auto_optimize );
 		update_option( self::DB_OPT_SIZE_CHECKED, $this->image_sizes_all );
 		update_option( self::DB_OPT_KEEP_ORIGIN, $this->keep_origin );
+		update_option( self::DB_OPT_TRIES_COUNT, $this->tries_count );
 		$this->reset();
 
 		flush_rewrite_rules();
