@@ -5,9 +5,9 @@ namespace JustCoded\WP\ImageOptimizer\migrations;
 use JustCoded\WP\ImageOptimizer\models;
 
 /**
- * Class m0x910
+ * Class m1x000
  */
-class m0X910 extends \JustCoded\WP\ImageOptimizer\core\Migration {
+class m1x000 extends \JustCoded\WP\ImageOptimizer\core\Migration {
 	/**
 	 * There are no changes in components structure
 	 *

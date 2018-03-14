@@ -107,7 +107,7 @@ class Settings extends core\Model {
 		$this->auto_optimize   = get_option( self::DB_OPT_AUTO_OPTIMIZE, '1' );
 		$this->image_limit     = get_option( self::DB_OPT_IMAGE_LIMIT, 5 );
 		$this->size_limit      = get_option( self::DB_OPT_SIZE_LIMIT, 10 );
-		$this->tries_count     = get_option( self::DB_OPT_TRIES_COUNT, 3 );
+		$this->tries_count     = get_option( self::DB_OPT_TRIES_COUNT, 5 );
 		$this->before_regen    = get_option( self::DB_OPT_BEFORE_REGEN );
 		$this->image_sizes_all = get_option( self::DB_OPT_SIZE_CHECKED, '1' );
 		$this->keep_origin     = get_option( self::DB_OPT_KEEP_ORIGIN );

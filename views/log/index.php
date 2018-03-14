@@ -17,9 +17,8 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 			<th>Service</th>
 			<th class="num">Image/Size Limits</th>
 			<th class="num">Attachments #</th>
-			<th class="num">Files #</th>
-			<th class="num">Files optim.</th>
-			<th class="num">Files failed</th>
+			<th class="num">Img Sizes #</th>
+			<th class="num">Optimized / Failed</th>
 			<th class="num">Saved Size</th>
 		</tr>
 		</thead>
@@ -40,8 +39,10 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 					<td class="num"><?php echo esc_html( $row[ Log::COL_IMAGE_LIMIT ] ); ?> attachm. / <?php echo esc_html( $row[ Log::COL_SIZE_LIMIT ] ); ?>MB</td>
 					<td class="num"><?php echo esc_html( $model->attach_count( $request_id ) ); ?></td>
 					<td class="num"><?php echo esc_html( $total_files = ! empty( $row['total_count'] ) ? $row['total_count'] : '0' ); ?></td>
-					<td class="num"><?php echo esc_html( $optimized = $model->files_count_stat( $request_id, Log::STATUS_OPTIMIZED ) ); ?></td>
-					<td class="num"><?php echo max($total_files - $optimized, 0); ?></td>
+					<td class="num">
+						<b><?php echo esc_html( $optimized = $model->files_count_stat( $request_id, Log::STATUS_OPTIMIZED ) ); ?></b>
+						/ <span class="text-danger"><?php echo esc_html( max( $total_files - $optimized, 0 ) ); ?></span>
+					</td>
 					<td class="num"><strong><?php echo esc_html( ! empty( $row['total_save'] ) ? size_format( $row['total_save'] ) : '0 B' ); ?></strong></td>
 				</tr>
 			<?php endforeach; ?>
@@ -58,9 +59,8 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 			<th>Service</th>
 			<th class="num">Image/Size Limits</th>
 			<th class="num">Attachments #</th>
-			<th class="num">Files #</th>
-			<th class="num">Files optim.</th>
-			<th class="num">Files failed</th>
+			<th class="num">Img Sizes #</th>
+			<th class="num">Optimized / Failed</th>
 			<th class="num">Saved Size</th>
 		</tr>
 		</tfoot>
@@ -71,3 +71,7 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 		</div>
 	</div>
 </div>
+
+<style type="text/css">
+	.text-danger { color:#a00; }
+</style>

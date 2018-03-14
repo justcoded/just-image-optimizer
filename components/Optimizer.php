@@ -102,10 +102,18 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			update_post_meta( get_the_ID(), '_just_img_opt_status', Media::STATUS_IN_QUEUE );
 		}
 		require_once ABSPATH . 'wp-admin/includes/file.php';
-		$tries = 1;
+		$tries = 0;
 		do {
 			$this->optimize_images( $attach_ids );
-		} while ( \JustImageOptimizer::$settings->tries_count > $tries++ );
+
+			// remove processed attachments from list.
+			foreach ( $attach_ids as $key => $attach_id ) {
+				$status = (int) get_post_meta( $attach_id, '_just_img_opt_status' );
+				if ( Media::STATUS_PROCESSED === $status ) {
+					unset( $attach_ids[ $key ] );
+				}
+			}
+		} while ( ! empty( $attach_ids ) && \JustImageOptimizer::$settings->tries_count > $tries++ );
 	}
 
 	/**
@@ -150,25 +158,27 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * @return boolean
 	 */
 	protected function optimize_images( array $attach_ids ) {
-		/* @var $wp_filesystem \WP_Filesystem_Direct */
+		/* @var \WP_Filesystem_Direct $wp_filesystem */
 		global $wp_filesystem;
-		$media               = new Media();
-		$log                 = new Log();
-		$before_attach_found = $attach_ids;
-		$attach_ids          = $media->size_limit( $attach_ids );
+		$media      = new Media();
+		$log        = new Log();
+		$attach_ids = $media->size_limit( $attach_ids );
 		// add filter for WP_FIlesystem permission.
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
 		WP_Filesystem();
 		// set statistics and status before replace images.
 		$request_id = $log->start_request();
 
-		foreach ( $attach_ids as $attach_id ) {
-			$optimize_status = $media->check_optimization_status( $attach_id );
+		foreach ( $attach_ids as $key => $attach_id ) {
+			$optimize_status = (int) get_post_meta( $attach_id, '_just_img_opt_status' );
+			if ( Media::STATUS_PROCESSED === $optimize_status ) {
+				unset( $attach_ids[ $key ] );
+				continue;
+			}
+
 			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
 			$media->save_stats( $attach_id, $file_sizes );
-			if( Media::STATUS_PROCESSED !== $optimize_status ) {
-				$log->save_details( $request_id, $attach_id, $file_sizes );
-			}
+			$log->save_details( $request_id, $attach_id, $file_sizes );
 			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_IN_PROCESS );
 		}
 		// upload images from service.
@@ -188,7 +198,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			return false;
 		}
 
-		$get_path  = $media->get_uploads_path();
+		$get_path = $media->get_uploads_path();
 
 		// process image replacement.
 		foreach ( $image_files as $key => $file ) {

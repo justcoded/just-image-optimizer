@@ -7,7 +7,7 @@ use JustCoded\WP\ImageOptimizer\models;
 /**
  * Class m0x110
  */
-class m0X110 extends \JustCoded\WP\ImageOptimizer\core\Migration {
+class m0x110 extends \JustCoded\WP\ImageOptimizer\core\Migration {
 	/**
 	 * There are no changes in components structure
 	 *

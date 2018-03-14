@@ -488,7 +488,7 @@ class Media extends core\Model {
 	 *
 	 * @return int  real image optimization status
 	 */
-	public function check_optimization_status( int $attach_id ) {
+	public static function check_optimization_status( int $attach_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
 
@@ -529,7 +529,7 @@ class Media extends core\Model {
 	 *
 	 * @return string[] image sizes names
 	 */
-	public function get_queued_image_sizes( int $attach_id ) {
+	public static function get_queued_image_sizes( int $attach_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::TABLE_IMAGE_STATS;
 		$queued_images = $wpdb->get_col( $wpdb->prepare(
