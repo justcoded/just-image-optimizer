@@ -43,8 +43,8 @@ use JustCoded\WP\ImageOptimizer\models\Media;
 		<?php if ( ! empty( $total_stats[0]->percent ) ) : ?>
 			<td>
 				<p><?php echo esc_html( $total_stats[0]->percent ); ?>% saved
-					(<?php echo esc_html( ! empty( $total_stats[0]->saving_size ) ? size_format( $total_stats[0]->saving_size ) : 0 ); ?>)</p>
-				<p>disk usage: <?php echo size_format( $total_stats[0]->disk_usage ); ?>
+					(<?php echo esc_html( ! empty( $total_stats[0]->saving_size ) ? jio_size_format( $total_stats[0]->saving_size ) : 0 ); ?>)</p>
+				<p>disk usage: <?php echo jio_size_format( $total_stats[0]->disk_usage ); ?>
 					(<?php echo esc_html( $model->get_count_images( $id ) ); ?> images) </p>
 			</td>
 		<?php else : ?>
@@ -61,7 +61,7 @@ use JustCoded\WP\ImageOptimizer\models\Media;
 				<td><?php echo esc_html( "{$params['width']} x {$params['height']}" ); ?> px</td>
 				<?php $stats = $model->get_attachment_stats( $id, $key ); ?>
 				<?php if ( ! empty( $stats[0]->saving_size ) ) : ?>
-					<td><strong><?php echo size_format( $stats[0]->saving_size ); ?>
+					<td><strong><?php echo jio_size_format( $stats[0]->saving_size ); ?>
 							, <?php echo esc_html( $stats[0]->percent ); ?>% saved</strong></td>
 				<?php else: ?>
 					<td><strong>0% saved</strong></td>

@@ -141,8 +141,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		$attach_stats    = $model->get_total_attachment_stats( $attach_id );
 		$data_statistics = array(
 			'saving_percent' => ( ! empty( $attach_stats[0]->percent ) ? $attach_stats[0]->percent : 0 ),
-			'saving_size'    => ( ! empty( $attach_stats[0]->saving_size ) ? size_format( $attach_stats[0]->saving_size ) : 0 ),
-			'total_size'     => ( ! empty( $attach_stats[0]->disk_usage ) ? size_format( $attach_stats[0]->disk_usage ) : 0 ),
+			'saving_size'    => ( ! empty( $attach_stats[0]->saving_size ) ? jio_size_format( $attach_stats[0]->saving_size ) : 0 ),
+			'total_size'     => ( ! empty( $attach_stats[0]->disk_usage ) ? jio_size_format( $attach_stats[0]->disk_usage ) : 0 ),
 			'count_images'   => $model->get_count_images( $attach_id ),
 		);
 		header( 'Content-Type: application/json; charset=' . get_bloginfo( 'charset' ) );

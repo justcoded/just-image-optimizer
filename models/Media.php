@@ -450,7 +450,7 @@ class Media extends core\Model {
 	public function size_format_explode( $bytes ) {
 		$size = array(
 			'bytes' => $bytes,
-			'unit'  => size_format( $bytes ),
+			'unit'  => jio_size_format( $bytes ),
 		);
 
 		return $size;

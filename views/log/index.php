@@ -43,7 +43,7 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 						<b><?php echo esc_html( $optimized = $model->files_count_stat( $request_id, Log::STATUS_OPTIMIZED ) ); ?></b>
 						/ <span class="text-danger"><?php echo esc_html( max( $total_files - $optimized, 0 ) ); ?></span>
 					</td>
-					<td class="num"><strong><?php echo esc_html( ! empty( $row['total_save'] ) ? size_format( $row['total_save'] ) : '0 B' ); ?></strong></td>
+					<td class="num"><strong><?php echo esc_html( ! empty( $row['total_save'] ) ? jio_size_format( $row['total_save'] ) : '0 B' ); ?></strong></td>
 				</tr>
 			<?php endforeach; ?>
 		<?php else : ?>
