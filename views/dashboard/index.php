@@ -34,8 +34,8 @@ $chart_disk_space    = $model->size_format_explode( $model->get_disk_space_size(
 		</div>
 		<div class="column middle">
 			<h2>Disk Space Saving</h2>
-			<p><strong><?php echo esc_html($dash_saving_percent); ?>% saved</strong> (<?php echo size_format( $dash_saving_size ); ?>),
-				disk usage: <?php echo size_format( $model->get_images_disk_usage() ); ?></p>
+			<p><strong><?php echo esc_html($dash_saving_percent); ?>% saved</strong> (<?php echo jio_size_format( $dash_saving_size ); ?>),
+				disk usage: <?php echo jio_size_format( $model->get_images_disk_usage() ); ?></p>
 			<div id="saving" style="height: 300px; width: 95%;"></div>
 		</div>
 

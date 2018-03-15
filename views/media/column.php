@@ -14,9 +14,9 @@ $total_stats  = $model->get_total_attachment_stats( $id );
 <?php if ( Media::STATUS_PROCESSED === $image_status || Media::STATUS_PARTIALY_PROCESSED === $image_status ) : ?>
 	<?php if ( ! empty( $total_stats[0]->percent ) ) : ?>
 		<p><?php echo esc_html( $total_stats[0]->percent ); ?>% saved
-			(<?php echo esc_html( ! empty( $total_stats[0]->saving_size ) ? size_format( $total_stats[0]->saving_size ) : 0 ); ?>)
+			(<?php echo esc_html( ! empty( $total_stats[0]->saving_size ) ? jio_size_format( $total_stats[0]->saving_size ) : 0 ); ?>)
 		</p>
-		<p>disk usage: <?php echo size_format( $total_stats[0]->disk_usage ); ?>
+		<p>disk usage: <?php echo jio_size_format( $total_stats[0]->disk_usage ); ?>
 			(<?php echo esc_html( $model->get_count_images( $id ) ); ?> images) </p>
 		<?php if ( Media::STATUS_PARTIALY_PROCESSED === $image_status ) : ?>
 			<em>&nbsp; * can be better,

@@ -269,15 +269,18 @@ class Media extends core\Model {
 		WP_Filesystem();
 		$total_size  = 0;
 		$sizes_array = array();
-		$attachments = wp_get_attachment_metadata( $id );
+		$meta = wp_get_attachment_metadata( $id );
 		$get_path    = $this->get_uploads_path();
-		if ( ! $attachments ) {
+		if ( ! $meta ) {
 			return 0;
 		}
-		foreach ( $attachments['sizes'] as $size_key => $attachment ) {
-			foreach ( $get_path as $path ) {
-				if ( $wp_filesystem->exists( $path . '/' . $attachment['file'] ) ) {
-					$sizes_array[ $size_key ] = $this->get_filesize( $path . '/' . $attachment['file'] );
+
+		foreach ( $meta['sizes'] as $size_key => $attachment ) {
+			if( basename( $meta['file'] ) !== $attachment['file'] ) {
+				foreach ( $get_path as $path ) {
+					if ( $wp_filesystem->exists( $path . '/' . $attachment['file'] ) ) {
+						$sizes_array[ $size_key ] = $this->get_filesize( $path . '/' . $attachment['file'] );
+					}
 				}
 			}
 		}
@@ -351,7 +354,7 @@ class Media extends core\Model {
 			);
 		}
 
-		return $sizes;
+		return apply_filters( 'jio_settings_image_sizes', $sizes );
 
 	}
 
@@ -448,7 +451,7 @@ class Media extends core\Model {
 	public function size_format_explode( $bytes ) {
 		$size = array(
 			'bytes' => $bytes,
-			'unit'  => size_format( $bytes ),
+			'unit'  => jio_size_format( $bytes ),
 		);
 
 		return $size;

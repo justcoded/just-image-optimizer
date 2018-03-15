@@ -24,19 +24,34 @@ class MediaInfo extends \JustCoded\WP\ImageOptimizer\core\Component {
 		add_action( 'admin_print_scripts-upload.php', array( $this, 'registerAssets' ) );
 		add_action( 'admin_print_scripts-post.php', array( $this, 'registerAssets' ) );
 		add_action( 'add_meta_boxes_attachment', array( $this, 'add_optimize_meta_boxes' ), 99 );
-		add_action( 'wp_ajax_regeneratethumbnail', array( $this, 'clean_stats' ), 5 );
 
+		// clean stats on regenerate thumbnails regen.
+		add_filter( 'wp_generate_attachment_metadata', array( $this, 'clean_stats' ), 99, 2 );
 	}
 
 	/**
 	 * Clean attachment statistics with Regenerate Thumbnails
+	 *
+	 * @param array $metadata Attachment new metadata.
+	 * @param int   $attachment_id Attachment ID.
+	 *
+	 * @return array
 	 */
-	public function clean_stats() {
-		if ( ! empty( $_REQUEST['id'] ) ) {
-			$attach_id = (int) $_REQUEST['id'];
+	public function clean_stats( $metadata, $attachment_id ) {
+		// Regenerate thumbnails has no any hooks, we can define this only by REST_REQUEST.
+		if ( defined( 'REST_REQUEST' )
+			&& ! empty( $attachment_id )
+			&& (
+				// In different cases it send POST or GET request, so we check some keys it submit.
+				isset( $_POST['regeneration_args'] )
+				|| isset( $_GET['only_regenerate_missing_thumbnails'] )
+				|| ( ! empty( $_SERVER['REQUEST_URI'] ) && false !== strpos( $_SERVER['REQUEST_URI'], 'regenerate-thumbnails' ) )
+		     )
+		) {
 			$media = new Media();
-			$media->clean_statistics( $attach_id );
+			$media->clean_statistics( $attachment_id );
 		}
+		return $metadata;
 	}
 
 	/**

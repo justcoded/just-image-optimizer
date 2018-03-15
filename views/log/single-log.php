@@ -38,8 +38,8 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 					</td>
 					<td><?php echo esc_html( $row[ Log::COL_IMAGE_SIZE ] ); ?></td>
 					<td><?php echo esc_html( $row[ Log::COL_ATTACH_NAME ] ); ?></td>
-					<td class="num"><?php echo size_format( $row[ Log::COL_BYTES_BEFORE ] ); ?></td>
-					<td class="num"><?php echo size_format( $row[ Log::COL_BYTES_AFTER ] ); ?></td>
+					<td class="num"><?php echo jio_size_format( $row[ Log::COL_BYTES_BEFORE ] ); ?></td>
+					<td class="num"><?php echo jio_size_format( $row[ Log::COL_BYTES_AFTER ] ); ?></td>
 					<td><?php echo esc_html( $model->get_status_message( $row[ Log::COL_STATUS ] ) ); ?></td>
 				</tr>
 			<?php endforeach; ?>
