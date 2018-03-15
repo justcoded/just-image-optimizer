@@ -11,18 +11,6 @@ use JustCoded\WP\ImageOptimizer\models\Media;
 	<?php if ( ! empty( $meta['width'] ) ) : ?>
 		<tr>
 			<td><strong>Full size</strong>
-				<?php if ( in_array( get_post_mime_type( $id ), $allowed_images, true ) ) :
-					$image_status = (int) get_post_meta( $id, '_just_img_opt_status', true );
-					?>
-					<?php if ( Media::STATUS_IN_PROCESS === $image_status ) : ?>
-						<br>Optimizing is in progress...
-					<?php elseif( Media::STATUS_PROCESSED !== $image_status ) :
-						$button_text = ( Media::STATUS_PARTIALY_PROCESSED !== $image_status ) ? 'try again' : 'optimize now';
-					?>
-						<br><a class="optimize-now-meta" href="#<?php echo esc_attr( $id ); ?>" data-attach-id="<?php echo esc_attr( $id ); ?>">
-							<?php echo esc_html( $button_text ); ?></a>
-					<?php endif; ?>
-				<?php endif; ?>
 			</td>
 			<td><strong><?php echo esc_html( "{$meta['width']} x {$meta['height']}" ); ?> px</strong>
 				<?php if ( ! empty( $meta['gcd'] ) ) : ?>
@@ -38,7 +26,20 @@ use JustCoded\WP\ImageOptimizer\models\Media;
 		</tr>
 	<?php endif; ?>
 	<tr class="optimize-stats">
-		<td><strong>Image Optimization</strong></td>
+		<td><strong>Image Optimization</strong>
+			<?php if ( in_array( get_post_mime_type( $id ), $allowed_images, true ) ) :
+				$image_status = (int) get_post_meta( $id, '_just_img_opt_status', true );
+				?>
+				<?php if ( Media::STATUS_IN_PROCESS === $image_status ) : ?>
+					<br>Optimizing is in progress...
+				<?php elseif( Media::STATUS_PROCESSED !== $image_status ) :
+					$button_text = ( Media::STATUS_PARTIALY_PROCESSED === $image_status ) ? 'try again' : 'optimize now';
+					?>
+					<br><a class="optimize-now-meta" href="#<?php echo esc_attr( $id ); ?>" data-attach-id="<?php echo esc_attr( $id ); ?>">
+					<?php echo esc_html( $button_text ); ?></a>
+				<?php endif; ?>
+			<?php endif; ?>
+		</td>
 		<?php $total_stats = $model->get_total_attachment_stats( $id ); ?>
 		<?php if ( ! empty( $total_stats[0]->percent ) ) : ?>
 			<td>
