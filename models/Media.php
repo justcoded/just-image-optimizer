@@ -354,7 +354,7 @@ class Media extends core\Model {
 			);
 		}
 
-		return $sizes;
+		return apply_filters( 'jio_settings_image_sizes', $sizes );
 
 	}
 
