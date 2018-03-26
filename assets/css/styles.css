@@ -6,6 +6,10 @@
     color: red;
 }
 
+.notice-nag {
+    border-left: 4px solid red;
+}
+
 .loader {
     border: 10px solid #f3f3f3;
     border-radius: 50%;
