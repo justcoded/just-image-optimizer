@@ -26,7 +26,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Run cron job by Settings param
 	 */
 	protected function setup_cron() {
-		if ( Connect::connected() && \JustImageOptimizer::$settings->auto_optimize && wp_is_writable( WP_CONTENT_DIR ) ) {
+		if ( \JustImageOptimizer::$settings->saved() && \JustImageOptimizer::$settings->auto_optimize && wp_is_writable( WP_CONTENT_DIR ) ) {
 			add_action( 'init', array( $this, 'check_cron_scheduled' ) );
 			add_filter( 'cron_schedules', array( $this, 'init_cron_schedule' ) );
 			add_action( 'just_image_optimizer_autorun', array( $this, 'auto_optimize' ) );
