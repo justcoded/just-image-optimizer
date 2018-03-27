@@ -2,7 +2,6 @@
 
 namespace JustCoded\WP\ImageOptimizer\components;
 
-use JustCoded\WP\ImageOptimizer\models\Connect;
 use JustCoded\WP\ImageOptimizer\models\Media;
 use JustCoded\WP\ImageOptimizer\models\Log;
 
