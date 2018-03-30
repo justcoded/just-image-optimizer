@@ -25,7 +25,9 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Run cron job by Settings param
 	 */
 	protected function setup_cron() {
-		if ( \JustImageOptimizer::$settings->saved() && \JustImageOptimizer::$settings->auto_optimize && wp_is_writable( WP_CONTENT_DIR ) ) {
+		if ( \JustImageOptimizer::$settings->saved()
+		&& \JustImageOptimizer::$settings->auto_optimize
+		&& wp_is_writable( WP_CONTENT_DIR ) ) {
 			add_action( 'init', array( $this, 'check_cron_scheduled' ) );
 			add_filter( 'cron_schedules', array( $this, 'init_cron_schedule' ) );
 			add_action( 'just_image_optimizer_autorun', array( $this, 'auto_optimize' ) );
@@ -112,7 +114,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 					unset( $attach_ids[ $key ] );
 				}
 			}
-		} while ( ! empty( $attach_ids ) && \JustImageOptimizer::$settings->tries_count > $tries++ );
+		} while ( ! empty( $attach_ids ) && \JustImageOptimizer::$settings->tries_count > $tries ++ );
 	}
 
 	/**
@@ -135,7 +137,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		do {
 			$this->optimize_images( [ $attach_id ] );
 			$optimize_status = $model->check_optimization_status( $attach_id );
-		} while ( Media::STATUS_PROCESSED !== $optimize_status && \JustImageOptimizer::$settings->tries_count > $tries++ );
+		} while ( Media::STATUS_PROCESSED !== $optimize_status && \JustImageOptimizer::$settings->tries_count > $tries ++ );
 
 		$attach_stats    = $model->get_total_attachment_stats( $attach_id );
 		$data_statistics = array(
@@ -194,6 +196,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 				update_post_meta( $attach_id, '_just_img_opt_status', $optimize_status );
 			}
 			$wp_filesystem->rmdir( $dir, true );
+
 			return false;
 		}
 
@@ -226,6 +229,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		}
 
 		$wp_filesystem->rmdir( $dir, true );
+
 		return true;
 	}
 }
