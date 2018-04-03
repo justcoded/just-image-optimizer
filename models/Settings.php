@@ -153,4 +153,13 @@ class Settings extends core\Model {
 		return get_option( self::DB_OPT_KEEP_ORIGIN ) === '1';
 	}
 
+	/**
+	 * Check requirements for accesses wp-content.
+	 *
+	 * @return bool true or false.
+	 */
+	public function check_requirements() {
+		return wp_is_writable( WP_CONTENT_DIR );
+	}
+
 }

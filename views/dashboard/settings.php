@@ -1,6 +1,15 @@
 <div class="wrap">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
-	<?php if ( ! $model->saved() ) : ?>
+	<?php if ( ! $model->check_requirements() ) : ?>
+		<div class="update-nag notice-nag">
+			<strong>
+				<?php echo sprintf( __( 'Make %1$s writable using the chmod command through your ftp or server software.
+					(<em>chmod 775 %1$s</em>) and refresh this page for continued settings plugin.',
+					\JustImageOptimizer::TEXTDOMAIN ), WP_CONTENT_DIR ); ?>
+			</strong>
+		</div>
+	<?php endif; ?>
+	<?php if ( !$model->saved() && $model->check_requirements() ) : ?>
 		<div class="update-nag">
 			<strong>Please confirm the settings below and Save them.</strong>
 		</div><br>
@@ -15,21 +24,25 @@
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
 			<tr>
-				<th scope="row"><?php _e( 'Automatically optimize uploads', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row">
+					<?php _e( 'Automatically optimize uploads', \JustImageOptimizer::TEXTDOMAIN ); ?>
+				</th>
 				<td>
 					<input type="hidden" name="auto_optimize" value="0">
-					<input <?php checked($model->auto_optimize); ?>
-						type="checkbox"
-						name="auto_optimize"
-						value="1">
+					<input <?php checked( $model->auto_optimize ); ?>
+							type="checkbox"
+							name="auto_optimize"
+							value="1">
 				</td>
 			</tr>
 			<tr class="image_sizes_set">
-				<th scope="row"><?php _e( 'Image sizes to optimize', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
+				<th scope="row">
+					<?php _e( 'Image sizes to optimize', \JustImageOptimizer::TEXTDOMAIN ); ?>
+				</th>
 				<td class="additional_sizes">
 					<input type="hidden" name="image_sizes_all" value="0">
 					<label for="check_all_size">
-						<input <?php checked($model->image_sizes_all); ?>
+						<input <?php checked( $model->image_sizes_all ); ?>
 								id="check_all_size" type="checkbox" name="image_sizes_all"
 								value="1">All
 					</label>
@@ -58,7 +71,7 @@
 				<th scope="row"><?php _e( 'Bulk media limit', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input type="text" name="image_limit"
-					       value="<?php echo $model->image_limit; ?>">
+						   value="<?php echo $model->image_limit; ?>">
 					<p class="description">How many Media can be optimized at a time</p>
 				</td>
 			</tr>
@@ -78,7 +91,7 @@
 				</td>
 			</tr>
 			<?php /*
-            // TODO: add support in future releases.
+			// TODO: add support in future releases.
 			<tr>
 				<th scope="row"><?php _e( 'Regenerate image thumbnails before optimize', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
@@ -90,18 +103,19 @@
 					<p class="description">Can affect server performance if you upload images very often</p>
 				</td>
 			</tr>
-            */ ?>
+			*/ ?>
 		</table>
-		<input
-			type="submit" name="submit-settings" class="button button-primary" value="Save">
+		<input <?php echo( $model->check_requirements() ? '' : 'disabled' ); ?>
+				type="submit" name="submit-settings" class="button button-primary" value="Save">
 	</form>
 </div>
 <style>
 	.size_checked {
 		padding-top: 10px;
 	}
+
 	.label-checkbox {
-		width:200px;
+		width: 200px;
 		display: inline-block;
 	}
 </style>

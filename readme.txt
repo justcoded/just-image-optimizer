@@ -1,12 +1,12 @@
 === Just Image Optimizer ===
 Contributors: aprokopenko
 Plugin Name: Just Image Optimizer
-Version: 1.1
+Version: 1.1.1
 Description: Compress image files, improve performance and boost your SEO rank using Google Page Speed Insights compression and optimization.
 Tags: image, resize, optimize, optimise, compress, performance, optimisation, optimise JPG, pictures, optimizer, Google Page Speed
 Author: JustCoded
 Author URI: https://justcoded.com
-Requires at least: 4.4
+Requires at least: 4.5
 Tested up to: 4.9.4
 Requires PHP: >=5.6
 License: GPLv2 or later
@@ -64,6 +64,10 @@ Just regenerate a single image or all images at once to create new images from t
 No special actions are required during the upgrade.
 
 == Changelog ==
+
+= 1.1.1 =
+* New: Added notice if wp-content is not writable, cause it's required for storing files.
+* Bug fix: Fake cron run without plugin settings saved. 
 
 = 1.1 =
 * Added compatibility with Just Responsive Images plugin (v1.5+)
