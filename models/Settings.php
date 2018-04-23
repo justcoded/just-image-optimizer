@@ -156,10 +156,15 @@ class Settings extends core\Model {
 	/**
 	 * Check requirements for accesses wp-content.
 	 *
+	 * @param bool $force_check Ignore caches within requriements check.
+	 *
 	 * @return bool true or false.
 	 */
-	public function check_requirements() {
-		return wp_is_writable( WP_CONTENT_DIR );
+	public function check_requirements( $force_check = false ) {
+		$php_vers   = version_compare( phpversion(), '7.0', '>' );
+		$wp_content = wp_is_writable( WP_CONTENT_DIR );
+		$service    = \JustImageOptimizer::$service && \JustImageOptimizer::$service->check_availability( $force_check );
+		return $php_vers && $wp_content && $service;
 	}
 
 }

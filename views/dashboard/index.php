@@ -6,8 +6,10 @@ $dash_saving_percent = ( ! empty( $dash_stats[0]->percent ) ? $dash_stats[0]->pe
 $chart_saving        = $model->size_format_explode( $dash_saving_size );
 $chart_disk_space    = $model->size_format_explode( $model->get_disk_space_size() );
 ?>
-<div class="wrap">
+<div class="wrap jio-admin-page">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
+	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/dashboard/_requirements.php' ); ?>
+
 	<?php if ( empty( \JustImageOptimizer::$settings->auto_optimize ) ) : ?>
 		<div class="update-nag">
 			<strong>Automatic image optimization is disabled. Please check

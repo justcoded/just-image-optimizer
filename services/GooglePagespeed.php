@@ -36,6 +36,15 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	}
 
 	/**
+	 * User friendly service name.
+	 *
+	 * @return string
+	 */
+	public function name() {
+		return 'Google Page Speed';
+	}
+
+	/**
 	 * Check Service credentials to be valid
 	 *
 	 * @return bool
@@ -46,6 +55,30 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		$response  = wp_remote_get( $url_req, array( 'timeout' => 60 ) );
 		$code      = wp_remote_retrieve_response_code( $response );
 		return ( 200 === $code );
+	}
+
+
+	/**
+	 * Check Service availability (that it has correct mode or site access)
+	 *
+	 * @param bool $force_check Ignore caches within requriements check.
+	 *
+	 * @return bool
+	 */
+	public function check_availability( $force_check = false ) {
+		// generate unique transient key based on domain, this will minimize requests on same domain.
+		$transient_key = 'jio_service_availability.google_page_speed.' . home_url();
+
+		$status = get_transient( $transient_key );
+		if ( false === $status || $force_check ) {
+			$url_req  = self::API_URL . 'url=' . home_url() . '&key=' . $this->api_key . '';
+			$response = wp_remote_get( $url_req, array( 'timeout' => 60 ) );
+			$code     = wp_remote_retrieve_response_code( $response );
+
+			$status = (int) ( 200 === $code );
+			set_transient( $transient_key, $status, 3600 * 60 * 24 );
+		}
+		return $status;
 	}
 
 	/**

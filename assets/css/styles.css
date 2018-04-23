@@ -6,8 +6,14 @@
     color: red;
 }
 
-.notice-nag {
-    border-left: 4px solid red;
+.jio-admin-page .update-nag {
+    display: block;
+}
+.jio-admin-page .update-nag.error-nag {
+    border-left: 4px solid red !important;
+}
+.jio-admin-page .update-nag.success-nag {
+    border-left: 4px solid green !important;
 }
 
 .loader {
