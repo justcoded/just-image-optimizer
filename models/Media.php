@@ -387,11 +387,11 @@ class Media extends core\Model {
 	 */
 	public function get_images_disk_usage() {
 		$disk_usage = 0;
-		$args       = $args = $this->query_args;
-		$query      = new \WP_Query( $args );
-		while ( $query->have_posts() ) {
-			$query->the_post();
-			$disk_usage = $disk_usage + $this->get_file_sizes( get_the_ID(), 'total' );
+		// Init ms-functions for get_dirsize.
+		require_once ABSPATH . WPINC .'/ms-functions.php';
+		$get_path = self::get_uploads_path();
+		foreach( $get_path as $path ) {
+			$disk_usage = $disk_usage + get_dirsize( $path );
 		}
 
 		return $disk_usage;

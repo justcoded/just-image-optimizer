@@ -1,21 +1,14 @@
-<div class="wrap">
+<div class="wrap jio-admin-page">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
-	<?php if ( ! $model->check_requirements() ) : ?>
-		<div class="update-nag notice-nag">
-			<strong>
-				<?php echo sprintf( __( 'Make %1$s writable using the chmod command through your ftp or server software.
-					(<em>chmod 775 %1$s</em>) and refresh this page for continued settings plugin.',
-					\JustImageOptimizer::TEXTDOMAIN ), WP_CONTENT_DIR ); ?>
-			</strong>
-		</div>
-	<?php endif; ?>
+	<?php $force_requirements_check = true; ?>
+	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/dashboard/_requirements.php' ); ?>
 	<?php if ( !$model->saved() && $model->check_requirements() ) : ?>
 		<div class="update-nag">
 			<strong>Please confirm the settings below and Save them.</strong>
 		</div><br>
 	<?php endif; ?>
 	<?php if ( $saved ) : ?>
-		<div class="update-nag" style="border-left-color: green !important">
+		<div class="update-nag success-nag">
 			<strong>Settings options updated!</strong>
 			<strong>Go to <a href="<?php echo admin_url(); ?>upload.php?page=just-img-opt-dashboard">Dashboard page</a>
 				to view the general statistics.</strong>

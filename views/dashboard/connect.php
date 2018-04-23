@@ -1,12 +1,12 @@
-<div class="wrap">
+<div class="wrap jio-admin-page">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
 	<?php if ( $saved ) : ?>
-		<div class="update-nag" style="border-left-color: green !important">
+		<div class="update-nag success-nag">
 			<strong>Connection options updated!</strong>
 		</div>
 	<?php endif; ?>
 	<?php if ( $saved === false ) : ?>
-		<div class="update-nag" style="border-left-color: red !important">
+		<div class="update-nag error-nag">
 			<strong>API key is invalid!</strong>
 		</div>
 	<?php endif; ?>
