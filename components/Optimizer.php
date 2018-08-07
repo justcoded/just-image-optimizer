@@ -103,6 +103,12 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			$attach_ids[] = get_the_ID();
 			update_post_meta( get_the_ID(), '_just_img_opt_status', Media::STATUS_IN_QUEUE );
 		}
+
+		// do not run optimization and any logs if we don't have images to optimize.
+		if ( empty( $attach_ids ) ) {
+			return;
+		}
+
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		$tries = 0;
 		do {

@@ -77,6 +77,9 @@ No special actions are required during the upgrade.
 
 == Changelog ==
 
+= 1.1.3 =
+* Update: Skip log if no attachments found.
+
 = 1.1.2 =
 * New: Added notice if site is not available online.
 * New: Added notice if PHP version is below 7.0.
