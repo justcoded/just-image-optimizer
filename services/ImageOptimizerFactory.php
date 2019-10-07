@@ -7,6 +7,8 @@ use JustCoded\WP\ImageOptimizer\models\Connect;
  * Class ImageOptimizerFactory
  *
  * @package JustCoded\WP\ImageOptimizer\services
+ *
+ * @method ImageOptimizerFactory instance() static
  */
 class ImageOptimizerFactory {
 

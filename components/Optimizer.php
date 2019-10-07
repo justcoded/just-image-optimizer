@@ -11,10 +11,21 @@ use JustCoded\WP\ImageOptimizer\models\Log;
 class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
+	 * Imagizer schedule class. @vg
+	 *
+	 * @var \stdClass $scheduller
+	 */
+	public $scheduller;
+
+	/**
 	 * Class constructor.
 	 * initialize WordPress hooks
 	 */
 	public function __construct() {
+		if ( class_exists( 'WebPConvert\WebPConvert' ) ) {
+			$this->scheduller = Scheduller::instance();
+		}
+
 		add_action( 'wp_ajax_manual_optimize', array( $this, 'manual_optimize' ) );
 		add_action( 'add_attachment', array( $this, 'set_attachment_in_queue' ) );
 
@@ -44,7 +55,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public function init_cron_schedule( $schedules ) {
 		$schedules['just_image_optimizer'] = array(
-			'interval' => 60 * 5, // 5 minutes
+			'interval' => 60 * 1, // 5 minutes
 			'display'  => 'Image optimizer background optimization',
 		);
 
@@ -72,6 +83,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
 	 * Auto optimizer cron job.
+	 *
+	 * @throws \WebPConvert\Convert\Exceptions\ConversionFailedException
 	 */
 	public function auto_optimize() {
 		$attach_ids = array();
@@ -117,45 +130,16 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 			// remove processed attachments from list.
 			foreach ( $attach_ids as $key => $attach_id ) {
 				$status = (int) get_post_meta( $attach_id, '_just_img_opt_status' );
+
+				if ( method_exists( $this->scheduller, 'imagize_file' ) ) {
+					$this->scheduller->imagize_file( $attach_id ); // Convert current image.
+				}
+
 				if ( Media::STATUS_PROCESSED === $status ) {
 					unset( $attach_ids[ $key ] );
 				}
 			}
 		} while ( ! empty( $attach_ids ) && \JustImageOptimizer::$settings->tries_count > $tries ++ );
-	}
-
-	/**
-	 * Function for init filesystem accesses
-	 *
-	 * @return string
-	 */
-	public function filesystem_direct() {
-		return 'direct';
-	}
-
-	/**
-	 * Ajax function for manual image optimize
-	 */
-	public function manual_optimize() {
-		$attach_id = (int) $_POST['attach_id'];
-		$model     = new Media();
-
-		$tries = 1;
-		do {
-			$this->optimize_images( [ $attach_id ] );
-			$optimize_status = $model->check_optimization_status( $attach_id );
-		} while ( Media::STATUS_PROCESSED !== $optimize_status && \JustImageOptimizer::$settings->tries_count > $tries ++ );
-
-		$attach_stats    = $model->get_total_attachment_stats( $attach_id );
-		$data_statistics = array(
-			'saving_percent' => ( ! empty( $attach_stats[0]->percent ) ? $attach_stats[0]->percent : 0 ),
-			'saving_size'    => ( ! empty( $attach_stats[0]->saving_size ) ? jio_size_format( $attach_stats[0]->saving_size ) : 0 ),
-			'total_size'     => ( ! empty( $attach_stats[0]->disk_usage ) ? jio_size_format( $attach_stats[0]->disk_usage ) : 0 ),
-			'count_images'   => $model->get_count_images( $attach_id ),
-		);
-		header( 'Content-Type: application/json; charset=' . get_bloginfo( 'charset' ) );
-		echo wp_json_encode( $data_statistics );
-		wp_die();
 	}
 
 	/**
@@ -168,8 +152,9 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	protected function optimize_images( array $attach_ids ) {
 		/* @var \WP_Filesystem_Direct $wp_filesystem */
 		global $wp_filesystem;
-		$media      = new Media();
-		$log        = new Log();
+		$media = new Media();
+		$log   = new Log();
+
 		$attach_ids = $media->size_limit( $attach_ids );
 		// add filter for WP_FIlesystem permission.
 		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
@@ -212,6 +197,7 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 		// process image replacement.
 		foreach ( $image_files as $key => $file ) {
 			if ( $wp_filesystem->is_file( $dir . $file ) ) {
+
 				foreach ( $get_path as $path ) {
 					if ( $wp_filesystem->exists( $path . '/' . $file ) ) {
 						$optimize_image_size = getimagesize( $dir . $file );
@@ -239,4 +225,46 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 		return true;
 	}
+
+	/**
+	 * Function for init filesystem accesses
+	 *
+	 * @return string
+	 */
+	public function filesystem_direct() {
+		return 'direct';
+	}
+
+	/**
+	 * Ajax function for manual image optimize
+	 *
+	 * @throws \WebPConvert\Convert\Exceptions\ConversionFailedException
+	 */
+	public function manual_optimize() {
+		$attach_id = (int) $_POST['attach_id'];
+		$model     = new Media();
+
+		$tries = 1;
+		do {
+			$this->optimize_images( [ $attach_id ] );
+
+			if ( method_exists( $this->scheduller, 'imagize_file' ) ) {
+				$this->scheduller->imagize_file( $attach_id ); // Convert current image.
+			}
+
+			$optimize_status = $model->check_optimization_status( $attach_id );
+		} while ( Media::STATUS_PROCESSED !== $optimize_status && \JustImageOptimizer::$settings->tries_count > $tries ++ );
+
+		$attach_stats    = $model->get_total_attachment_stats( $attach_id );
+		$data_statistics = array(
+			'saving_percent' => ( ! empty( $attach_stats[0]->percent ) ? $attach_stats[0]->percent : 0 ),
+			'saving_size'    => ( ! empty( $attach_stats[0]->saving_size ) ? jio_size_format( $attach_stats[0]->saving_size ) : 0 ),
+			'total_size'     => ( ! empty( $attach_stats[0]->disk_usage ) ? jio_size_format( $attach_stats[0]->disk_usage ) : 0 ),
+			'count_images'   => $model->get_count_images( $attach_id ),
+		);
+		header( 'Content-Type: application/json; charset=' . get_bloginfo( 'charset' ) );
+		echo wp_json_encode( $data_statistics );
+		wp_die();
+	}
+
 }

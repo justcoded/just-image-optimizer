@@ -1,20 +1,23 @@
 <?php
+
 namespace JustCoded\WP\ImageOptimizer\core;
 
 use JustCoded\WP\ImageOptimizer\models;
+use JustCoded\WP\ImageOptimizer\controllers;
 
 /**
  * Class PluginLoader
  * Perform version check and show migration warning if needed
  */
-class PluginLoader
-{
+class PluginLoader {
 	/**
 	 * Init joi plugin Media DB
 	 */
 	public function init_db() {
-		$migrate    = new models\Migrate;
+		$migrate = new models\Migrate;
 		$migrate->migrate( $migrate->findMigrations() );
+
+		controllers\ServiceController::imagizer_activate();
 	}
 
 	/**

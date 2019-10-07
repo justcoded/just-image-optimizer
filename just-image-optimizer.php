@@ -2,19 +2,23 @@
 
 /*
 Plugin Name: Just Image Optimizer
-Description: Compress image files, improve performance and boost your SEO rank using Google Page Speed Insights compression and optimization.
+Description: Compress image files, improve performance and boost your SEO rank using Google Page Speed Insights compression and optimization. Convert images to WEBP and JPEG 2000 formats.
 Tags: image, resize, optimize, optimise, compress, performance, optimisation, optimise JPG, pictures, optimizer, Google Page Speed
-Version: 1.1.3
-Author: JustCoded
+Version: 1.1.3.2
+Author: JustCoded (feat. vg)
 License: GPLv2 or later
 */
 
 define( 'JUSTIMAGEOPTIMIZER_ROOT', dirname( __FILE__ ) );
+define( 'UPLOADS_ROOT', wp_upload_dir()['basedir'] );
+define( 'UPLOADS_URL', wp_upload_dir()['baseurl'] );
+
 require_once JUSTIMAGEOPTIMIZER_ROOT . '/core/Autoload.php';
 require_once JUSTIMAGEOPTIMIZER_ROOT . '/functions.php';
 
 use JustCoded\WP\ImageOptimizer\core;
 use JustCoded\WP\ImageOptimizer\components;
+use JustCoded\WP\ImageOptimizer\includes\Singleton;
 use JustCoded\WP\ImageOptimizer\services;
 use JustCoded\WP\ImageOptimizer\models;
 use JustCoded\WP\ImageOptimizer\controllers;
@@ -22,36 +26,44 @@ use JustCoded\WP\ImageOptimizer\controllers;
 /**
  * Class JustImageOptimizer
  * Main plugin entry point. Includes components in constructor
+ *
+ * @method JustImageOptimizer instance() static
  */
-class JustImageOptimizer extends core\Singleton {
+class JustImageOptimizer {
+	use Singleton;
+
+	/**
+	 * Plugin text domain for translations
+	 */
+	const TEXTDOMAIN = 'justimageoptimizer';
+	/**
+	 * Plugin version option name
+	 */
+	const OPT_VERSION = 'joi_version';
 	/**
 	 * Textual plugin name
 	 *
 	 * @var string
 	 */
 	public static $plugin_name;
-
 	/**
 	 * Current plugin version
 	 *
 	 * @var float
 	 */
 	public static $version;
-
 	/**
 	 * Database options plugin version
 	 *
 	 * @var float
 	 */
 	public static $opt_version;
-
 	/**
 	 * Current Optimize service
 	 *
 	 * @var services\ImageOptimizerInterface
 	 */
 	public static $service;
-
 	/**
 	 * Settings model
 	 *
@@ -60,30 +72,23 @@ class JustImageOptimizer extends core\Singleton {
 	public static $settings;
 
 	/**
-	 * Plugin text domain for translations
-	 */
-	const TEXTDOMAIN = 'justimageoptimizer';
-
-	/**
-	 * Plugin version option name
-	 */
-	const OPT_VERSION = 'joi_version';
-
-	/**
 	 * Plugin main entry point
 	 *
 	 * Protected constructor prevents creating another plugin instance with "new" operator.
+	 *
+	 * @throws Exception
 	 */
 	protected function __construct() {
 		$loader = new core\PluginLoader();
 		// init plugin name and version.
 		self::$plugin_name = __( 'Just Image Optimizer', self::TEXTDOMAIN );
-		self::$version     = '1.103';
+		self::$version     = '1.1.3.2';
 		self::$opt_version = get_option( self::OPT_VERSION );
 		self::$settings    = new models\Settings();
 		self::$service     = services\ImageOptimizerFactory::create();
 
 		register_activation_hook( __FILE__, array( $loader, 'init_db' ) );
+		register_deactivation_hook( __FILE__, array( controllers\ServiceController::instance(), 'imagizer_deactivate' ) );
 
 		// init components for media and optimizer.
 		new components\MediaInfo();
@@ -102,7 +107,9 @@ class JustImageOptimizer extends core\Singleton {
 				new controllers\LogController();
 			}
 		}
+
+
 	}
 }
 
-JustImageOptimizer::run();
+JustImageOptimizer::instance();
