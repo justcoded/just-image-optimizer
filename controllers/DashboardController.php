@@ -5,6 +5,7 @@ namespace JustCoded\WP\ImageOptimizer\controllers;
 use JustCoded\WP\ImageOptimizer\models\Connect;
 use JustCoded\WP\ImageOptimizer\models\Settings;
 use JustCoded\WP\ImageOptimizer\models\Media;
+use JustCoded\WP\ImageOptimizer\components\QueryVars;
 
 /**
  * Adds option dashboard page
@@ -56,6 +57,8 @@ class DashboardController extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
 	 * Render Dashboard page
+	 *
+	 * @throws \Exception
 	 */
 	public function actionIndex() {
 		// check page access.
@@ -65,10 +68,14 @@ class DashboardController extends \JustCoded\WP\ImageOptimizer\core\Component {
 			) );
 		}
 
-		$model = new Media();
+		$model      = new Media();
+		$query_vars = new QueryVars();
+		$query_vars->add_dynamic_query_var( 'reset-queue' );
+
 		$this->render( 'dashboard/index', array(
-			'tab'   => 'dashboard',
-			'model' => $model,
+			'tab'         => 'dashboard',
+			'model'       => $model,
+			'reset_queue' => $query_vars->get_query_vars( 'post', 'reset-queue' ),
 		) );
 	}
 }

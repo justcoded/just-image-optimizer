@@ -3,21 +3,15 @@
 
 namespace JustCoded\WP\ImageOptimizer\components;
 
-use JustCoded\WP\ImageOptimizer\includes\Singleton;
-use JustCoded\WP\ImageOptimizer\models;
-use JustCoded\WP\ImageOptimizer\controllers;
-
-use DOMDocument;
+use JustCoded\WP\ImageOptimizer\models\Log;
+use JustCoded\WP\ImageOptimizer\models\Media;
 
 /**
  * Class Replacement
  *
- * @package JustCoded\WP\Imagizer
- *
- * @method Replacement instance() static
+ * @package JustCoded\WP\ImageOptimizer\components
  */
 class Replacement {
-	use Singleton;
 
 	/**
 	 * Replacement constructor.
@@ -31,12 +25,7 @@ class Replacement {
 	 * Start_buffer
 	 */
 	public function start_buffer() {
-		if ( true === models\ImagizerSettings::get_options()->replacement
-			&& ( 0 !== models\ImagizerSettings::get_options()->converted['webp']
-				|| 0 !== models\ImagizerSettings::get_options()->converted['jp2']
-			) ) {
-			ob_start( array( $this, 'alternate_urls' ) );
-		}
+		ob_start( array( $this, 'alternate_urls' ) );
 	}
 
 	/**
@@ -53,136 +42,42 @@ class Replacement {
 	 *
 	 * @return string
 	 */
-	public function alternate_urls( $buffer ) {
-		global $is_safari;
-		$lazy      = models\ImagizerSettings::get_options()->lazy;
-		$extension = 'webp';
-		$data_attr = '';
+	public function alternate_urls( &$buffer ) {
+		global $wpdb, $is_chrome, $is_safari;
 
-		if ( true === $lazy ) {
-			$data_attr = 'data-';
+		$table = $wpdb->prefix . Log::TABLE_IMAGE_CONVERSION;
+
+		if ( false === $is_chrome && false === $is_safari ) {
+			return $buffer;
 		}
 
-		if ( $is_safari ) {
+		if ( true === $is_safari ) {
 			$extension = 'jp2';
+		} elseif ( true === $is_chrome ) {
+			$extension = 'webp';
 		}
 
-		libxml_use_internal_errors( true );
+		preg_match_all( '/' . preg_quote( UPLOADS_URL, '/' ) . '([^\s\"]*)/', $buffer, $srcs );
 
-		$post = new DOMDocument();
+		foreach ( $srcs[1] as $src ) {
+			$src = trim( $src, '/' );
 
-		$post->loadHTML( $buffer );
+			$match = $wpdb->get_var( "
+				SELECT " . Log::COL_CONVERTED_PATH . "
+				FROM {$table}
+				WHERE " . Log::COL_UPLOAD_PATH . " = '{$src}'
+				AND " . Log::COL_IMAGE_FORMAT . " = '{$extension}'
+				AND " . Log::COL_STATUS . " = 1
+			" );
 
-		$imgs = $post->getElementsByTagName( 'img' );
-
-		foreach ( $imgs as $img ) {
-			$class = $img->getAttribute( 'class' );
-			$img->setAttribute( 'class', $this->add_lazy_class( $class ) );
-
-			$src    = $img->getAttribute( 'src' );
-			$srcset = $img->getAttribute( 'srcset' );
-
-			$matches = Filesystem::instance()->get_real_path( ( empty( $srcset ) ? $src : $srcset ) );
-
-			$check_img = Filesystem::instance()->check_file( $matches, $extension );
-
-			if ( $check_img ) {
-
-				$img->removeAttribute( 'src' );
-
-				// Img src.
-				$temp_src = preg_replace( '/(.jpg|.png|.jpeg)/is', '.' . $extension, $src );
-				$new_src  = preg_replace( '/uploads/is', 'uploads/' . $extension, $temp_src );
-
-				$img->setAttribute( $data_attr . 'src', $new_src );
-
-				if ( $srcset ) {
-					$img->removeAttribute( 'srcset' );
-
-					// Img srcset.
-					$temp_srcset = preg_replace( '/(.jpg|.png|.jpeg)/is', '.' . $extension, $srcset );
-					$new_srcset  = preg_replace( '/uploads/is', 'uploads/' . $extension, $temp_srcset );
-
-					$img->setAttribute( $data_attr . 'srcset', $new_srcset );
-				}
-			}
-		};
-
-		$pictures = $post->getElementsByTagName( 'picture' );
-
-		foreach ( $pictures as $picture ) {
-			$nodes = $picture->getElementsByTagName( 'source' );
-			$img   = $picture->lastChild;
-			$items = array();
-
-			foreach ( $nodes as $node ) {
-				$s = $node->getAttribute( 'srcset' );
-
-				$matches       = Filesystem::instance()->get_real_path( $s );
-				$check_picture = Filesystem::instance()->check_file( $matches, $extension );
-
-				$node->removeAttribute( 'srcset' );
-				$node->setAttribute( $data_attr . 'srcset', $s );
-
-				if ( $check_picture ) {
-					$m = $node->getAttribute( 'media' );
-
-					$el = $post->createElement( 'source' );
-
-					$rp  = preg_replace( '/(.jpg|.png|.jpeg)/is', '.' . $extension, $s );
-					$nrp = preg_replace( '/uploads/is', 'uploads/' . $extension, $rp );
-
-					$el->setAttribute( $data_attr . 'srcset', $nrp );
-					$el->setAttribute( 'media', $m );
-					$el->setAttribute( 'type', 'image/' . $extension );
-
-					$items[] = $el;
-				}
+			if ( empty( $match ) ) {
+				continue;
 			}
 
-			foreach ( $items as $item ) {
-				$picture->insertBefore( $item, $img );
-			}
+			$pattern = '/' . preg_quote( $src, '/' ) . '/';
+			$buffer  = preg_replace( $pattern, $match . ' ', $buffer );
 		}
 
-		$backs = $post->getElementsByTagName( 'style' );
-
-		foreach ( $backs as $back ) {
-			$b = $back->nodeValue;
-
-			preg_match_all( '(\/(\d+)\/(\d+)\/[^"\s\,]*)', $b, $matches );
-
-			$rb  = preg_replace( '/(.jpg|.png|.jpeg)/is', '.' . $extension, $b );
-			$nrb = preg_replace( '/uploads/is', 'uploads/' . $extension, $rb );
-
-			$back->nodeValue = $nrb;
-		}
-
-		return $post->saveHTML();
+		return $buffer;
 	}
-
-	/**
-	 * Add_lazy_class
-	 *
-	 * @param string $classes .
-	 *
-	 * @return string
-	 */
-	public function add_lazy_class( $classes ) {
-		if ( empty( $classes ) ) {
-			return 'lazy';
-		}
-
-		$classes = trim( $classes );
-		$classes = explode( ' ', $classes );
-
-		if ( true === models\ImagizerSettings::get_options()->lazy ) {
-			$classes[] = 'lazy';
-		}
-
-		$classes = implode( ' ', $classes );
-
-		return $classes;
-	}
-
 }

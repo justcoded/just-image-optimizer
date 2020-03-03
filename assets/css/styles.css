@@ -1,9 +1,14 @@
-#google_insights {
+#google_insights-info,
+#localconverter-info {
     display: none;
 }
 
 .notice-error {
     color: red;
+}
+
+.notice-warning {
+    color: #f60;
 }
 
 .jio-admin-page .update-nag {

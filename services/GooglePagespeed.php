@@ -8,7 +8,7 @@ use JustCoded\WP\ImageOptimizer\models;
 
 class GooglePagespeed implements ImageOptimizerInterface {
 
-	const API_URL = 'https://www.googleapis.com/pagespeedonline/v1/runPagespeed?';
+	const API_URL           = 'https://www.googleapis.com/pagespeedonline/v1/runPagespeed?';
 	const OPTIMIZE_CONTENTS = 'https://www.googleapis.com/pagespeedonline/v3beta1/optimizeContents?';
 
 	/**
@@ -45,6 +45,42 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	}
 
 	/**
+	 * Service ID
+	 *
+	 * @return mixed|string
+	 */
+	public function service_id() {
+		return 'google_insights';
+	}
+
+	/**
+	 * Has_api_key
+	 *
+	 * @return bool
+	 */
+	public function has_api_key() {
+		return true;
+	}
+
+	/**
+	 * Has_option
+	 *
+	 * @return bool
+	 */
+	public function has_options() {
+		return false;
+	}
+
+	/**
+	 * Get_service_options
+	 *
+	 * @return array
+	 */
+	public function get_service_options() {
+		return array();
+	}
+
+	/**
 	 * Check Service credentials to be valid
 	 *
 	 * @return bool
@@ -54,6 +90,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		$url_req   = self::API_URL . 'url=' . $check_url . '&key=' . $this->api_key . '';
 		$response  = wp_remote_get( $url_req, array( 'timeout' => 60 ) );
 		$code      = wp_remote_retrieve_response_code( $response );
+
 		return ( 200 === $code );
 	}
 
@@ -65,7 +102,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 *
 	 * @return bool
 	 */
-	public function check_availability( $force_check = false ) {
+	public function check_connect( $force_check = false ) {
 		// generate unique transient key based on domain, this will minimize requests on same domain.
 		$transient_key = 'jio_service_availability.google_page_speed.' . home_url();
 
@@ -78,6 +115,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 			$status = (int) ( 200 === $code );
 			set_transient( $transient_key, $status, 3600 * 60 * 24 );
 		}
+
 		return $status;
 	}
 
@@ -90,7 +128,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 *
 	 * @return mixed
 	 */
-	public function upload_optimize_images( $attach_ids, $dst, $log ) {
+	public function optimize_images( $attach_ids, $dst, $log ) {
 		/* @var $wp_filesystem \WP_Filesystem_Direct */
 		global $wp_filesystem;
 
@@ -100,7 +138,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		$wp_filesystem->is_dir( $google_img_path ) || $wp_filesystem->mkdir( $google_img_path );
 
 		$images_url = home_url( '/just-image-optimize/google/' . $base_attach_ids ) . '?' . rand( 0, 10000 );
-		$log->update_info( 'Optimize request: ' . $images_url );
+		$log->end_request( 'Optimize request: ' . $images_url );
 
 		// download archive file with optimized images.
 		$archive_file = $upload_dir . '/optimize_contents.zip';
@@ -114,11 +152,12 @@ class GooglePagespeed implements ImageOptimizerInterface {
 			'filename'    => $archive_file,
 		) );
 		if ( is_wp_error( $response ) ) {
-			$log->update_info( 'WP Error: ' . $response->get_error_message() );
+			$log->end_request( 'WP Error: ' . $response->get_error_message() );
+
 			return false;
 		}
 
-		$log->update_info( 'Downloaded: ' . $archive_file . ', ' . ( (int) @filesize( $archive_file ) ) . 'B' );
+		$log->end_request( 'Downloaded: ' . $archive_file . ', ' . ( (int) @filesize( $archive_file ) ) . 'B' );
 
 		// optimized images are placed under /image folder inside the archive, so $google_img_path = $dst . '/image'.
 		$unzipfile = unzip_file( $archive_file, $dst );
@@ -148,10 +187,12 @@ class GooglePagespeed implements ImageOptimizerInterface {
 			}
 			unlink( $archive_file );
 
-			$log->update_info( 'Extracted: ' . $counter . ' files' );
+			$log->end_request( 'Extracted: ' . $counter . ' files' );
+
 			return $counter;
 		} else {
-			$log->update_info( 'WP Error: ' . $unzipfile->get_error_message() );
+			$log->end_request( 'WP Error: ' . $unzipfile->get_error_message() );
+
 			return false;
 		}
 	}
@@ -160,7 +201,8 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	 * Add custom rewrite url.
 	 */
 	public function add_rewrite_rules() {
-		add_rewrite_rule( '^just-image-optimize/google/image/([\d]+)', 'index.php?just-image-optimize=google-image&image_size_id=$matches[1]', 'top' );
+		add_rewrite_rule( '^just-image-optimize/google/image/([\d]+)',
+			'index.php?just-image-optimize=google-image&image_size_id=$matches[1]', 'top' );
 		add_rewrite_rule( '^just-image-optimize/google/(.+)', 'index.php?just-image-optimize=google-page&attach_ids=$matches[1]', 'top' );
 	}
 
@@ -205,10 +247,10 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		require ABSPATH . 'wp-admin/includes/file.php';
 
 		// extract attach ids.
-		$attach_ids    = base64_decode( $attach_ids );
-		$attach_ids    = explode( ',', $attach_ids );
+		$attach_ids = base64_decode( $attach_ids );
+		$attach_ids = explode( ',', $attach_ids );
 
-		(new Component())->render( 'optimize/google-page-speed', array(
+		( new Component() )->render( 'optimize/google-page-speed', array(
 			'attach_ids' => $attach_ids,
 			'service'    => $this,
 			'media'      => new models\Media(),
@@ -220,7 +262,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	/**
 	 * Generate image proxy URL to be able identify images after optimization.
 	 *
-	 * @param int    $attach_id  Attach to optimize.
+	 * @param int    $attach_id Attach to optimize.
 	 * @param string $image_size Image size to optimize.
 	 *
 	 * @return string Image proxy URL.
@@ -233,6 +275,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 				$extension      = end( $filename_parts );
 
 				$this->attach_filenames[ $row->attach_name ] = $row->attach_name;
+
 				return home_url( "/just-image-optimize/google/image/{$row->id}.{$extension}" );
 			}
 		}
@@ -241,7 +284,7 @@ class GooglePagespeed implements ImageOptimizerInterface {
 	/**
 	 * Proxy to print real attachment image under custom URL with ID.
 	 *
-	 * @param int $image_size_id  Image stats size ID.
+	 * @param int $image_size_id Image stats size ID.
 	 */
 	protected function render_image_proxy( $image_size_id ) {
 		if ( $row = models\Media::find_stats_by_id( $image_size_id ) ) {
@@ -257,4 +300,5 @@ class GooglePagespeed implements ImageOptimizerInterface {
 		}
 		exit;
 	}
+
 }

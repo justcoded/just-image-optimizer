@@ -35,10 +35,11 @@ if ( ! function_exists( 'jio_size_format' ) ) {
 	 * @return string Friendly file size.
 	 */
 	function jio_size_format( $bytes ) {
-		$size = size_format( $bytes, 1 );
+		$size = size_format( abs( $bytes ), 1 );
 		if ( false !== strpos( $size, 'KB' ) ) {
-			$size = size_format( $bytes, 0 );
+			$size = size_format( abs( $bytes ), 0 );
 		}
+
 		return $size;
 	}
 }

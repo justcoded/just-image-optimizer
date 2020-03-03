@@ -1,8 +1,17 @@
+<?php
+/**
+ * Variables
+ *
+ * @var \JustCoded\WP\ImageOptimizer\models\Settings $model .
+ * @var $saved .
+ * @var $sizes .
+ */
+?>
 <div class="wrap jio-admin-page">
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/_tabs.php' ); ?>
 	<?php $force_requirements_check = true; ?>
 	<?php include( JUSTIMAGEOPTIMIZER_ROOT . '/views/dashboard/_requirements.php' ); ?>
-	<?php if ( !$model->saved() && $model->check_requirements() ) : ?>
+	<?php if ( ! $model->saved() && $model->check_requirements() ) : ?>
 		<div class="update-nag">
 			<strong>Please confirm the settings below and Save them.</strong>
 		</div><br>
@@ -16,6 +25,22 @@
 	<?php endif; ?>
 	<form method="post" action="<?php get_permalink(); ?>" enctype="multipart/form-data">
 		<table class="form-table">
+			<tr>
+				<th scope="row">
+					<?php _e( 'Super cache option', \JustImageOptimizer::TEXTDOMAIN ); ?>
+				</th>
+				<td>
+					<input type="hidden" name="super_cache" value="0">
+					<?php if ( function_exists( 'wpsc_init' ) ) : ?>
+					<input <?php checked( $model->super_cache ); ?>
+							type="checkbox"
+							name="super_cache"
+							value="1">
+					<?php else : ?>
+						<div>For using this options you should install <a href="https://wordpress.org/plugins/wp-super-cache/" target="_blank">WP Super Cache</a> plugin.</div>
+					<?php endif; ?>
+				</td>
+			</tr>
 			<tr>
 				<th scope="row">
 					<?php _e( 'Automatically optimize uploads', \JustImageOptimizer::TEXTDOMAIN ); ?>
@@ -43,7 +68,7 @@
 						<input type="hidden" name="image_sizes" value="">
 						<?php $i = 0; ?>
 						<?php foreach ( $sizes as $size => $dimensions ) : ?>
-							<label for="image_size_<?php echo ++$i; ?>" class="label-checkbox">
+							<label for="image_size_<?php echo ++ $i; ?>" class="label-checkbox">
 								<input <?php checked( in_array( $size, $model->image_sizes ) ); ?>
 										id="image_size_<?php echo $i; ?>"
 										type="checkbox"
@@ -55,16 +80,10 @@
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Keep origin', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
-				<td>
-					<input onclick="return false;" checked type="checkbox" name="keep_origin" value="1">
-				</td>
-			</tr>
-			<tr>
 				<th scope="row"><?php _e( 'Bulk media limit', \JustImageOptimizer::TEXTDOMAIN ); ?></th>
 				<td>
 					<input type="text" name="image_limit"
-						   value="<?php echo $model->image_limit; ?>">
+							value="<?php echo $model->image_limit; ?>">
 					<p class="description">How many Media can be optimized at a time</p>
 				</td>
 			</tr>
@@ -83,6 +102,7 @@
 					<p class="description">Tries count for optimization request</p>
 				</td>
 			</tr>
+
 			<?php /*
 			// TODO: add support in future releases.
 			<tr>
@@ -97,9 +117,15 @@
 				</td>
 			</tr>
 			*/ ?>
+
+			<?php
+			if ( true === JustImageOptimizer::$service->has_options() ) {
+				include JustImageOptimizer::$service->service_id() . '/_service_options.php';
+			}
+			?>
 		</table>
-		<input <?php echo( $model->check_requirements() ? '' : 'disabled' ); ?>
-				type="submit" name="submit-settings" class="button button-primary" value="Save">
+		<input type="hidden" name="settings_saved" value="1">
+		<input type="submit" name="submit-settings" class="button button-primary" value="Save">
 	</form>
 </div>
 <style>

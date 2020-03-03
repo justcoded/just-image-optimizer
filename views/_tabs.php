@@ -14,4 +14,7 @@ use JustCoded\WP\ImageOptimizer\models;
 	<?php if( version_compare( \JustImageOptimizer::$opt_version, \JustImageOptimizer::$version, '<' ) ) : ?>
 	<a class="nav-tab <?php echo ($tab == 'migrate' ? 'nav-tab-active' : ''); ?>" href="<?php echo admin_url() ?>upload.php?page=just-img-opt-migrate"><?php _e('Migration', \JustImageOptimizer::TEXTDOMAIN); ?></a>
 	<?php endif; ?>
+	<?php if ( 'development' === WP_ENV ) : ?>
+	<a class="nav-tab <?php echo ($tab == 'debug' ? 'nav-tab-active' : ''); ?>" href="<?php echo admin_url() ?>upload.php?page=just-img-opt-debug"><?php _e( 'Debug', JustImageOptimizer::TEXTDOMAIN ); ?></a>
+	<?php endif; ?>
 </h2>

@@ -3,7 +3,7 @@ if ( ! isset( $force_requirements_check ) ) {
 	$force_requirements_check = false;
 }
 ?>
-<?php if ( ! \JustImageOptimizer::$settings->check_requirements( $force_requirements_check ) ) : ?>
+<?php if ( ! empty( JustImageOptimizer::$service ) && ! \JustImageOptimizer::$settings->check_requirements( $force_requirements_check ) ) : ?>
 	<div class="update-nag error-nag">
 		<strong>Please check that all requirements are met:</strong>
 		<ul>

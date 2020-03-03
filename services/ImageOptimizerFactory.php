@@ -1,4 +1,5 @@
 <?php
+
 namespace JustCoded\WP\ImageOptimizer\services;
 
 use JustCoded\WP\ImageOptimizer\models\Connect;
@@ -7,10 +8,25 @@ use JustCoded\WP\ImageOptimizer\models\Connect;
  * Class ImageOptimizerFactory
  *
  * @package JustCoded\WP\ImageOptimizer\services
- *
- * @method ImageOptimizerFactory instance() static
  */
 class ImageOptimizerFactory {
+
+	/**
+	 * Services list.
+	 *
+	 * @var array $scope
+	 */
+	public static $scope = array();
+
+	/**
+	 * ImageOptimizerFactory constructor.
+	 */
+	public function __construct() {
+		self::$scope = array(
+			/*'google_insights' => new GooglePagespeed(),*/
+			'localconverter' => new LocalConverter(),
+		);
+	}
 
 	/**
 	 * Factory create method
@@ -18,22 +34,23 @@ class ImageOptimizerFactory {
 	 * @param string $service Service to be created.
 	 * @param string $api_key Credentials.
 	 *
-	 * @return GooglePagespeed
+	 * @return GooglePagespeed|LocalConverter
 	 * @throws \Exception Wrong service passed.
 	 */
 	public static function create( $service = '', $api_key = '' ) {
 		$connect = new Connect();
 		$service = ( $service ? $service : $connect->service );
 		if ( $service ) {
-			switch ( $service ) {
-				case 'google_insights':
-					$google_insights          = new GooglePagespeed();
-					$google_insights->api_key = ( $api_key ? $api_key : $connect->api_key );
-
-					return $google_insights;
-				default:
-					throw new \Exception( "Service \"{$service}\" does not exists." );
+			if ( empty( self::$scope[ $service ] ) ) {
+				throw new \Exception( "Service \"{$service}\" does not exists." );
 			}
+
+			$item = self::$scope[ $service ];
+			if ( true === $item->has_api_key() ) {
+				$item->api_key = ( $api_key ? : $connect->api_key );
+			}
+
+			return $item;
 		}
 	}
 }

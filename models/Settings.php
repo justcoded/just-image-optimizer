@@ -11,14 +11,18 @@ use JustCoded\WP\ImageOptimizer\core;
  */
 class Settings extends core\Model {
 
-	const DB_OPT_IMAGE_SIZES   = 'joi_image_sizes';
-	const DB_OPT_AUTO_OPTIMIZE = 'joi_auto_optimize';
-	const DB_OPT_IMAGE_LIMIT   = 'joi_image_limit';
-	const DB_OPT_SIZE_LIMIT    = 'joi_size_limit';
-	const DB_OPT_BEFORE_REGEN  = 'joi_before_regen';
-	const DB_OPT_SIZE_CHECKED  = 'joi_image_sizes_all';
-	const DB_OPT_KEEP_ORIGIN   = 'joi_keep_origin';
-	const DB_OPT_TRIES_COUNT   = 'joi_tries_count';
+	const DB_OPT_IMAGE_SIZES     = 'jio_image_sizes';
+	const DB_OPT_AUTO_OPTIMIZE   = 'jio_auto_optimize';
+	const DB_OPT_IMAGE_LIMIT     = 'jio_image_limit';
+	const DB_OPT_SIZE_LIMIT      = 'jio_size_limit';
+	const DB_OPT_BEFORE_REGEN    = 'jio_before_regen';
+	const DB_OPT_SIZE_CHECKED    = 'jio_image_sizes_all';
+	const DB_OPT_TRIES_COUNT     = 'jio_tries_count';
+	const DB_OPT_REPLACEMENT     = 'jio_replacement';
+	const DB_OPT_LAZYLOAD        = 'jio_lazyload';
+	const DB_OPT_SERVICE_OPTIONS = 'jio_service_options';
+	const DB_OPT_SAVED           = 'jio_setting_saved';
+	const DB_OPT_SUPER_CACHE     = 'jio_super_cache';
 
 	/**
 	 * Optimize all image sizes or not.
@@ -69,12 +73,39 @@ class Settings extends core\Model {
 	public $before_regen;
 
 	/**
-	 * Keep original image without optimization
-	 * (always true)
+	 * Image replacement.
 	 *
 	 * @var bool
 	 */
-	public $keep_origin;
+	public $replacement;
+
+	/**
+	 * Lazyload.
+	 *
+	 * @var bool
+	 */
+	public $lazyload;
+
+	/**
+	 * Service extra options.
+	 *
+	 * @var array $service_options .
+	 */
+	public $service_options;
+
+	/**
+	 * Checks is plugin settings saved.
+	 *
+	 * @var bool $settings_saved .
+	 */
+	public $settings_saved;
+
+	/**
+	 * Super cache option
+	 *
+	 * @var bool $super_cache;
+	 */
+	public $super_cache;
 
 	/**
 	 * Sanitize rules
@@ -89,7 +120,10 @@ class Settings extends core\Model {
 		'size_limit'      => 'int',
 		'tries_count'     => 'int',
 		'before_regen'    => 'int',
-		'keep_origin'     => 'int',
+		'replacement'     => 'int',
+		'lazyload'        => 'int',
+		'settings_saved'  => 'int',
+		'super_cache'     => 'int',
 	);
 
 	/**
@@ -110,7 +144,11 @@ class Settings extends core\Model {
 		$this->tries_count     = get_option( self::DB_OPT_TRIES_COUNT, 5 );
 		$this->before_regen    = get_option( self::DB_OPT_BEFORE_REGEN );
 		$this->image_sizes_all = get_option( self::DB_OPT_SIZE_CHECKED, '1' );
-		$this->keep_origin     = get_option( self::DB_OPT_KEEP_ORIGIN );
+		$this->replacement     = get_option( self::DB_OPT_REPLACEMENT, '0' );
+		$this->lazyload        = get_option( self::DB_OPT_LAZYLOAD, '0' );
+		$this->service_options = get_option( self::DB_OPT_SERVICE_OPTIONS, '' );
+		$this->super_cache     = get_option( self::DB_OPT_SUPER_CACHE );
+		$this->settings_saved  = get_option( self::DB_OPT_SAVED );
 	}
 
 	/**
@@ -129,14 +167,29 @@ class Settings extends core\Model {
 	 * Update options
 	 */
 	public function save() {
+		if (
+			true === \JustImageOptimizer::$service->has_options() &&
+			! isset( $this->service_options )
+		) {
+			$this->service_options = \JustImageOptimizer::$service->get_service_options();
+		}
+
+		if ( false === \JustImageOptimizer::$service->has_options() ) {
+			$this->service_options = '';
+		}
+
 		update_option( self::DB_OPT_IMAGE_SIZES, $this->image_sizes );
 		update_option( self::DB_OPT_IMAGE_LIMIT, $this->image_limit );
 		update_option( self::DB_OPT_SIZE_LIMIT, $this->size_limit );
 		update_option( self::DB_OPT_BEFORE_REGEN, $this->before_regen );
 		update_option( self::DB_OPT_AUTO_OPTIMIZE, $this->auto_optimize );
 		update_option( self::DB_OPT_SIZE_CHECKED, $this->image_sizes_all );
-		update_option( self::DB_OPT_KEEP_ORIGIN, $this->keep_origin );
 		update_option( self::DB_OPT_TRIES_COUNT, $this->tries_count );
+		update_option( self::DB_OPT_REPLACEMENT, $this->replacement );
+		update_option( self::DB_OPT_LAZYLOAD, $this->lazyload );
+		update_option( self::DB_OPT_SERVICE_OPTIONS, $this->service_options );
+		update_option( self::DB_OPT_SUPER_CACHE, $this->super_cache );
+		update_option( self::DB_OPT_SAVED, $this->settings_saved );
 		$this->reset();
 
 		flush_rewrite_rules();
@@ -150,7 +203,7 @@ class Settings extends core\Model {
 	 * @return bool true or false.
 	 */
 	public function saved() {
-		return get_option( self::DB_OPT_KEEP_ORIGIN ) === '1';
+		return intval( get_option( self::DB_OPT_SAVED ) ) === 1;
 	}
 
 	/**
@@ -163,7 +216,8 @@ class Settings extends core\Model {
 	public function check_requirements( $force_check = false ) {
 		$php_vers   = version_compare( phpversion(), '7.0', '>' );
 		$wp_content = wp_is_writable( WP_CONTENT_DIR );
-		$service    = \JustImageOptimizer::$service && \JustImageOptimizer::$service->check_availability( $force_check );
+		$service    = \JustImageOptimizer::$service && \JustImageOptimizer::$service->check_connect( $force_check );
+
 		return $php_vers && $wp_content && $service;
 	}
 

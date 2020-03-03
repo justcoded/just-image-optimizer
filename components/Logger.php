@@ -2,10 +2,11 @@
 
 namespace JustCoded\WP\ImageOptimizer\components;
 
-use JustCoded\WP\ImageOptimizer\includes\Singleton;
+use JustCoded\WP\ImageOptimizer\core\Singleton;
 
 /**
  * Class Logger
+ * For debugging, will be removed in the future.
  *
  * @package JustCoded\WP\Imagizer\
  *

@@ -13,6 +13,20 @@ interface ImageOptimizerInterface {
 	public function name();
 
 	/**
+	 * Service ID.
+	 *
+	 * @return string
+	 */
+	public function service_id();
+
+	/**
+	 * Checks does service use api key.
+	 *
+	 * @return bool
+	 */
+	public function has_api_key();
+
+	/**
 	 * Check Service credentials to be valid
 	 *
 	 * @return bool
@@ -20,22 +34,36 @@ interface ImageOptimizerInterface {
 	public function check_api_key();
 
 	/**
-	 * Check Service availability (that it has correct mode or site access)
+	 * Check Service connection (that it has correct mode or site access)
 	 *
-	 * @param bool $force_check Ignore caches within requriements check.
+	 * @param bool $force_check Ignore caches within requirements check.
 	 *
 	 * @return bool
 	 */
-	public function check_availability( $force_check = false );
+	public function check_connect( $force_check = false );
+
+	/**
+	 * Has options
+	 *
+	 * @return bool
+	 */
+	public function has_options();
+
+	/**
+	 * Get service options
+	 *
+	 * @return array
+	 */
+	public function get_service_options();
 
 	/**
 	 * Optimize images and save to destination directory
 	 *
 	 * @param int[]  $attach_ids Attachment ids to optimize.
-	 * @param string $dst Directory to save image to.
 	 * @param Log    $log Log object.
+	 * @param string $dst Directory to save image to.
 	 *
-	 * @return mixed
+	 * @return integer
 	 */
-	public function upload_optimize_images( $attach_ids, $dst, $log );
+	public function optimize_images( $attach_ids, $log, $dst = null );
 }
