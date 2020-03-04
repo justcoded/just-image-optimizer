@@ -2,6 +2,11 @@
 
 namespace JustCoded\WP\ImageOptimizer\core;
 
+/**
+ * Class Model
+ *
+ * @package JustCoded\WP\ImageOptimizer\core
+ */
 class Model {
 
 	/**

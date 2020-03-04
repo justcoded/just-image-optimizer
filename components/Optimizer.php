@@ -72,6 +72,8 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
 	 * Auto optimizer cron job.
+	 *
+	 * @throws \Exception
 	 */
 	public function auto_optimize() {
 		$attach_ids = array();
@@ -121,20 +123,13 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 					unset( $attach_ids[ $key ] );
 				}
 			}
-		} while ( ! empty( $attach_ids ) && \JustImageOptimizer::$settings->tries_count > $tries ++ );
-	}
-
-	/**
-	 * Function for init filesystem accesses
-	 *
-	 * @return string
-	 */
-	public function filesystem_direct() {
-		return 'direct';
+		} while ( ! empty( $attach_ids ) && \JustImageOptimizer::$settings->tries_count > ++ $tries );
 	}
 
 	/**
 	 * Ajax function for manual image optimize
+	 *
+	 * @throws \Exception
 	 */
 	public function manual_optimize() {
 		$attach_id = (int) $_POST['attach_id'];
@@ -148,10 +143,10 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 		$attach_stats    = $model->get_total_attachment_stats( $attach_id );
 		$data_statistics = array(
-			'saving_percent' => ( ! empty( $attach_stats[0]->percent ) ? $attach_stats[0]->percent : 0 ),
-			'saving_size'    => ( ! empty( $attach_stats[0]->saving_size ) ? jio_size_format( $attach_stats[0]->saving_size ) : 0 ),
-			'total_size'     => ( ! empty( $attach_stats[0]->disk_usage ) ? jio_size_format( $attach_stats[0]->disk_usage ) : 0 ),
-			'count_images'   => $model->get_count_images( $attach_id ),
+			'saving_percent' => ( ! empty( $attach_stats->percent ) ? $attach_stats->percent : 0 ),
+			'saving_size'    => ( ! empty( $attach_stats->saving_size ) ? jio_size_format( $attach_stats->saving_size ) : 0 ),
+			'total_size'     => ( ! empty( $attach_stats->disk_usage ) ? jio_size_format( $attach_stats->disk_usage ) : 0 ),
+			'count_images'   => $attach_stats->count_images,
 		);
 		header( 'Content-Type: application/json; charset=' . get_bloginfo( 'charset' ) );
 		echo wp_json_encode( $data_statistics );
@@ -159,24 +154,22 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 	}
 
 	/**
-	 * Function for optimize images
+	 * Optimize_images
 	 *
-	 * @param array $attach_ids Attachment ids.
+	 * @param array $attach_ids .
 	 *
-	 * @return boolean
+	 * @return bool
+	 * @throws \Exception
 	 */
 	protected function optimize_images( array $attach_ids ) {
-		/* @var \WP_Filesystem_Direct $wp_filesystem */
-		global $wp_filesystem;
+		global $wpdb;
+		$table      = $wpdb->prefix . Log::TABLE_IMAGE_CONVERSION;
 		$media      = new Media();
 		$log        = new Log();
 		$attach_ids = $media->size_limit( $attach_ids );
-		// add filter for WP_FIlesystem permission.
-		add_filter( 'filesystem_method', array( $this, 'filesystem_direct' ) );
-		WP_Filesystem();
-		// set statistics and status before replace images.
 		$request_id = $log->start_request();
 
+		// Create new stats record to DB.
 		foreach ( $attach_ids as $key => $attach_id ) {
 			$optimize_status = (int) get_post_meta( $attach_id, '_just_img_opt_status' );
 			if ( Media::STATUS_PROCESSED === $optimize_status ) {
@@ -184,58 +177,60 @@ class Optimizer extends \JustCoded\WP\ImageOptimizer\core\Component {
 				continue;
 			}
 
-			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
+			$file_sizes = $media->get_file_sizes( $attach_id );
 			$media->save_stats( $attach_id, $file_sizes );
 			$log->save_details( $request_id, $attach_id, $file_sizes );
 			update_post_meta( $attach_id, '_just_img_opt_status', Media::STATUS_IN_PROCESS );
 		}
-		// upload images from service.
-		$dir = WP_CONTENT_DIR . '/tmp/';
-		$wp_filesystem->is_dir( $dir ) || $wp_filesystem->mkdir( $dir );
-		$status = \JustImageOptimizer::$service->upload_optimize_images( $attach_ids, $dir, $log );
 
-		// if folder empty - then optimization failed, reset stats.
-		$image_files = scandir( $dir );
-		if ( ! $status || 0 === count( glob( $dir ) ) || empty( $image_files ) ) {
+		$counter = \JustImageOptimizer::$service->optimize_images( $attach_ids, $log );
+
+		if ( 0 !== $counter ) {
 			foreach ( $attach_ids as $attach_id ) {
-				$log->update_status( $attach_id, $request_id, Log::STATUS_REMOVED );
-				$optimize_status = $media->check_optimization_status( $attach_id );
-				update_post_meta( $attach_id, '_just_img_opt_status', $optimize_status );
-			}
-			$wp_filesystem->rmdir( $dir, true );
+				$current_status   = 0;
+				$check_conversion = $wpdb->get_results( "SELECT `status` FROM {$table} WHERE attach_id = {$attach_id}", ARRAY_A );
 
-			return false;
-		}
-
-		$get_path = $media->get_uploads_path();
-
-		// process image replacement.
-		foreach ( $image_files as $key => $file ) {
-			if ( $wp_filesystem->is_file( $dir . $file ) ) {
-				foreach ( $get_path as $path ) {
-					if ( $wp_filesystem->exists( $path . '/' . $file ) ) {
-						$optimize_image_size = getimagesize( $dir . $file );
-						if ( 25 < $optimize_image_size[0] && 25 < $optimize_image_size[1] ) {
-							$wp_filesystem->copy( $dir . $file, $path . '/' . $file, true );
-							$log->save_status( $request_id, $file, Log::STATUS_OPTIMIZED );
-						} else {
-							$log->save_status( $request_id, $file, Log::STATUS_ABORTED );
+				if ( ! empty( $check_conversion ) ) {
+					foreach ( $check_conversion as $conv_status ) {
+						if ( $current_status <= intval( $conv_status['status'] ) ) {
+							$current_status = $conv_status['status'];
 						}
+					}
+
+					switch ( intval( $current_status ) ) {
+						case 0:
+						case 5:
+							$log->update_status( $attach_id, $request_id, Log::STATUS_REMOVED );
+							break;
+						case 1:
+							$log->update_status( $attach_id, $request_id, Log::STATUS_OPTIMIZED );
+							break;
+						case 2:
+							$log->update_status( $attach_id, $request_id, Log::STATUS_CMYK );
+							break;
+						case 3:
+							$log->update_status( $attach_id, $request_id, Log::STATUS_PARTIALLY );
+							break;
+						case 4:
+							$log->update_status( $attach_id, $request_id, Log::STATUS_INAPPROPRIATE );
+							break;
+						default:
+							continue 2;
 					}
 				}
 			}
 		}
 
-		// set statistics and status after replace images.
+		// Update statistics and status after replace images.
 		foreach ( $attach_ids as $attach_id ) {
-			$file_sizes = $media->get_file_sizes( $attach_id, 'detailed' );
+			$file_sizes = $media->get_file_sizes( $attach_id );
 			$media->update_stats( $attach_id, $file_sizes );
 			$log->update_details( $request_id, $attach_id, $file_sizes );
 			$optimize_status = $media->check_optimization_status( $attach_id );
 			update_post_meta( $attach_id, '_just_img_opt_status', $optimize_status );
 		}
 
-		$wp_filesystem->rmdir( $dir, true );
+		$log->end_request( 'Processed: ' . $counter . ' ' . _n( 'file', 'files', $counter ) );
 
 		return true;
 	}

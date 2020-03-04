@@ -1,14 +1,15 @@
 <?php
 
+
 namespace JustCoded\WP\ImageOptimizer\core;
 
 /**
  * Class Singleton
  * Singleton design pattern basic class.
  *
- * @package JustCoded\WP\ImageOptimizer\core
+ * @package JustCoded\WP\JustImagizer\core
  */
-class Singleton {
+trait Singleton {
 	/**
 	 * Refers to a single instance of this class.
 	 *
@@ -21,21 +22,12 @@ class Singleton {
 	 *
 	 * @return Singleton A single instance of this class.
 	 */
-	public static function get_instance() {
+	public static function instance() {
 		if ( null === static::$instance ) {
 			static::$instance = new static();
 		}
 
 		return static::$instance;
-	}
-
-	/**
-	 * Alias for creating object of *Singleton* pattern
-	 *
-	 * @return Singleton A single instance of this class.
-	 */
-	public static function run() {
-		return static::get_instance();
 	}
 
 	/**

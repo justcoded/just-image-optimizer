@@ -12,6 +12,8 @@ class MediaInfo extends \JustCoded\WP\ImageOptimizer\core\Component {
 
 	/**
 	 * Allowed images mime types
+	 *
+	 * @var array $allowed_images .
 	 */
 	public $allowed_images = array( 'image/jpeg', 'image/jpg', 'image/png', 'image/gif' );
 
@@ -83,7 +85,7 @@ class MediaInfo extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * @return mixed
 	 */
 	public function optimize_column( $cols ) {
-		$cols["optimize"] = "Optimize";
+		$cols['optimize'] = 'Optimize';
 
 		return $cols;
 	}
@@ -91,10 +93,11 @@ class MediaInfo extends \JustCoded\WP\ImageOptimizer\core\Component {
 	/**
 	 * Display column content.
 	 *
-	 * @param string $column_name Column Name.
+	 * @param string  $column_name Column Name.
 	 * @param integer $id Attachment id.
 	 *
 	 * @return mixed
+	 * @throws \Exception
 	 */
 	public function optimize_column_display( $column_name, $id ) {
 		$model = new Media();
@@ -114,7 +117,7 @@ class MediaInfo extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * @return mixed
 	 */
 	public function optimize_column_sortable( $cols ) {
-		$cols["optimize"] = "name";
+		$cols['optimize'] = 'name';
 
 		return $cols;
 	}

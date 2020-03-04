@@ -1,14 +1,18 @@
 <?php
 
+
 namespace JustCoded\WP\ImageOptimizer\controllers;
 
+use JustCoded\WP\ImageOptimizer\core\Component;
 use JustCoded\WP\ImageOptimizer\models;
 
 /**
- * Class OptimizationLogController
- * Image Optimization Log
+ * Class DebugController
+ *
+ * @package JustCoded\WP\ImageOptimizer\controllers
  */
-class LogController extends \JustCoded\WP\ImageOptimizer\core\Component {
+class DebugController extends Component {
+
 	/**
 	 * OptimizationLogController constructor.
 	 * Init WP hooks
@@ -28,7 +32,7 @@ class LogController extends \JustCoded\WP\ImageOptimizer\core\Component {
 			$page_title,
 			$page_title,
 			'manage_options',
-			'just-img-opt-log',
+			'just-img-opt-debug',
 			array( $this, 'actionIndex' )
 		);
 	}
@@ -37,21 +41,11 @@ class LogController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 * Image Optimization Log view
 	 */
 	public function actionIndex() {
-		$model      = new models\Log();
-		$request_id = ( isset( $_GET['request_id'] ) ? (int) $_GET['request_id'] : 0 );
-		if ( ! empty( $request_id ) ) {
-			$this->render( 'log/single-log', array(
-				'model'      => $model,
-				'request_id' => $request_id,
-				'log'        => $model->find( $request_id ),
-				'tab'        => 'log',
-			) );
-		} else {
-			$this->render( 'log/index', array(
-				'model' => $model,
-				'tab'   => 'log',
-			) );
-		}
+		$model = new models\Debug();
+		$this->render( 'debug/index', array(
+			'model' => $model,
+			'tab'   => 'debug',
+		) );
 	}
-}
 
+}

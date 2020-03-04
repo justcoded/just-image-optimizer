@@ -12,9 +12,9 @@ use JustCoded\WP\ImageOptimizer\services;
  */
 class Connect extends core\Model {
 
-	const DB_OPT_API_KEY = 'joi_api_key';
-	const DB_OPT_SERVICE = 'joi_service';
-	const DB_OPT_STATUS  = 'joi_status';
+	const DB_OPT_API_KEY = 'jio_api_key';
+	const DB_OPT_SERVICE = 'jio_service';
+	const DB_OPT_STATUS  = 'jio_status';
 
 	/**
 	 * Service identifier.
@@ -68,6 +68,7 @@ class Connect extends core\Model {
 	 * Update Settings
 	 *
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public function save() {
 		$service = services\ImageOptimizerFactory::create( $this->service, $this->api_key );

@@ -19,6 +19,7 @@ class ConnectController extends \JustCoded\WP\ImageOptimizer\core\Component {
 		add_action( 'admin_menu', array( $this, 'init_admin_menu' ) );
 		add_action( 'admin_print_scripts-media_page_just-img-opt-connection', array( $this, 'registerAssets' ) );
 		add_action( 'wp_ajax_joi_check_api_connect', array( $this, 'check_api_connect' ) );
+		add_action( 'wp_ajax_joi_check_connect', array( $this, 'check_service_connect' ) );
 
 	}
 
@@ -74,7 +75,7 @@ class ConnectController extends \JustCoded\WP\ImageOptimizer\core\Component {
 	 */
 	public function check_api_connect() {
 		try {
-			$service = services\ImageOptimizerFactory::create(
+			$service           = services\ImageOptimizerFactory::create(
 				sanitize_key( $_POST['service'] ),
 				sanitize_text_field( $_POST['api_key'] )
 			);
@@ -82,6 +83,23 @@ class ConnectController extends \JustCoded\WP\ImageOptimizer\core\Component {
 			echo esc_attr( $connection_status );
 		} catch ( \Exception $e ) {
 			echo '0';
+		}
+		exit();
+	}
+
+	/**
+	 * Ajax function for check installed converters
+	 */
+	public function check_service_connect() {
+		try {
+			$service = services\ImageOptimizerFactory::create(
+				sanitize_key( $_POST['service'] ),
+				''
+			);
+			$status  = $service->check_connect();
+			echo( ! empty( $status ) ? wp_json_encode( $status ) : true );
+		} catch ( \Exception $e ) {
+			esc_html_e( '0' );
 		}
 		exit();
 	}
