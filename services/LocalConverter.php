@@ -76,7 +76,7 @@ class LocalConverter implements ImageOptimizerInterface {
 		$this->errors = new \WP_Error();
 
 		foreach ( self::$directories as $path ) {
-			$this->fs->setup_directories( $path );
+			$this->fs->setup_directories( UPLOADS_ROOT . DIRECTORY_SEPARATOR . $path );
 		}
 	}
 
